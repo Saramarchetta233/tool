@@ -3,17 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Star, Clock, Shield, Heart, Zap, TrendingDown, Award } from 'lucide-react';
 
+
+
+
 const KetoBruciaLanding = () => {
   const [timeLeft, setTimeLeft] = useState({
-    hours: 24,
-    minutes: 0,
-    seconds: 0
+    hours: 11,
+    minutes: 45,
+    seconds: 36
   });
 
   const [formData, setFormData] = useState({
     nome: '',
     telefono: '',
-    indirizzo: ''
+    indirizzo: '',
+    URL: 'https://network.worldfilia.net/manager/inventory/buy/ntm_ketobrucia_4x49.json?api_key=1fcebdea725d57dac8ec9addd1692ed7',
+    source_id: '63baaa24b01a',
+    quantity: '4'
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,10 +32,19 @@ const KetoBruciaLanding = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Qui implementerai l'invio dei dati
-    console.log('Dati form:', formData);
-    // fetch('TUO_URL', { method: 'POST', body: JSON.stringify(formData) })
-    // .then(() => window.location.href = 'TUA_THANKYOU_PAGE')
+
+    // Debug: verifica che tutti i campi siano presenti
+    console.log('Dati form completi:', formData);
+
+    fetch('https://primary-production-625c.up.railway.app/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',  // Importante!
+      },
+      body: JSON.stringify(formData)  // Invia tutti i dati
+    })
+      .then(() => window.location.href = 'ty-keto')
+      .catch(error => console.error('Errore:', error));
   };
 
   const scrollToPricing = () => {
@@ -752,11 +767,12 @@ const KetoBruciaLanding = () => {
                   />
                 </div>
 
+
                 <button
                   type="submit"
                   className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform hover:scale-105 transition-all duration-200"
                 >
-                  ORDINA ORA - SOLO €49,99
+                  ORDINA ORA
                 </button>
               </form>
             </div>
