@@ -14,8 +14,8 @@ const KetoBruciaLanding = () => {
     nome: '',
     telefono: '',
     indirizzo: '',
-    URL: 'https://network.worldfilia.net/manager/inventory/buy/ntm_ketobrucia_4x49.json?api_key=1fcebdea725d57dac8ec9addd1692ed7',
-    source_id: '63baaa24b01a',
+    URL: 'https://network.worldfilia.net/manager/inventory/buy/ntm_ketobrucia_4x49.json?api_key=5b4327289caa289c6117c469d70a13bd',
+    source_id: '2da1cfad54d3',
     quantity: '4'
   });
 
