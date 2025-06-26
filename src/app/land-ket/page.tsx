@@ -747,7 +747,7 @@ const KetoBruciaLanding = () => {
               <ul className="space-y-3">
                 <li className="flex items-center space-x-3">
                   <Check className="w-5 h-5 text-green-500" />
-                  <span>4 Confezioni Keto Brucia (4 mesi di trattamento)</span>
+                  <span>4 Confezioni Keto Brucia (4 mesi di trattamento, valore 150€)</span>
                 </li>
                 <li className="flex items-center space-x-3">
                   <Check className="w-5 h-5 text-green-500" />
@@ -756,6 +756,10 @@ const KetoBruciaLanding = () => {
                 <li className="flex items-center space-x-3">
                   <Check className="w-5 h-5 text-green-500" />
                   <span>Piano di Allenamento Metabolico (valore €39)</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span>Consulenza WhatsApp con specialista sempre disponibile per 4 mesi (valore 99€)</span>
                 </li>
               </ul>
             </div>

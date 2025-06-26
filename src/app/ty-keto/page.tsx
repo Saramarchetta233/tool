@@ -169,6 +169,10 @@ const ThankYouPage = () => {
                     <CheckCircle className="w-4 h-4 text-green-500" />
                     <span>Piano Allenamento Metabolico</span>
                   </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span>Consulenza WhatsApp 24/7 con Specialista</span>
+                  </li>
                 </ul>
               </div>
             </div>
