@@ -653,7 +653,7 @@ const KetoBruciaLanding = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center mb-4" style={{ marginTop: '50px' }}>
                   {[...Array(testimonial.stars)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
