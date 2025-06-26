@@ -9,7 +9,6 @@ const KetoBruciaLanding = () => {
     minutes: 45,
     seconds: 36
   });
-
   const [formData, setFormData] = useState({
     nome: '',
     telefono: '',
@@ -27,33 +26,29 @@ const KetoBruciaLanding = () => {
     return match ? match[2] : null;
   };
 
-  // Funzione per raccogliere i dati necessari per Meta
-  const getMetaTrackingData = () => {
-    return {
-      // Dati Meta essenziali
-      fbp: getCookieValue('_fbp'), // Facebook browser ID
-      fbc: getCookieValue('_fbc'), // Facebook click ID (da campagne)
-      user_agent: navigator.userAgent,
-      timestamp: Math.floor(Date.now() / 1000),
-      event_source_url: window.location.href,
-      referrer: document.referrer,
+  // Funzione per creare hash SHA256
+  const hashData = async (data: string): Promise<string | null> => {
+    if (!data) return null;
 
-      // Dati per il tracciamento
-      event_name: 'Lead', // Tipo di evento (Lead, Purchase, etc.)
-      event_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // ID univoco
+    try {
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(data.toLowerCase().trim());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (error) {
+      console.error('Errore durante l\'hashing:', error);
+      return null;
+    }
+  };
 
-      // Parametri UTM (se presenti nell'URL)
-      utm_source: new URLSearchParams(window.location.search).get('utm_source'),
-      utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
-      utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-      utm_content: new URLSearchParams(window.location.search).get('utm_content'),
-      utm_term: new URLSearchParams(window.location.search).get('utm_term'),
-
-      // Altri dati utili
-      page_title: document.title,
-      screen_resolution: `${screen.width}x${screen.height}`,
-      language: navigator.language
-    };
+  // Funzione per pulire il numero di telefono
+  const cleanPhone = (phone: string): string => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('39')) return cleaned;
+    if (cleaned.startsWith('3')) return '39' + cleaned;
+    return cleaned;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,21 +64,47 @@ const KetoBruciaLanding = () => {
 
     // Previeni invii multipli
     if (isSubmitting) return;
-
     setIsSubmitting(true);
 
     try {
-      // Raccogli i dati per Meta
-      const metaData = getMetaTrackingData();
+      // Prepara i dati per Meta con hashing
+      const cleanedPhone = cleanPhone(formData.telefono);
+      const firstName = formData.nome.split(' ')[0];
+      const lastName = formData.nome.split(' ').length > 1 ? formData.nome.split(' ').slice(1).join(' ') : '';
 
-      // Combina tutti i dati
       const completeData = {
+        // Dati del form originali
         ...formData,
-        ...metaData
+
+        // Dati Meta
+        fbp: getCookieValue('_fbp'),
+        fbc: getCookieValue('_fbc'),
+        user_agent: navigator.userAgent,
+        timestamp: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        referrer: document.referrer,
+        event_name: 'Lead',
+        event_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+
+        // Dati hashati
+        nome_hash: await hashData(firstName),
+        telefono_hash: await hashData(cleanedPhone),
+        cognome_hash: lastName ? await hashData(lastName) : null,
+
+        // Parametri UTM
+        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+        utm_content: new URLSearchParams(window.location.search).get('utm_content'),
+        utm_term: new URLSearchParams(window.location.search).get('utm_term'),
+
+        // Altri dati
+        page_title: document.title,
+        screen_resolution: `${screen.width}x${screen.height}`,
+        language: navigator.language
       };
 
-      // Debug: verifica che tutti i campi siano presenti
-      console.log('Dati form completi:', completeData);
+      console.log('Invio dati:', completeData);
 
       const response = await fetch('https://primary-production-625c.up.railway.app/webhook/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
         method: 'POST',
@@ -93,32 +114,12 @@ const KetoBruciaLanding = () => {
         body: JSON.stringify(completeData)
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
+      // Reindirizza sempre (per semplicità)
+      window.location.href = '/ty-keto';
 
-      if (response.ok) {
-        // Reindirizza solo se la richiesta è andata a buon fine
-        console.log('Reindirizzamento a ty-keto...');
-        window.location.href = '/ty-keto';
-      } else {
-        const errorText = await response.text();
-        console.error('Errore nella risposta:', response.status, response.statusText, errorText);
-
-        // Per ora commentiamo l'alert e facciamo comunque il redirect per testare
-        // alert('Si è verificato un errore. Riprova.');
-
-        // Redirect anche in caso di errore per il testing
-        console.log('Reindirizzamento forzato per testing...');
-        window.location.href = '/ty-keto';
-      }
     } catch (error) {
-      console.error('Errore nell\'invio:', error);
-
-      // Per ora commentiamo l'alert e facciamo comunque il redirect per testare
-      // alert('Si è verificato un errore di connessione. Riprova.');
-
-      // Redirect anche in caso di errore per il testing
-      console.log('Reindirizzamento forzato in caso di errore...');
+      console.error('Errore:', error);
+      // Reindirizza anche in caso di errore
       window.location.href = '/ty-keto';
     } finally {
       setIsSubmitting(false);
