@@ -160,7 +160,7 @@ const KetoBruciaLanding = () => {
       result: "-8 kg in 6 settimane",
       text: "Dopo la menopausa pensavo fosse impossibile perdere peso. Keto Brucia ha riattivato il mio metabolismo e ora mi sento come a 30 anni!",
       stars: 5,
-      image: ""
+      image: "/images/donna-1.webp"
     },
     {
       name: "Giulia R.",
@@ -169,7 +169,7 @@ const KetoBruciaLanding = () => {
       result: "-6 kg in 4 settimane",
       text: "Il gonfiore addominale che mi tormentava è completamente sparito. Finalmente posso indossare i miei vestiti preferiti!",
       stars: 5,
-      image: ""
+      image: "/images/donna-2.webp"
     },
     {
       name: "Francesca L.",
@@ -178,7 +178,7 @@ const KetoBruciaLanding = () => {
       result: "-10 kg in 8 settimane",
       text: "I miei valori ormonali si sono normalizzati e ho ritrovato l'energia che avevo perso. È stata una trasformazione incredibile!",
       stars: 5,
-      image: ""
+      image: "/images/donna-3.webp"
     }
   ];
 
@@ -641,12 +641,11 @@ const KetoBruciaLanding = () => {
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
                 <div className="mb-6" style={{ height: '300px' }}>
-                  <img
-                    src={`/api/placeholder/300/200?random=${index + 1}`}
-                    alt={`Evoluzione ${testimonial.name}`}
+
+                  <img src={testimonial.image} alt={`Evoluzione ${testimonial.name}`}
                     style={{ height: '300px' }}
-                    className="w-full h-48 rounded-xl object-cover shadow-lg"
-                  />
+                    className="w-full h-48 rounded-xl object-cover shadow-lg" />
+
                   <div className="text-center mt-3">
                     <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
                       {testimonial.result}
