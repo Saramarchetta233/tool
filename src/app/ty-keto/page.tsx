@@ -6,12 +6,12 @@ declare global {
   }
 }
 
-
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Phone, Clock, Shield, Package, Star, Heart, Award } from 'lucide-react';
 
 const ThankYouPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [pixelFired, setPixelFired] = useState(false);
 
   const steps = [
     "Ordine Ricevuto",
@@ -20,26 +20,68 @@ const ThankYouPage = () => {
     "Spedizione"
   ];
 
-
-
   useEffect(() => {
     // Timer esistente
     const timer = setInterval(() => {
       setCurrentStep(prev => (prev < 3 ? prev + 1 : 0));
     }, 2000);
 
-    // Meta Pixel Purchase Event
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: 20.00,
-        currency: 'EUR'
-      });
+    // Funzione per tracciare l'evento Purchase con retry
+    const trackPurchaseEvent = (retries = 5, delay = 500) => {
+      if (pixelFired) return; // Evita duplicati
+
+      if (typeof window !== 'undefined' && window.fbq) {
+        try {
+          window.fbq('track', 'Purchase', {
+            value: 20.00,
+            currency: 'EUR',
+            content_type: 'product',
+            content_name: 'Keto Brucia - Pacchetto Completo',
+            content_ids: ['keto-brucia-complete'],
+            num_items: 4
+          });
+          setPixelFired(true);
+          console.log('✅ Purchase event successfully tracked');
+        } catch (error) {
+          console.error('❌ Error tracking Purchase event:', error);
+          if (retries > 0) {
+            setTimeout(() => trackPurchaseEvent(retries - 1, delay * 1.5), delay);
+          }
+        }
+      } else {
+        console.log(`⏳ Facebook Pixel not ready, retrying... (${retries} attempts left)`);
+        if (retries > 0) {
+          setTimeout(() => trackPurchaseEvent(retries - 1, delay * 1.2), delay);
+        } else {
+          console.error('❌ Facebook Pixel not available after all retries');
+        }
+      }
+    };
+
+    // Avvia il tracking con un delay iniziale
+    const pixelTimeout = setTimeout(() => {
+      trackPurchaseEvent();
+    }, 1000);
+
+    // Listener per quando la pagina è completamente caricata
+    const handleLoad = () => {
+      if (!pixelFired) {
+        setTimeout(() => trackPurchaseEvent(), 500);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      handleLoad();
+    } else {
+      window.addEventListener('load', handleLoad);
     }
 
-    return () => clearInterval(timer);
-  }, []);
-
-
+    return () => {
+      clearInterval(timer);
+      clearTimeout(pixelTimeout);
+      window.removeEventListener('load', handleLoad);
+    };
+  }, [pixelFired]);
 
   const benefits = [
     {
@@ -81,8 +123,6 @@ const ThankYouPage = () => {
   ];
 
   return (
-
-
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       {/* Header Success */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-8">
@@ -98,8 +138,6 @@ const ThankYouPage = () => {
           </p>
         </div>
       </div>
-
-
 
       <div className="container mx-auto px-4 py-12">
         {/* Main Confirmation */}
