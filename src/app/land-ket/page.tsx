@@ -85,7 +85,7 @@ const KetoBruciaLanding = () => {
       // Debug: verifica che tutti i campi siano presenti
       console.log('Dati form completi:', completeData);
 
-      const response = await fetch('https://primary-production-625c.up.railway.app/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
+      const response = await fetch('https://primary-production-625c.up.railway.app/webhook/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
