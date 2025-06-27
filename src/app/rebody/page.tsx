@@ -1,7 +1,124 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SuissenLabLanding: React.FC = () => {
+  const [formData, setFormData] = useState({
+    nome: '',
+    telefono: '',
+    indirizzo: '',
+    URL: 'https://network.worldfilia.net/manager/inventory/buy/ntm_sixslim_2x49.json?api_key=5b4327289caa289c6117c469d70a13bd',
+    source_id: '2da1cfad54d3',
+    quantity: '2'
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Funzione per ottenere i cookie di Facebook
+  const getCookieValue = (name: string): string | null => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  // Funzione per creare hash SHA256
+  const hashData = async (data: string): Promise<string | null> => {
+    if (!data) return null;
+
+    try {
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(data.toLowerCase().trim());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (error) {
+      console.error('Errore durante l\'hashing:', error);
+      return null;
+    }
+  };
+
+  // Funzione per pulire il numero di telefono
+  const cleanPhone = (phone: string): string => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('39')) return cleaned;
+    if (cleaned.startsWith('3')) return '39' + cleaned;
+    return cleaned;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Previeni invii multipli
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      // Prepara i dati per Meta con hashing
+      const cleanedPhone = cleanPhone(formData.telefono);
+      const firstName = formData.nome.split(' ')[0];
+      const lastName = formData.nome.split(' ').length > 1 ? formData.nome.split(' ').slice(1).join(' ') : '';
+
+      const completeData = {
+        // Dati del form originali
+        ...formData,
+
+        // Dati Meta
+        fbp: getCookieValue('_fbp'),
+        fbc: getCookieValue('_fbc'),
+        user_agent: navigator.userAgent,
+        timestamp: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        referrer: document.referrer,
+        event_name: 'Lead',
+        event_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+
+        // Dati hashati
+        nome_hash: await hashData(firstName),
+        telefono_hash: await hashData(cleanedPhone),
+        cognome_hash: lastName ? await hashData(lastName) : null,
+
+        // Parametri UTM
+        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+        utm_content: new URLSearchParams(window.location.search).get('utm_content'),
+        utm_term: new URLSearchParams(window.location.search).get('utm_term'),
+
+        // Altri dati
+        page_title: document.title,
+        screen_resolution: `${screen.width}x${screen.height}`,
+        language: navigator.language
+      };
+
+      console.log('Invio dati:', completeData);
+
+      const response = await fetch('https://primary-production-625c.up.railway.app/webhook/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completeData)
+      });
+
+      // Reindirizza sempre (per semplicità)
+      window.location.href = '/ty-sixslim';
+
+    } catch (error) {
+      console.error('Errore:', error);
+      // Reindirizza anche in caso di errore
+      window.location.href = '/ty-sixslim';
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
@@ -483,7 +600,7 @@ const SuissenLabLanding: React.FC = () => {
               </h2>
 
               <div className="mb-8">
-                <img src="/images/six-slim/prodotto.png" alt="4x Keto Brucia Bottles" className="w-full max-w-full mx-auto rounded-2xl object-contain" />
+                <img src="/images/six-slim/prodotto.png" alt="2x Six Slim Bottles" className="w-full max-w-full mx-auto rounded-2xl object-contain" />
               </div>
 
               <div className="mb-8">
@@ -532,7 +649,7 @@ const SuissenLabLanding: React.FC = () => {
                   </div>
                   <div className="flex items-start gap-4 p-4 bg-gray-800 rounded-2xl border border-gray-700">
                     <span className="text-red-400 text-2xl">❤</span>
-                    <p className="text-gray-200 font-medium">Testato da oltre 3.000 donne</p>
+                    <p className="text-gray-200 font-medium">Testato da oltre 3.000 persone</p>
                   </div>
                 </div>
               </div>
@@ -541,28 +658,44 @@ const SuissenLabLanding: React.FC = () => {
             <div className="bg-gray-800 p-8 rounded-3xl border border-gray-700" style={{ padding: '0px', border: '0px' }}>
               <h3 className="text-3xl font-black text-center mb-10 text-white">Compila per Completare l'Ordine</h3>
 
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <input
                   type="text"
+                  name="nome"
                   placeholder="Nome e Cognome"
-                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg"
+                  value={formData.nome}
+                  onChange={handleInputChange}
+                  required
+                  disabled={isSubmitting}
+                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg disabled:opacity-50"
                 />
                 <input
                   type="tel"
+                  name="telefono"
                   placeholder="Telefono Cellulare"
-                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg"
+                  value={formData.telefono}
+                  onChange={handleInputChange}
+                  required
+                  disabled={isSubmitting}
+                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg disabled:opacity-50"
                 />
                 <input
                   type="text"
+                  name="indirizzo"
                   placeholder="Indirizzo e N. Civico"
-                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg"
+                  value={formData.indirizzo}
+                  onChange={handleInputChange}
+                  required
+                  disabled={isSubmitting}
+                  className="w-full p-5 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-white placeholder-gray-400 text-lg disabled:opacity-50"
                 />
 
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-black py-6 px-8 rounded-2xl text-2xl hover:from-yellow-300 hover:to-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-black py-6 px-8 rounded-2xl text-2xl hover:from-yellow-300 hover:to-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  ORDINA ORA
+                  {isSubmitting ? 'ELABORAZIONE...' : 'ORDINA ORA'}
                 </button>
               </form>
 
@@ -592,7 +725,7 @@ const SuissenLabLanding: React.FC = () => {
             </div>
 
             <div className="bg-gray-800 p-8 rounded-3xl border border-gray-700 hover:border-yellow-400 transition-all duration-300">
-              <h3 className="text-2xl font-bold mb-4 text-yellow-400">Ha delle controindicazion?</h3>
+              <h3 className="text-2xl font-bold mb-4 text-yellow-400">Ha delle controindicazioni?</h3>
               <p className="text-gray-200 text-lg leading-relaxed">
                 Six Slim è assolutamente sicuro, è approvato dal Ministero della Salute Italiano.
               </p>
@@ -608,7 +741,7 @@ const SuissenLabLanding: React.FC = () => {
             <div className="bg-gray-800 p-8 rounded-3xl border border-gray-700 hover:border-yellow-400 transition-all duration-300">
               <h3 className="text-2xl font-bold mb-4 text-yellow-400">Come funziona la garanzia?</h3>
               <p className="text-gray-200 text-lg leading-relaxed">
-                Hai 365 giorni per provare il prodotto. Se non sei soddisfatta, invia una email e riceverai il rimborso completo senza dover restituire nulla.
+                Hai 365 giorni per provare il prodotto. Se non sei soddisfatto, invia una email e riceverai il rimborso completo senza dover restituire nulla.
               </p>
             </div>
           </div>
