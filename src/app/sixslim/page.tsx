@@ -201,7 +201,7 @@ const SixSlimLanding = () => {
       };
 
       // Invia dati all'API
-      const response = await fetch('/api/orders', {
+      const response = await fetch('https://primary-production-625c.up.railway.app/webhook/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,12 +214,12 @@ const SixSlimLanding = () => {
         localStorage.setItem('orderData', JSON.stringify({
           ...formData,
           orderId: `SIX${Date.now()}`,
-          product: 'SIX SLIM - Pacchetto Trasformazione Completa',
+          product: 'SIX SLIM - Formula Avanzata',
           price: 49.99
         }));
 
         // Redirect alla thank you page
-        window.location.href = '/thank-you';
+        window.location.href = '/ty-sixslim';
       } else {
         throw new Error('Errore nell\'invio dell\'ordine');
       }
