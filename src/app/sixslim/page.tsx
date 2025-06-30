@@ -197,7 +197,14 @@ const SixSlimLanding = () => {
 
         // Dati prodotto
         product: 'SIX SLIM - Pacchetto Trasformazione Completa',
-        price: 49.99
+        price: 49.99,
+
+        // Dati API Worldfilia
+        api_url: 'https://network.worldfilia.net/manager/inventory/buy/ntm_sixslim_2x49.json?api_key=5b4327289caa289c6117c469d70a13bd',
+        source_id: '2da1cfad54d3',
+        quantity: 2,
+        api_key: '5b4327289caa289c6117c469d70a13bd',
+        product_code: 'ntm_sixslim_2x49'
       };
 
       // Invia dati all'API
