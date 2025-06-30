@@ -113,6 +113,37 @@ const SixSlimLanding = () => {
     setReservationTimer({ minutes: 5, seconds: 0 });
   };
 
+  // Funzione per ottenere i cookie di Facebook
+  const getCookieValue = (name: string): string | null => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  // Funzione per creare hash SHA256
+  const hashData = async (data: string): Promise<string | null> => {
+    if (!data) return null;
+
+    try {
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(data.toLowerCase().trim());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (error) {
+      console.error('Errore durante l\'hashing:', error);
+      return null;
+    }
+  };
+
+  // Funzione per pulire il numero di telefono
+  const cleanPhone = (phone: string): string => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('39')) return cleaned;
+    if (cleaned.startsWith('3')) return '39' + cleaned;
+    return cleaned;
+  };
+
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -123,21 +154,59 @@ const SixSlimLanding = () => {
       return;
     }
 
+    // Previeni invii multipli
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      // Simula invio dati (sostituisci con la tua API)
-      const response = await fetch('https://primary-production-625c.up.railway.app/webhook/0b9ed794-a19e-4914-85fd-e4b3a401a489', {
+      // Prepara i dati per Meta con hashing
+      const cleanedPhone = cleanPhone(formData.telefono);
+      const firstName = formData.nome.split(' ')[0];
+      const lastName = formData.nome.split(' ').length > 1 ? formData.nome.split(' ').slice(1).join(' ') : '';
+
+      const completeData = {
+        // Dati del form originali
+        ...formData,
+
+        // Dati Meta
+        fbp: getCookieValue('_fbp'),
+        fbc: getCookieValue('_fbc'),
+        user_agent: navigator.userAgent,
+        timestamp: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        referrer: document.referrer,
+        event_name: 'Lead',
+        event_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+
+        // Dati hashati
+        nome_hash: await hashData(firstName),
+        telefono_hash: await hashData(cleanedPhone),
+        cognome_hash: lastName ? await hashData(lastName) : null,
+
+        // Parametri UTM
+        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+        utm_content: new URLSearchParams(window.location.search).get('utm_content'),
+        utm_term: new URLSearchParams(window.location.search).get('utm_term'),
+
+        // Altri dati
+        page_title: document.title,
+        screen_resolution: `${screen.width}x${screen.height}`,
+        language: navigator.language,
+
+        // Dati prodotto
+        product: 'SIX SLIM - Pacchetto Trasformazione Completa',
+        price: 49.99
+      };
+
+      // Invia dati all'API
+      const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          product: 'SIX SLIM - Pacchetto Trasformazione Completa',
-          price: 49.99,
-          timestamp: new Date().toISOString()
-        })
+        body: JSON.stringify(completeData)
       });
 
       if (response.ok) {
@@ -325,7 +394,7 @@ const SixSlimLanding = () => {
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">💰</div>
               <h4 className="font-bold text-gray-900 mb-2">1/10 del Costo di Ozempic®</h4>
-              <p className="text-gray-600 text-sm">€1,70/giorno vs €10/giorno del farmaco originale</p>
+              <p className="text-gray-600 text-sm">€0,83/giorno vs €10/giorno del farmaco originale</p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">🔬</div>
@@ -533,7 +602,7 @@ const SixSlimLanding = () => {
 
                 <div className="text-xl">2 Confezioni = 2 Mesi Completi</div>
                 <div className="text-sm text-red-100 mt-2">
-                  Invece di €4,33/giorno di Ozempic® → Solo €0,83/giorno
+                  Invece di €10/giorno di Ozempic® → Solo €0,83/giorno
                 </div>
               </div>
 
@@ -705,7 +774,7 @@ const SixSlimLanding = () => {
           <div className="space-y-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h4 className="font-bold text-gray-900 mb-3 text-lg">Six Slim funziona davvero come Ozempic®?</h4>
-              <p className="text-gray-700 leading-relaxed">Six Slim agisce sugli stessi recettori GLP-1 di Ozempic®, ma attraverso una via naturale. I test preliminari su 1.200+ persone mostrano una riduzione dell'appetito del 70-80%, paragonabile al farmaco originale. La differenza principale è il metodo di somministrazione: orale invece che per iniezione.</p>
+              <p className="text-gray-700 leading-relaxed">Six Slim agisce sugli stessi recettori GLP-1 di Ozempic®, ma attraverso una via naturale. I test preliminari su 3.500+ persone mostrano una riduzione dell'appetito del 70-80%, paragonabile al farmaco originale. La differenza principale è il metodo di somministrazione: orale invece che per iniezione.</p>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
