@@ -394,7 +394,7 @@ const SixSlimLanding = () => {
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">💰</div>
               <h4 className="font-bold text-gray-900 mb-2">1/10 del Costo di Ozempic®</h4>
-              <p className="text-gray-600 text-sm">€0,83/giorno vs €10/giorno del farmaco originale</p>
+              <p className="text-gray-600 text-sm">€1,70/giorno vs €10/giorno del farmaco originale</p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">🔬</div>
@@ -602,7 +602,7 @@ const SixSlimLanding = () => {
 
                 <div className="text-xl">2 Confezioni = 2 Mesi Completi</div>
                 <div className="text-sm text-red-100 mt-2">
-                  Invece di €10/giorno di Ozempic® → Solo €0,83/giorno
+                  Invece di €4,33/giorno di Ozempic® → Solo €0,83/giorno
                 </div>
               </div>
 
@@ -673,43 +673,43 @@ const SixSlimLanding = () => {
 
         {/* Order Popup */}
         {showOrderPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full relative">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 md:p-8 max-w-md w-full relative my-4 md:my-8 min-h-0">
               <button
                 onClick={() => setShowOrderPopup(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl z-10"
               >
                 ×
               </button>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Compila per ordinare</h3>
-              <p className="text-gray-600 mb-6">Pagamento alla consegna</p>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 pr-8">Compila per ordinare</h3>
+              <p className="text-gray-600 mb-4 md:mb-6">Pagamento alla consegna</p>
 
               {/* Order Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <h4 className="font-semibold text-gray-800 mb-3">Riepilogo ordine</h4>
-                <div className="flex items-center gap-4">
+              <div className="bg-gray-50 rounded-lg p-3 md:p-4 mb-4">
+                <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Riepilogo ordine</h4>
+                <div className="flex items-center gap-3">
                   <img
                     src="images/oz/product.png"
                     alt="Six Slim"
-                    className="w-16 h-16 rounded-lg border border-gray-200 object-cover"
+                    className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">Six Slim - Formula Avanzata</div>
-                    <div className="text-sm text-gray-600">Quantità: 2 confezioni</div>
-                    <div className="text-sm text-green-600">✅ Spedizione gratuita</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 text-sm md:text-base">Six Slim - Formula Avanzata</div>
+                    <div className="text-xs md:text-sm text-gray-600">Quantità: 2 confezioni</div>
+                    <div className="text-xs md:text-sm text-green-600">✅ Spedizione gratuita</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-xl text-gray-900">€49,90</div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-bold text-lg md:text-xl text-gray-900">€49,90</div>
                     <div className="text-xs text-gray-500 line-through">€129,90</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 md:mb-6">
                 <div className="text-center">
                   <div className="text-xs text-red-600 mb-1">🔒 Stiamo riservando il tuo ordine</div>
-                  <div className="text-2xl font-mono font-bold text-red-700">
+                  <div className="text-xl md:text-2xl font-mono font-bold text-red-700">
                     {reservationTimer.minutes.toString().padStart(2, '0')}:{reservationTimer.seconds.toString().padStart(2, '0')}
                   </div>
                   <div className="text-xs text-red-600 mt-1">
@@ -718,14 +718,14 @@ const SixSlimLanding = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome e Cognome</label>
                   <input
                     type="text"
                     value={formData.nome}
                     onChange={(e) => handleFormChange('nome', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                     placeholder="Il tuo nome completo"
                   />
                 </div>
@@ -736,7 +736,7 @@ const SixSlimLanding = () => {
                     type="tel"
                     value={formData.telefono}
                     onChange={(e) => handleFormChange('telefono', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                     placeholder="Il tuo numero di telefono"
                   />
                 </div>
@@ -746,21 +746,21 @@ const SixSlimLanding = () => {
                   <textarea
                     value={formData.indirizzo}
                     onChange={(e) => handleFormChange('indirizzo', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-20"
+                    className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-20 md:h-20 text-base resize-none"
                     placeholder="Via, numero civico, città, CAP"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 mb-4 text-gray-700">
+              <div className="flex items-center justify-center gap-2 mb-4 mt-4 text-gray-700">
                 <CreditCard className="w-5 h-5" />
-                <span className="font-medium">Pagamento alla consegna</span>
+                <span className="font-medium text-sm md:text-base">Pagamento alla consegna</span>
               </div>
 
               <button
                 onClick={handleOrderSubmit}
                 disabled={!formData.nome || !formData.telefono || !formData.indirizzo || isSubmitting}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200"
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 text-base md:text-lg"
               >
                 {isSubmitting ? 'ELABORANDO...' : 'CONFERMA ORDINE - €49,90'}
               </button>
@@ -774,7 +774,7 @@ const SixSlimLanding = () => {
           <div className="space-y-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <h4 className="font-bold text-gray-900 mb-3 text-lg">Six Slim funziona davvero come Ozempic®?</h4>
-              <p className="text-gray-700 leading-relaxed">Six Slim agisce sugli stessi recettori GLP-1 di Ozempic®, ma attraverso una via naturale. I test preliminari su 3.500+ persone mostrano una riduzione dell'appetito del 70-80%, paragonabile al farmaco originale. La differenza principale è il metodo di somministrazione: orale invece che per iniezione.</p>
+              <p className="text-gray-700 leading-relaxed">Six Slim agisce sugli stessi recettori GLP-1 di Ozempic®, ma attraverso una via naturale. I test preliminari su 1.200+ persone mostrano una riduzione dell'appetito del 70-80%, paragonabile al farmaco originale. La differenza principale è il metodo di somministrazione: orale invece che per iniezione.</p>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
