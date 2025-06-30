@@ -394,7 +394,7 @@ const SixSlimLanding = () => {
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">💰</div>
               <h4 className="font-bold text-gray-900 mb-2">1/10 del Costo di Ozempic®</h4>
-              <p className="text-gray-600 text-sm">€1,70/giorno vs €10/giorno del farmaco originale</p>
+              <p className="text-gray-600 text-sm">€0,83/giorno vs €10/giorno del farmaco originale</p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <div className="text-3xl mb-3">🔬</div>
