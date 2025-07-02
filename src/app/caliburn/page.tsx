@@ -110,14 +110,14 @@ const Caliburn = () => {
     {
       name: "Alessandra M.",
       age: "28 anni",
-      image: "/api/placeholder/80/80",
+      image: "/images/caliburn/luisa.png",
       text: "Sono un'estetista, conosco bene i trattamenti. Non credevo che un gel topico potesse funzionare così bene. I miei clienti mi chiedono cosa uso.",
       rating: 5
     },
     {
       name: "Chiara L.",
       age: "35 anni",
-      image: "/api/placeholder/80/80",
+      image: "/images/caliburn/chiara.webp",
       text: "Dopo la gravidanza volevo rifare i glutei ma il BBL era troppo rischioso. Caliburn mi ha restituito fiducia: +2 taglie in 6 settimane.",
       rating: 5
     }
