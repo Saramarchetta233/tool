@@ -3,6 +3,7 @@
 declare global {
   interface Window {
     fbq: any;
+    dataLayer: any[];
   }
 }
 
@@ -24,6 +25,32 @@ const SixSlimLanding = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+
+    // Google Tag Manager initialization
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+
+      // Load GTM script
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-WCVD5W8K';
+      const firstScript = document.getElementsByTagName('script')[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(script, firstScript);
+      }
+
+      // Add noscript fallback
+      const noscript = document.createElement('noscript');
+      noscript.innerHTML = '<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WCVD5W8K" height="0" width="0" style="display:none;visibility:hidden"></iframe>';
+      document.body.appendChild(noscript);
+    }
+
+
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev.seconds > 0) {
