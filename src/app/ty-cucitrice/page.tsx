@@ -59,23 +59,34 @@ const advancedTrackingUtils = {
     }
   },
 
-  // Enhanced Purchase tracking with retry mechanism and CAPI
-  trackPurchaseEvent: async (orderData: any, retries = 5) => {
+  // Enhanced Purchase tracking with retry mechanism and CAPI (FIXED)
+  trackPurchaseEvent: async (orderData: any, retries = 3): Promise<boolean> => {
     const clientEventId = `purchase-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log(`🎯 Starting Purchase tracking (attempt ${6 - retries}/5)...`);
+    console.log(`🎯 Starting Purchase tracking (${retries} retries left)...`);
 
-    // Facebook Client-Side + CAPI Tracking
-    await advancedTrackingUtils.trackFacebookPurchase(orderData, clientEventId, retries);
+    try {
+      // Facebook Client-Side + CAPI Tracking
+      await advancedTrackingUtils.trackFacebookPurchase(orderData, clientEventId);
 
-    // Google Ads Conversion Tracking
-    await advancedTrackingUtils.trackGooglePurchase(orderData, retries);
+      // Google Ads Conversion Tracking
+      await advancedTrackingUtils.trackGooglePurchase(orderData);
 
-    return true;
+      console.log('✅ Purchase tracking completed successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Purchase tracking error:', error);
+      if (retries > 0) {
+        console.log(`⏰ Retrying purchase tracking... (${retries - 1} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return advancedTrackingUtils.trackPurchaseEvent(orderData, retries - 1);
+      }
+      throw error;
+    }
   },
 
-  // Facebook Purchase with CAPI fallback
-  trackFacebookPurchase: async (orderData: any, clientEventId: string, retries: number) => {
+  // Facebook Purchase with CAPI fallback (FIXED)
+  trackFacebookPurchase: async (orderData: any, clientEventId: string): Promise<void> => {
     const purchaseData = {
       content_type: 'product',
       content_ids: ['sewing-machine-creative'],
@@ -97,7 +108,7 @@ const advancedTrackingUtils = {
       }
     }
 
-    // Enhanced CAPI tracking with more user data
+    // CAPI tracking (single attempt)
     try {
       const userIP = await advancedTrackingUtils.getClientIP();
 
@@ -113,11 +124,11 @@ const advancedTrackingUtils = {
             client_user_agent: navigator.userAgent,
             fbc: advancedTrackingUtils.getFbClickId(),
             fbp: advancedTrackingUtils.getFbBrowserId(),
-            // Add order data if available
-            em: orderData?.email ? [advancedTrackingUtils.hashData(orderData.email)] : undefined,
-            ph: orderData?.telefono ? [advancedTrackingUtils.hashData(orderData.telefono)] : undefined,
-            fn: orderData?.nome ? [advancedTrackingUtils.hashData(orderData.nome.split(' ')[0])] : undefined,
-            ln: orderData?.nome ? [advancedTrackingUtils.hashData(orderData.nome.split(' ').slice(1).join(' '))] : undefined
+            // Add order data if available (properly hashed)
+            em: orderData?.email ? [await advancedTrackingUtils.hashData(orderData.email)] : undefined,
+            ph: orderData?.telefono ? [await advancedTrackingUtils.hashData(orderData.telefono)] : undefined,
+            fn: orderData?.nome ? [await advancedTrackingUtils.hashData(orderData.nome.split(' ')[0])] : undefined,
+            ln: orderData?.nome && orderData.nome.split(' ').length > 1 ? [await advancedTrackingUtils.hashData(orderData.nome.split(' ').slice(1).join(' '))] : undefined
           },
           custom_data: {
             currency: 'EUR',
@@ -144,22 +155,15 @@ const advancedTrackingUtils = {
         const result = await response.json();
         console.log('✅ Facebook Purchase tracked (CAPI)', result);
       } else {
-        throw new Error(`CAPI request failed: ${response.status} ${response.statusText}`);
+        console.error(`❌ CAPI request failed: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error(`❌ Facebook CAPI tracking error (${retries} retries left):`, error);
-
-      // Retry mechanism for CAPI
-      if (retries > 0) {
-        setTimeout(() => {
-          advancedTrackingUtils.trackFacebookPurchase(orderData, clientEventId, retries - 1);
-        }, 2000 * (6 - retries)); // Exponential backoff
-      }
+      console.error('❌ Facebook CAPI tracking error:', error);
     }
   },
 
-  // Google Ads Purchase tracking with retry
-  trackGooglePurchase: async (orderData: any, retries: number) => {
+  // Google Ads Purchase tracking (FIXED)
+  trackGooglePurchase: async (orderData: any): Promise<void> => {
     if (typeof window !== 'undefined' && window.gtag) {
       try {
         // Enhanced ecommerce tracking
@@ -196,20 +200,10 @@ const advancedTrackingUtils = {
 
         console.log('✅ Google Ads Purchase & Conversion tracked');
       } catch (error) {
-        console.error(`❌ Google Ads tracking error (${retries} retries left):`, error);
-
-        // Retry mechanism
-        if (retries > 0) {
-          setTimeout(() => {
-            advancedTrackingUtils.trackGooglePurchase(orderData, retries - 1);
-          }, 1000 * (6 - retries));
-        }
+        console.error('❌ Google Ads tracking error:', error);
       }
-    } else if (retries > 0) {
-      // Wait for gtag to load
-      setTimeout(() => {
-        advancedTrackingUtils.trackGooglePurchase(orderData, retries - 1);
-      }, 1000);
+    } else {
+      console.log('⏰ Google gtag not available');
     }
   },
 
@@ -239,37 +233,54 @@ const advancedTrackingUtils = {
     return '';
   },
 
-  hashData: (data: string): string => {
-    // Simple hash function for PII (in production, use proper SHA-256)
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+  // Proper SHA-256 hashing for PII data (Facebook requirement)
+  hashData: async (data: string): Promise<string> => {
+    if (!data || typeof data !== 'string') return '';
+
+    try {
+      // Normalize data (lowercase, trim spaces)
+      const normalizedData = data.toLowerCase().trim();
+
+      // Use Web Crypto API for SHA-256 hashing
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(normalizedData);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return hashHex;
+    } catch (error) {
+      console.error('Error hashing data:', error);
+      return '';
     }
-    return hash.toString();
   },
 
-  // Track additional events for remarketing
-  trackEngagementEvents: () => {
-    // Track that user stayed on thank you page
-    setTimeout(() => {
-      if (window.fbq) {
-        window.fbq('trackCustom', 'ThankYouPageEngagement', {
-          engagement_time: 10,
-          page_type: 'thank_you'
-        });
-      }
+  // Track additional events for remarketing (FIXED - no infinite loops)
+  trackEngagementEvents: (): (() => void) => {
+    let engagementTracked = false;
+    let scrollTracked = false;
 
-      if (window.gtag) {
-        window.gtag('event', 'engagement', {
-          engagement_time_msec: 10000
-        });
+    // Track that user stayed on thank you page (ONLY ONCE)
+    const engagementTimeout = setTimeout(() => {
+      if (!engagementTracked) {
+        engagementTracked = true;
+        if (window.fbq) {
+          window.fbq('trackCustom', 'ThankYouPageEngagement', {
+            engagement_time: 10,
+            page_type: 'thank_you'
+          });
+        }
+
+        if (window.gtag) {
+          window.gtag('event', 'engagement', {
+            engagement_time_msec: 10000
+          });
+        }
+        console.log('✅ Engagement event tracked (10s)');
       }
     }, 10000);
 
-    // Track scroll engagement
-    let scrollTracked = false;
+    // Track scroll engagement (ONLY ONCE)
     const handleScroll = () => {
       if (!scrollTracked && window.scrollY > 500) {
         scrollTracked = true;
@@ -281,10 +292,18 @@ const advancedTrackingUtils = {
             page_location: window.location.href
           });
         }
+        console.log('✅ Scroll event tracked');
         window.removeEventListener('scroll', handleScroll);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup function
+    return () => {
+      clearTimeout(engagementTimeout);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }
 };
 
@@ -321,9 +340,12 @@ const ThankYouPage = () => {
       setCurrentStep(prev => (prev < 3 ? prev + 1 : 0));
     }, 2000);
 
-    // Enhanced Purchase tracking with multiple retry attempts
-    const trackPurchaseWithRetry = async (attempt = 1, maxAttempts = 7) => {
-      if (pixelFired) return;
+    // Enhanced Purchase tracking with multiple retry attempts (FIXED)
+    const trackPurchaseWithRetry = async (attempt = 1, maxAttempts = 3) => {
+      if (pixelFired) {
+        console.log('🎉 Purchase already tracked, skipping...');
+        return;
+      }
 
       console.log(`🎯 Purchase tracking attempt ${attempt}/${maxAttempts}`);
 
@@ -335,43 +357,46 @@ const ThankYouPage = () => {
         console.error(`❌ Purchase tracking attempt ${attempt} failed:`, error);
 
         if (attempt < maxAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff, max 10s
+          const delay = 2000 * attempt; // Linear backoff: 2s, 4s, 6s
+          console.log(`⏰ Retrying in ${delay / 1000}s...`);
           setTimeout(() => {
             trackPurchaseWithRetry(attempt + 1, maxAttempts);
           }, delay);
+        } else {
+          console.log('❌ All tracking attempts failed');
         }
       }
     };
 
-    // Start tracking with progressive delays
-    const trackingTimeouts = [
-      setTimeout(() => trackPurchaseWithRetry(1), 500),   // First attempt after 500ms
-      setTimeout(() => trackPurchaseWithRetry(2), 2000),  // Second attempt after 2s
-      setTimeout(() => trackPurchaseWithRetry(3), 5000),  // Third attempt after 5s
-      setTimeout(() => trackPurchaseWithRetry(4), 10000), // Fourth attempt after 10s
-    ];
+    // Single tracking attempt with delay
+    const initialTrackingTimeout = setTimeout(() => {
+      if (!pixelFired) {
+        trackPurchaseWithRetry(1, 3);
+      }
+    }, 1000);
 
-    // Page load completion tracking
+    // Page load completion tracking (SINGLE ATTEMPT)
     const handleLoad = () => {
       if (!pixelFired) {
-        setTimeout(() => trackPurchaseWithRetry(5), 1000);
+        setTimeout(() => trackPurchaseWithRetry(1, 3), 500);
       }
     };
 
     if (document.readyState === 'complete') {
       handleLoad();
     } else {
-      window.addEventListener('load', handleLoad);
+      window.addEventListener('load', handleLoad, { once: true });
     }
 
-    // Track engagement events
-    advancedTrackingUtils.trackEngagementEvents();
+    // Track engagement events (with cleanup)
+    const cleanupEngagement = advancedTrackingUtils.trackEngagementEvents();
 
     // Cleanup
     return () => {
       clearInterval(timer);
-      trackingTimeouts.forEach(timeout => clearTimeout(timeout));
+      clearTimeout(initialTrackingTimeout);
       window.removeEventListener('load', handleLoad);
+      if (cleanupEngagement) cleanupEngagement();
     };
   }, [pixelFired, orderData]);
 

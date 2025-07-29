@@ -17,6 +17,192 @@ import {
   Play
 } from 'lucide-react';
 
+// Declare global tracking functions
+declare global {
+  interface Window {
+    fbq: any;
+    gtag: any;
+    dataLayer: any[];
+  }
+}
+
+// Tracking utilities
+const trackingUtils = {
+  // Initialize Facebook Pixel
+  initFacebookPixel: () => {
+    if (typeof window !== 'undefined') {
+      (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = '2.0';
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+      window.fbq('init', '763716602087140', {}, {
+        test_event_code: 'TEST20028'
+      });
+      window.fbq('track', 'PageView');
+    }
+  },
+
+  // Initialize Google Ads
+  initGoogleAds: () => {
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        window.dataLayer.push(arguments);
+      };
+      window.gtag('js', new Date());
+      window.gtag('config', 'AW-17086993346');
+
+      // Load gtag script
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17086993346';
+      document.head.appendChild(script);
+    }
+  },
+
+  // Track Facebook events with CAPI fallback
+  trackFacebookEvent: async (eventName: string, eventData: any = {}): Promise<void> => {
+    const clientEventId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Client-side tracking
+    if (typeof window !== 'undefined' && window.fbq) {
+      try {
+        window.fbq('track', eventName, eventData, {
+          eventID: clientEventId
+        });
+        console.log(`✅ Facebook ${eventName} tracked (client-side)`);
+      } catch (error) {
+        console.error(`❌ Facebook ${eventName} client tracking error:`, error);
+      }
+    }
+
+    // Server-side CAPI tracking
+    try {
+      const capiData = {
+        data: [{
+          event_name: eventName.toLowerCase(),
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: clientEventId,
+          action_source: 'website',
+          event_source_url: window.location.href,
+          user_data: {
+            client_ip_address: await trackingUtils.getClientIP(),
+            client_user_agent: navigator.userAgent,
+            fbc: trackingUtils.getFbClickId(),
+            fbp: trackingUtils.getFbBrowserId()
+          },
+          custom_data: {
+            currency: 'EUR',
+            value: eventData.value || 62.98,
+            content_name: eventData.content_name || 'Macchina da Cucire Creativa',
+            content_type: eventData.content_type || 'product',
+            content_ids: eventData.content_ids || ['sewing-machine-creative']
+          }
+        }],
+        test_event_code: 'TEST20028',
+        access_token: 'EAAPYtpMdWREBOLjUOn7SdNOjxDb1RlZBVTfkvNCskiNhzm3hYAdfMFZBz34Xd13aF10XFnkAM1GicYwZAfszCO9gL3oWAdJtZCvTHIKeCuZBU3z8lp4I1w35hhDLZCd4xGONZA7ZAAdptDiNcc8g08enSnVZBfiHmQaZC3R0WnnKak8dIVvN76QCpnZBXCAOYShxQZDZD'
+      };
+
+      const response = await fetch(`https://graph.facebook.com/v18.0/763716602087140/events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(capiData)
+      });
+
+      if (response.ok) {
+        console.log(`✅ Facebook ${eventName} tracked (CAPI)`);
+      } else {
+        throw new Error(`CAPI request failed: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ Facebook ${eventName} CAPI tracking error:`, error);
+    }
+  },
+
+  // Track Google Ads events
+  trackGoogleEvent: (eventName: string, eventData: any = {}): void => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        if (eventName === 'Purchase') {
+          window.gtag('event', 'conversion', {
+            send_to: 'AW-17086993346/DJt3CMrUrPsaEMKn29M_',
+            value: eventData.value || 62.98,
+            currency: 'EUR',
+            transaction_id: eventData.transaction_id || `MCU${Date.now()}`
+          });
+        } else {
+          window.gtag('event', eventName, eventData);
+        }
+        console.log(`✅ Google Ads ${eventName} tracked`);
+      } catch (error) {
+        console.error(`❌ Google Ads ${eventName} tracking error:`, error);
+      }
+    }
+  },
+
+  // Utility functions
+  getClientIP: async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch {
+      return '';
+    }
+  },
+
+  getFbClickId: (): string => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('fbclid') || '';
+  },
+
+  getFbBrowserId: (): string => {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === '_fbp') return value;
+    }
+    return '';
+  },
+
+  // Proper SHA-256 hashing for PII data (Facebook requirement)
+  hashData: async (data: string): Promise<string> => {
+    if (!data || typeof data !== 'string') return '';
+
+    try {
+      // Normalize data (lowercase, trim spaces)
+      const normalizedData = data.toLowerCase().trim();
+
+      // Use Web Crypto API for SHA-256 hashing
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(normalizedData);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return hashHex;
+    } catch (error) {
+      console.error('Error hashing data:', error);
+      return '';
+    }
+  }
+};
+
 // Countdown Timer Component
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -186,8 +372,20 @@ export default function SewingMachineLanding() {
     indirizzo: ''
   });
 
-  // Load fingerprinting script
+  // Initialize tracking on component mount
   useEffect(() => {
+    // Initialize tracking systems
+    trackingUtils.initFacebookPixel();
+    trackingUtils.initGoogleAds();
+
+    // Track PageView for both platforms
+    trackingUtils.trackFacebookEvent('PageView');
+    trackingUtils.trackGoogleEvent('page_view', {
+      page_title: 'Macchina da Cucire Creativa - Landing Page',
+      page_location: window.location.href
+    });
+
+    // Load fingerprinting script
     const script = document.createElement('script');
     script.src = 'https://offers.supertrendaffiliateprogram.com/forms/tmfp/';
     script.crossOrigin = 'anonymous';
@@ -224,6 +422,27 @@ export default function SewingMachineLanding() {
   }, [showOrderPopup]);
 
   const handleOrderClick = () => {
+    // Track ViewContent event
+    trackingUtils.trackFacebookEvent('ViewContent', {
+      content_type: 'product',
+      content_ids: ['sewing-machine-creative'],
+      content_name: 'Macchina da Cucire Creativa',
+      value: 62.98,
+      currency: 'EUR'
+    });
+
+    trackingUtils.trackGoogleEvent('view_item', {
+      currency: 'EUR',
+      value: 62.98,
+      items: [{
+        item_id: 'sewing-machine-creative',
+        item_name: 'Macchina da Cucire Creativa',
+        category: 'Sewing Machines',
+        quantity: 1,
+        price: 62.98
+      }]
+    });
+
     setShowOrderPopup(true);
     setReservationTimer({ minutes: 5, seconds: 0 });
     setFormErrors({ nome: '', telefono: '', indirizzo: '' });
@@ -280,6 +499,28 @@ export default function SewingMachineLanding() {
 
     setIsSubmitting(true);
 
+    // Track InitiateCheckout event
+    trackingUtils.trackFacebookEvent('InitiateCheckout', {
+      content_type: 'product',
+      content_ids: ['sewing-machine-creative'],
+      content_name: 'Macchina da Cucire Creativa',
+      value: 62.98,
+      currency: 'EUR',
+      num_items: 1
+    });
+
+    trackingUtils.trackGoogleEvent('begin_checkout', {
+      currency: 'EUR',
+      value: 62.98,
+      items: [{
+        item_id: 'sewing-machine-creative',
+        item_name: 'Macchina da Cucire Creativa',
+        category: 'Sewing Machines',
+        quantity: 1,
+        price: 62.98
+      }]
+    });
+
     try {
       const apiFormData = new FormData();
 
@@ -303,10 +544,34 @@ export default function SewingMachineLanding() {
 
       if (response.ok) {
         const responseData = await response.text();
+        const orderId = `MCU${Date.now()}`;
+
+        // Track Purchase events
+        trackingUtils.trackFacebookEvent('Purchase', {
+          content_type: 'product',
+          content_ids: ['sewing-machine-creative'],
+          content_name: 'Macchina da Cucire Creativa',
+          value: 62.98,
+          currency: 'EUR',
+          num_items: 1
+        });
+
+        trackingUtils.trackGoogleEvent('Purchase', {
+          value: 62.98,
+          currency: 'EUR',
+          transaction_id: orderId,
+          items: [{
+            item_id: 'sewing-machine-creative',
+            item_name: 'Macchina da Cucire Creativa',
+            category: 'Sewing Machines',
+            quantity: 1,
+            price: 62.98
+          }]
+        });
 
         const orderData = {
           ...formData,
-          orderId: `MCU${Date.now()}`,
+          orderId,
           product: 'Macchina da Cucire Creativa',
           price: 62.98,
           apiResponse: responseData
