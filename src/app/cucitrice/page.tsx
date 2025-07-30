@@ -525,6 +525,7 @@ export default function SewingMachineLanding() {
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [reservationTimer, setReservationTimer] = useState({ minutes: 5, seconds: 0 });
   const [showStickyButton, setShowStickyButton] = useState(false);
+  const [bounceAnimation, setBounceAnimation] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefono: '',
@@ -570,6 +571,14 @@ export default function SewingMachineLanding() {
 
     window.addEventListener('scroll', handleScroll);
 
+    // Bounce animation ogni 8 secondi per il pulsante sticky
+    const bounceInterval = setInterval(() => {
+      if (showStickyButton) {
+        setBounceAnimation(true);
+        setTimeout(() => setBounceAnimation(false), 1000);
+      }
+    }, 8000);
+
     return () => {
       try {
         document.head.removeChild(script);
@@ -577,8 +586,9 @@ export default function SewingMachineLanding() {
         // Script might already be removed
       }
       window.removeEventListener('scroll', handleScroll);
+      clearInterval(bounceInterval);
     };
-  }, []);
+  }, [showStickyButton]);
 
   useEffect(() => {
     let reservationInterval: NodeJS.Timeout | undefined;
@@ -778,8 +788,7 @@ export default function SewingMachineLanding() {
 
       <div className="bg-red-600 text-white text-center py-2 px-4">
         <div className="flex items-center justify-center space-x-4 text-sm font-medium">
-          <span>🔥 OFFERTA LIMITATA - Scade tra:</span>
-          <CountdownTimer />
+          <span>🔥 OFFERTA LIMITATA - Solo per oggi a prezzo speciale!</span>
         </div>
       </div>
 
@@ -1437,13 +1446,14 @@ export default function SewingMachineLanding() {
         </div>
       </section>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-green-600 p-4 z-30" style={{
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-30" style={{
         transform: showStickyButton ? 'translateY(0)' : 'translateY(100%)',
         transition: 'transform 0.3s ease-in-out'
       }}>
         <button
           onClick={handleOrderClick}
-          className="w-full bg-white text-green-600 font-bold py-3 px-6 rounded-lg text-lg"
+          className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-200 shadow-lg ${bounceAnimation ? 'animate-bounce' : ''
+            }`}
         >
           🛒 ORDINA ORA - Pagamento alla Consegna
         </button>
