@@ -251,7 +251,7 @@ const SocialProofNotification = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm animate-slide-up">
+    <div className="fixed bottom-20 md:bottom-4 left-4 z-40 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm animate-slide-up">
       <div className="flex items-center space-x-3">
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         <div className="flex-1">
@@ -313,6 +313,197 @@ const StockIndicator = () => {
       <div className="flex items-center justify-center space-x-2">
         <AlertCircle className="w-5 h-5" />
         <span>⚡ Solo {stock} pezzi rimasti in magazzino!</span>
+      </div>
+    </div>
+  );
+};
+
+// Results Section with Progress Bars
+const ResultsSection = () => {
+  return (
+    <div className="py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <img
+              src="https://cosedicase.com/cdn/shop/files/download_17_a3b5a2ba-dfd7-48bd-9cf6-cbaa230ed97c.gif?v=1749034197&width=600"
+              alt="Risultati soddisfacenti"
+              className="w-full h-auto rounded-lg shadow-lg"
+            />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+              Trasforma il Tuo Cucito con Risultati Eccezionali
+            </h2>
+
+            <div className="space-y-8">
+              {/* Progress bar 1 */}
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                      fill="none"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#16a34a"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${97 * 3.14159} ${100 * 3.14159}`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">97%</span>
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-gray-700">Hanno trovato che il cucito diventa più semplice e veloce!</p>
+              </div>
+
+              {/* Progress bar 2 */}
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                      fill="none"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#16a34a"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${98 * 3.14159} ${100 * 3.14159}`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">98%</span>
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-gray-700">Hanno notato un aumento della creatività nei loro progetti!</p>
+              </div>
+
+              {/* Progress bar 3 */}
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                      fill="none"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#16a34a"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${96 * 3.14159} ${100 * 3.14159}`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">96%</span>
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-gray-700">Hanno risparmiato tempo grazie alle funzioni automatiche!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Delivery Tracking Component
+const DeliveryTracking = () => {
+  const [deliveryDates, setDeliveryDates] = useState({
+    orderDate: '',
+    shipDate: '',
+    deliveryStart: '',
+    deliveryEnd: '',
+    deliveryRange: ''
+  });
+
+  useEffect(() => {
+    const formatData = (data: Date): string => {
+      const giorni = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+      const mesi = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+      const giornoSettimana = giorni[data.getDay()];
+      const giorno = String(data.getDate()).padStart(2, '0');
+      const mese = mesi[data.getMonth()];
+      return `${giornoSettimana}, ${giorno} ${mese}`;
+    };
+
+    const aggiungiGiorniLavorativi = (data: Date, giorni: number): Date => {
+      let count = 0;
+      const nuovaData = new Date(data);
+      while (count < giorni) {
+        nuovaData.setDate(nuovaData.getDate() + 1);
+        const giorno = nuovaData.getDay();
+        if (giorno !== 0 && giorno !== 6) count++; // 0 = domenica, 6 = sabato
+      }
+      return nuovaData;
+    };
+
+    const oggi = new Date();
+    const dataOrdine = oggi;
+    const dataSpedizione = aggiungiGiorniLavorativi(dataOrdine, 1);
+    const dataConsegnaInizio = aggiungiGiorniLavorativi(dataSpedizione, 2);
+    const dataConsegnaFine = aggiungiGiorniLavorativi(dataSpedizione, 3);
+
+    setDeliveryDates({
+      orderDate: formatData(dataOrdine),
+      shipDate: formatData(dataSpedizione),
+      deliveryStart: formatData(dataConsegnaInizio),
+      deliveryEnd: formatData(dataConsegnaFine),
+      deliveryRange: `${formatData(dataConsegnaInizio)} e ${formatData(dataConsegnaFine)}`
+    });
+  }, []);
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <p className="text-center text-gray-700 mb-4">
+        Ordina <strong>ORA</strong> e riceverai il tuo pacco tra <strong>{deliveryDates.deliveryRange}</strong>
+      </p>
+      <div className="flex justify-between items-center text-sm">
+        <div className="text-center">
+          <div className="text-2xl mb-1">📦</div>
+          <div className="font-medium">Ordinato</div>
+          <div className="text-gray-500">{deliveryDates.orderDate}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl mb-1">🚚</div>
+          <div className="font-medium">Spedito</div>
+          <div className="text-gray-500">{deliveryDates.shipDate}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl mb-1">📍</div>
+          <div className="font-medium">Consegnato</div>
+          <div className="text-gray-500">{deliveryDates.deliveryStart} - {deliveryDates.deliveryEnd}</div>
+        </div>
       </div>
     </div>
   );
@@ -616,106 +807,179 @@ export default function SewingMachineLanding() {
                 </div>
               </div>
 
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                <div className="text-center space-y-4">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    🧵 Macchina da Cucire Creativa – Compatta, Potente, Facilissima da Usare
-                  </h3>
+              {/* NUOVO BOX OFFERTA CON STILE DELLA SECONDA IMMAGINE */}
+              <div style={{
+                fontFamily: 'sans-serif',
+                background: '#fff',
+                padding: '20px',
+                borderRadius: '10px',
+                maxWidth: '650px',
+                margin: 'auto',
+                textAlign: 'left',
+                boxShadow: '0 0 10px rgba(0,0,0,0.05)'
+              }}>
+                <h2 style={{
+                  color: '#1c1917',
+                  fontSize: '20px',
+                  marginBottom: '15px',
+                  textAlign: 'center'
+                }}>
+                  🧵 Macchina da Cucire Creativa – Compatta, Potente, Facilissima da Usare
+                </h2>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span>📅 Ampia varietà di punti: 165 programmi inclusi</span>
-                      <span className="text-red-600 line-through font-bold">€129,99</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>✨ Infila ago automatico: Risparmia tempo e stress</span>
-                      <span className="text-green-600 font-bold">✔ Incluso</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>🔢 Display LCD retroilluminato: Tutto sotto controllo</span>
-                      <span className="text-green-600 font-bold">✔ Incluso</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>🛋 Accessori completi: Tavolo estensibile, piedini, DVD</span>
-                      <span className="text-green-600 font-bold">✔ Incluso</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-100 p-3 rounded-lg space-y-2 text-sm">
-                    <div className="flex items-center justify-center space-x-2">
-                      <Truck className="w-4 h-4" />
-                      <span><strong>Spedizione Gratis</strong> in tutta Italia (3-4 giorni)</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2">
-                      <Shield className="w-4 h-4" />
-                      <span><strong>Pagamento alla consegna</strong> disponibile (+€2,99)</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-600 text-white p-4 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-sm">Prezzo di listino:</div>
-                      <div className="text-lg line-through text-red-200">€129,99</div>
-                      <div className="text-sm">Oggi solo:</div>
-                      <div className="text-3xl font-bold">€62,98</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-red-50 border border-red-200 p-3 rounded-lg text-center">
-                    <div className="text-red-800 font-bold text-sm">
-                      ⏳ <strong>Offerta valida solo per pochi giorni!</strong><br />
-                      Approfitta prima che torni a prezzo pieno.
-                    </div>
-                  </div>
-
-                  <StockIndicator />
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 0',
+                  borderBottom: '1px solid #eee',
+                  fontSize: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ flex: '1 1 70%' }}>📅 Ampia varietà di punti: 165 programmi inclusi (decorativi, utili e alfanumerici)</span>
+                  <span style={{
+                    color: 'red',
+                    textDecoration: 'line-through',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>€129,99</span>
                 </div>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 0',
+                  borderBottom: '1px solid #eee',
+                  fontSize: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ flex: '1 1 70%' }}>✨ Infila ago automatico: Risparmia tempo e stress</span>
+                  <span style={{
+                    color: '#16a34a',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>✔ Incluso</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 0',
+                  borderBottom: '1px solid #eee',
+                  fontSize: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ flex: '1 1 70%' }}>🔢 Display LCD retroilluminato: Tutto sotto controllo</span>
+                  <span style={{
+                    color: '#16a34a',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>✔ Incluso</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 0',
+                  borderBottom: '1px solid #eee',
+                  fontSize: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ flex: '1 1 70%' }}>🛋 Accessori completi: Tavolo estensibile, piedini, DVD e altro ancora</span>
+                  <span style={{
+                    color: '#16a34a',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>✔ Incluso</span>
+                </div>
+
+                <div style={{
+                  background: '#ecfdf5',
+                  borderLeft: '4px solid #10b981',
+                  padding: '10px 12px',
+                  margin: '10px 0',
+                  fontSize: '15px'
+                }}>
+                  🚚 <strong>Spedizione Gratis</strong> in tutta Italia (consegna in 3-4 giorni lavorativi)
+                </div>
+
+                <div style={{
+                  background: '#ecfdf5',
+                  borderLeft: '4px solid #10b981',
+                  padding: '10px 12px',
+                  margin: '10px 0',
+                  fontSize: '15px'
+                }}>
+                  💶 <strong>Pagamento alla consegna</strong> disponibile
+                </div>
+
+                <div style={{
+                  background: '#f0fdf4',
+                  padding: '15px',
+                  margin: '20px 0',
+                  textAlign: 'center',
+                  borderRadius: '8px',
+                  fontSize: '22px',
+                  color: '#16a34a',
+                  fontWeight: 'bold'
+                }}>
+                  Prezzo di listino: <span style={{ textDecoration: 'line-through', color: 'red' }}>€129,99</span><br />
+                  Oggi solo: <span style={{ fontSize: '26px' }}>€59,99</span>
+                </div>
+
+                <div style={{
+                  textAlign: 'center',
+                  color: '#7f1d1d',
+                  fontWeight: '500',
+                  background: '#fef2f2',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  marginBottom: '10px',
+                  fontSize: '14px'
+                }}>
+                  ⏳ <strong>Offerta valida solo per pochi giorni!</strong><br />
+                  Approfitta prima che torni a prezzo pieno.
+                </div>
+
+                <div style={{
+                  textAlign: 'center',
+                  fontSize: '14px',
+                  color: '#dc2626',
+                  fontWeight: 'bold',
+                  marginTop: '8px'
+                }}>
+                  <CountdownTimer />
+                </div>
+
+                <div style={{
+                  background: 'repeating-linear-gradient(45deg, #facc15, #facc15 10px, #fde68a 10px, #fde68a 20px)',
+                  color: '#1f2937',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  margin: '10px 0',
+                  fontSize: '15px'
+                }}>
+                  ⚡ Ultimi pezzi disponibili in magazzino
+                </div>
+
+                <p style={{ textAlign: 'center', fontSize: '14px', color: '#555' }}>
+                  📦 Spedito in 24/48h – Consegna garantita in 3-4 giorni
+                </p>
               </div>
 
               <button
                 onClick={handleOrderClick}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 shadow-lg"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 shadow-lg"
               >
-                🛒 ORDINA ORA - SPEDIZIONE GRATUITA
+                🛒 ORDINA ORA - Pagamento alla Consegna
               </button>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-center text-gray-700 mb-4">
-                  Ordina <strong>ORA</strong> e riceverai il tuo pacco tra <strong>venerdì 26 lug e lunedì 29 lug</strong>
-                </p>
-                <div className="flex justify-between items-center text-sm">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">📦</div>
-                    <div className="font-medium">Ordinato</div>
-                    <div className="text-gray-500">gio, 25 lug</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🚚</div>
-                    <div className="font-medium">Spedito</div>
-                    <div className="text-gray-500">ven, 26 lug</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">📍</div>
-                    <div className="font-medium">Consegnato</div>
-                    <div className="text-gray-500">lun, 29 lug</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-center space-x-8 text-sm text-gray-600">
-                <div className="flex items-center space-x-1">
-                  <Truck className="w-4 h-4" />
-                  <span>Spedizione veloce</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Shield className="w-4 h-4" />
-                  <span>Pagamento sicuro</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Heart className="w-4 h-4" />
-                  <span>30 giorni garanzia</span>
-                </div>
-              </div>
+              <DeliveryTracking />
             </div>
           </div>
         </div>
@@ -901,56 +1165,7 @@ export default function SewingMachineLanding() {
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <img
-                src="https://cosedicase.com/cdn/shop/files/download_17_a3b5a2ba-dfd7-48bd-9cf6-cbaa230ed97c.gif?v=1749034197&width=600"
-                alt="Risultati soddisfacenti"
-                className="w-full h-auto rounded-lg shadow-lg"
-              />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                Trasforma il Tuo Cucito con Risultati Eccezionali
-              </h2>
-
-              <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Cucito più semplice e veloce</span>
-                    <span className="text-sm font-medium">97%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '97%' }}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Aumento della creatività</span>
-                    <span className="text-sm font-medium">98%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '98%' }}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Risparmio di tempo</span>
-                    <span className="text-sm font-medium">96%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '96%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ResultsSection />
 
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1194,12 +1409,12 @@ export default function SewingMachineLanding() {
         </div>
       </section>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-orange-600 p-4 z-30">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-green-600 p-4 z-30">
         <button
           onClick={handleOrderClick}
-          className="w-full bg-white text-orange-600 font-bold py-3 px-6 rounded-lg text-lg"
+          className="w-full bg-white text-green-600 font-bold py-3 px-6 rounded-lg text-lg"
         >
-          🛒 ORDINA ORA €62,98
+          🛒 ORDINA ORA - Pagamento alla Consegna
         </button>
       </div>
 
