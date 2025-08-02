@@ -172,37 +172,9 @@ const advancedTrackingUtils = {
     }
   },
 
-  // Google Ads Purchase tracking
+  // Google Ads Purchase tracking DISABILITATO - già tracciato nella landing
   trackGooglePurchase: async (orderData: any): Promise<void> => {
-    if (typeof window !== 'undefined' && window.gtag) {
-      try {
-        // Enhanced ecommerce tracking
-        window.gtag('event', 'purchase', {
-          transaction_id: orderData?.orderId || `MCU${Date.now()}`,
-          value: 62.98,
-          currency: 'EUR',
-          items: [{
-            item_id: 'sewing-machine-creative',
-            item_name: 'Macchina da Cucire Creativa',
-            category: 'Sewing Machines',
-            quantity: 1,
-            price: 62.98
-          }]
-        });
-
-        // Conversion tracking
-        window.gtag('event', 'conversion', {
-          send_to: 'AW-17086993346/DJt3CMrUrPsaEMKn29M_',
-          value: 62.98,
-          currency: 'EUR',
-          transaction_id: orderData?.orderId || `MCU${Date.now()}`
-        });
-
-        console.log('✅ Google Ads Purchase & Conversion tracked');
-      } catch (error) {
-        console.error('❌ Google Ads tracking error:', error);
-      }
-    }
+    console.log('ℹ️ Google Ads Purchase skipped - already tracked in landing page');
   },
 
   // Utility functions
