@@ -458,7 +458,7 @@ const ThankYouPage = () => {
       step: "1",
       title: "Połączenie Weryfikacyjne",
       description: "Nasz operator skontaktuje się z Tobą w najbliższych godzinach, aby potwierdzić dane zamówienia",
-      time: "W najbliższych godzinach"
+      time: "Wkrótce"
     },
     {
       step: "2",
