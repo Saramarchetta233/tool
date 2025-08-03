@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Star,
   Check,
@@ -14,6 +14,8 @@ import {
   MapPin,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,    // ← AGGIUNGI
+  ChevronRight,  // ← AGGIUNGI
   Play
 } from 'lucide-react';
 
@@ -472,7 +474,7 @@ const ResultsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+              src="/images/smartwatch-5.jpg"
               alt="Zadowoleni użytkownicy smartwatcha"
               className="w-full h-auto rounded-lg shadow-lg"
             />
@@ -728,6 +730,195 @@ const Footer = () => {
 };
 
 // Main Component
+// Componente Carosello
+const ProductCarousel = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  // Le tue immagini del prodotto
+  const images = [
+    "/images/smartwatch-1.jpg",
+    "/images/smartwatch-2.jpg",
+    "/images/smartwatch-3.jpg",
+    "/images/smartwatch-4.jpg"
+  ];
+
+  // Auto-slide ogni 8 secondi
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  // Gestione touch per mobile
+  const handleTouchStart = (e: any) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: any) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
+  const nextImage = () => {
+    setCurrentImage((prev: any) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImage((prev: any) => (prev - 1 + images.length) % images.length);
+  };
+
+  const goToImage = (index: any) => {
+    setCurrentImage(index);
+  };
+
+  return (
+    <div className="relative">
+      {/* Container principale */}
+      <div
+        className="relative w-full h-auto"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Badge sconto */}
+        <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
+          -60% TANIEJ
+        </div>
+
+        {/* Immagini */}
+        <div className="relative min-h-[300px] max-h-[600px]">
+          {images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Smartwatch Niezniszczalny - Vista ${index + 1}`}
+              className={`w-full h-auto max-h-[600px] object-contain mx-auto transition-opacity duration-500 ${index === currentImage ? 'opacity-100' : 'opacity-0'
+                } ${index !== currentImage ? 'absolute top-0 left-0' : ''}`}
+            />
+          ))}
+        </div>
+
+        {/* Frecce desktop */}
+        <button
+          onClick={prevImage}
+          className="hidden md:flex absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={nextImage}
+          className="hidden md:flex absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Dots indicatori */}
+      <div className="flex justify-center space-x-2 mt-4">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToImage(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImage
+              ? 'bg-green-600 w-8'
+              : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+          />
+        ))}
+      </div>
+
+      {/* Thumbnails desktop */}
+      <div className="hidden md:flex justify-center space-x-2 mt-4">
+        {images.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => goToImage(index)}
+            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${index === currentImage
+              ? 'border-green-600 opacity-100'
+              : 'border-gray-200 opacity-70 hover:opacity-100'
+              }`}
+          >
+            <img
+              src={image}
+              alt={`Thumbnail ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+const AutoplayVideo = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      // Forza l'autoplay su mobile
+      video.play().catch((error: any) => {
+        console.log('Autoplay fallito:', error);
+      });
+    }
+  }, []);
+
+  return (
+    <div className="relative rounded-lg shadow-lg overflow-hidden">
+      <video
+        ref={videoRef}
+        className="w-full h-auto"
+        autoPlay
+        muted
+        loop
+        playsInline // Importante per iOS
+        preload="auto"
+        style={{
+          maxHeight: '500px',
+          objectFit: 'cover'
+        }}
+      >
+        {/* Sostituisci con il tuo video */}
+        <source src="/video/smartwatch-demo.mp4" type="video/mp4" />
+        <source src="/video/smartwatch-demo.webm" type="video/webm" />
+
+        {/* Fallback per browser che non supportano video */}
+        <img
+          src="/images/smartwatch-1.jpg"
+          alt="Smartwatch in azione - Fallback"
+          className="w-full h-auto"
+        />
+      </video>
+
+      {/* Overlay opzionale */}
+      <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm">
+        📹 Smartwatch w Akcji
+      </div>
+    </div>
+  );
+};
+
+// Main Component
 export default function SmartwatchLanding() {
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [reservationTimer, setReservationTimer] = useState({ minutes: 5, seconds: 0 });
@@ -925,8 +1116,8 @@ export default function SmartwatchLanding() {
 
       apiFormData.append('uid', '01980825-ae5a-7aca-8796-640a3c5ee3da');
       apiFormData.append('key', 'ad79469b31b0058f6ea72c');
-      apiFormData.append('offer', '232');
-      apiFormData.append('lp', '232');
+      apiFormData.append('offer', '154');
+      apiFormData.append('lp', '154');
       apiFormData.append('name', formData.imie.trim());
       apiFormData.append('tel', formData.telefon.trim());
       apiFormData.append('street-address', formData.adres.trim());
@@ -992,16 +1183,7 @@ export default function SmartwatchLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div className="order-1">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1544117519-31a4b719223d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                  alt="Smartwatch Niezniszczalny"
-                  className="w-full h-auto rounded-lg shadow-lg"
-                />
-                <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  -60% TANIEJ
-                </div>
-              </div>
+              <ProductCarousel />
             </div>
 
             <div className="order-2 space-y-6">
@@ -1022,15 +1204,15 @@ export default function SmartwatchLanding() {
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">💧 <strong>Wodoodporny IP68</strong> – Pływanie, nurkowanie, deszcz - nic go nie zatrzyma</span>
+                  <span className="text-base">📞 <strong>Odbieraj połączenia</strong> – Głośnomówiący wbudowany - rozmawiaj bez telefonu</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🛡️ <strong>Pancerny design</strong> – Wytrzyma upadki z wysokości i uderzenia</span>
+                  <span className="text-base">🛰️ <strong>GPS wojskowy</strong> – Precyzja na poziomie 3 metrów - nigdy się nie zgubisz</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🔋 <strong>Bateria 30 dni</strong> – Jeden ładunek na cały miesiąc użytkowania</span>
+                  <span className="text-base">🏃 <strong>100+ trybów sportowych</strong> – Każda aktywność precyzyjnie monitorowana</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1265,11 +1447,7 @@ export default function SmartwatchLanding() {
               </p>
             </div>
             <div>
-              <img
-                src="https://images.unsplash.com/photo-1484704849700-f032a568e944?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                alt="Smartwatch w ekstremalnych warunkach"
-                className="w-full h-auto rounded-lg shadow-lg"
-              />
+              <AutoplayVideo />
             </div>
           </div>
         </div>
@@ -1280,7 +1458,7 @@ export default function SmartwatchLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <img
-                src="https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                src="/images/smartwatch-2.jpg"
                 alt="Cechy smartwatcha"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1340,7 +1518,7 @@ export default function SmartwatchLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <img
-                src="https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                src="/images/smartwatch-3.jpg"
                 alt="Smartwatch w akcji"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1704,9 +1882,9 @@ export default function SmartwatchLanding() {
               <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
               <div className="flex items-center gap-3">
                 <img
-                  src="https://images.unsplash.com/photo-1544117519-31a4b719223d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  src="/images/smartwatch-1.jpg"
                   alt="Smartwatch Niezniszczalny"
-                  className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
+                  className="w-16 h-auto md:w-20 md:h-auto object-contain flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-gray-900 text-sm md:text-base">Smartwatch Niezniszczalny</div>
