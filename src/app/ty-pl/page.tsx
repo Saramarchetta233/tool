@@ -156,11 +156,20 @@ const advancedTrackingUtils = {
         const hashedFirstName = orderData.imie ? await advancedTrackingUtils.hashData(orderData.imie.split(' ')[0]) : null;
         const hashedLastName = orderData.imie && orderData.imie.split(' ').length > 1 ? await advancedTrackingUtils.hashData(orderData.imie.split(' ').slice(1).join(' ')) : null;
 
+        // Calcola timestamp corretto (non più di 7 giorni fa, non nel futuro)
+        const now = Math.floor(Date.now() / 1000);
+        const maxPastTime = now - (7 * 24 * 60 * 60); // 7 giorni fa
+        const eventTimestamp = Math.max(maxPastTime, now - 10); // Massimo 10 secondi fa
+
         const capiData = {
-          event_name: 'Purchase',
+          event_name: 'Purchase', // o eventName per la landing
           event_id: clientEventId,
-          timestamp: Math.floor(Date.now() / 1000),
+          timestamp: eventTimestamp, // <-- TIMESTAMP CORRETTO
           event_source_url: window.location.href,
+
+          // AGGIUNGI ANCHE QUESTO
+          action_source: 'website',
+          event_time: eventTimestamp,
 
           // Token e Pixel ID dinamici
           token: 'EAAPYtpMdWREBPJH0W7LzwU2MuZA61clyQOfYg5C6E0vo9E5QYgJWl2n5XtO8Ur93YTZANcWYz3qsAbDOadffn10KbQZCOwkRS6DpM8bRjwX25NBn5d1lvVNQhFOCGY9eZARrjyCbJs1OtFk2BOc4ZBbaUjeD7dvkejyxZAZAEQdeb8AQzUKdAQitdhU0jVGywZDZD',
