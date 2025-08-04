@@ -228,7 +228,39 @@ const advancedTrackingUtils = {
   },
 
   trackGooglePurchase: async (orderData: any): Promise<void> => {
-    console.log('ℹ️ Google Ads Purchase skipped - already tracked in landing page');
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        const transactionId = orderData?.orderId || `TY${Date.now()}`;
+
+        // Track Google Ads conversion
+        window.gtag('event', 'conversion', {
+          send_to: 'AW-17086993346/DJt3CMrUrPsaEMKn29M_',
+          value: 299.00,
+          currency: 'PLN',
+          transaction_id: transactionId
+        });
+
+        // Track Google Analytics purchase
+        window.gtag('event', 'purchase', {
+          transaction_id: transactionId,
+          value: 299.00,
+          currency: 'PLN',
+          items: [{
+            item_id: 'sewing-machine-creative',
+            item_name: 'Maszyna do Szycia Kreatywna',
+            category: 'Sewing Machines',
+            quantity: 1,
+            price: 299.00
+          }]
+        });
+
+        console.log(`✅ Google Ads Purchase tracked in Thank You page with transaction ID: ${transactionId}`);
+      } catch (error) {
+        console.error(`❌ Google Ads Purchase tracking error:`, error);
+      }
+    } else {
+      console.log(`❌ Google gtag not available for Purchase tracking`);
+    }
   },
 
   // Utility functions
