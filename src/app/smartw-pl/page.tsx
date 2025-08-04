@@ -264,10 +264,41 @@ const trackingUtils = {
     const fbclid = urlParams.get('fbclid');
 
     if (fbclid) {
-      // Formato corretto per fbc: fb.1.timestamp.fbclid
-      return `fb.1.${Date.now()}.${fbclid}`;
+      // Formato corretto per fbc secondo Meta: fb.1.timestamp.fbclid
+      // Il timestamp deve essere in SECONDI, non millisecondi
+      const timestamp = Math.floor(Date.now() / 1000);
+      return `fb.1.${timestamp}.${fbclid}`;
     }
+
+    // Se non c'è fbclid, prova a recuperare da cookie esistenti
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === '_fbc') {
+        return decodeURIComponent(value);
+      }
+    }
+
     return '';
+  },
+
+  // AGGIUNGI QUESTA NUOVA FUNZIONE SUBITO DOPO getFbClickId
+  setFbClickId: (): void => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fbclid = urlParams.get('fbclid');
+
+    if (fbclid) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const fbcValue = `fb.1.${timestamp}.${fbclid}`;
+
+      // Salva nei cookie per 90 giorni (standard Facebook)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 90);
+
+      document.cookie = `_fbc=${encodeURIComponent(fbcValue)}; expires=${expirationDate.toUTCString()}; path=/; domain=${window.location.hostname}`;
+
+      console.log('✅ Facebook Click ID salvato:', fbcValue);
+    }
   },
 
   getFbBrowserId: (): string => {
@@ -938,6 +969,8 @@ export default function SmartwatchLanding() {
 
   // Initialize tracking on component mount
   useEffect(() => {
+    // AGGIUNGI QUESTA LINEA QUI
+    trackingUtils.setFbClickId();
     // Initialize tracking systems
     trackingUtils.initGoogleAds();
     trackingUtils.initGoogleAnalytics();
