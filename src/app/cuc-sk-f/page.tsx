@@ -1022,7 +1022,7 @@ export default function SewingMachineLanding() {
             <div className="order-1">
               <div className="relative">
                 <img
-                  src="/images/cuc-sl/Cuc_pl20.jpg"
+                  src="/images/cuc-sk/Cuc_pl20.png"
                   alt="Kreativni Šivalni Stroj"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
@@ -1308,7 +1308,7 @@ export default function SewingMachineLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <img
-                src="/images/cuc-sl/Cuc_pl19.jpg"
+                src="/images/cuc-sk/Cuc_pl19.png"
                 alt="Cechy maszyny"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1368,7 +1368,7 @@ export default function SewingMachineLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <img
-                src="/images/cuc-sl/Cuc_pl18.jpg"
+                src="/images/cuc-sk/Cuc_pl18.png"
                 alt="Maszyna do szycia w akcji"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1732,7 +1732,7 @@ export default function SewingMachineLanding() {
               <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Zhrnutie objednávky</h4>
               <div className="flex items-center gap-3">
                 <img
-                  src="/images/cuc-sl/Cuc_pl20.jpg"
+                  src="/images/cuc-sk/Cuc_pl20.png"
                   alt="Šivalni stroj"
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />
