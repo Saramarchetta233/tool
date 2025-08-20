@@ -147,8 +147,8 @@ const trackingUtils = {
 
         if (userFormData) {
           hashedPhone = userFormData.telefon ? await trackingUtils.hashData(userFormData.telefon.replace(/\D/g, '')) : null;
-          hashedFirstName = userFormData.imie ? await trackingUtils.hashData(userFormData.imie.split(' ')[0]) : null;
-          hashedLastName = userFormData.imie && userFormData.imie.split(' ').length > 1 ? await trackingUtils.hashData(userFormData.imie.split(' ').slice(1).join(' ')) : null;
+          hashedFirstName = userFormData.jmeno ? await trackingUtils.hashData(userFormData.jmeno.split(' ')[0]) : null;
+          hashedLastName = userFormData.jmeno && userFormData.jmeno.split(' ').length > 1 ? await trackingUtils.hashData(userFormData.jmeno.split(' ').slice(1).join(' ')) : null;
         }
 
         // Prepara i dati per N8N
@@ -175,7 +175,7 @@ const trackingUtils = {
           telefono_hash: hashedPhone,
           nome_hash: hashedFirstName,
           cognome_hash: hashedLastName,
-          indirizzo: userFormData?.adres || null,
+          indirizzo: userFormData?.adresa || null,
 
           // Traffic source for analytics
           traffic_source: trackingUtils.getTrafficSource(),
@@ -199,12 +199,12 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: 'Smartwatch Niezniszczalny',
+          content_name: 'Neničitelný Smartwatch',
           content_category: 'Electronics',
           content_ids: 'smartwatch-indestructible',
           content_type: 'product',
-          value: eventData.value || 219.00,
-          currency: 'PLN', // Currency dinamica
+          value: eventData.value || 1249.00,
+          currency: 'CZK', // Currency dinamica
           quantity: eventData.num_items || 1
         };
 
@@ -391,7 +391,63 @@ const StarRating = ({ rating, size = 'w-4 h-4' }: { rating: number; size?: strin
   );
 };
 
+// Social Proof Notification
+const SocialProofNotification = () => {
+  const [visible, setVisible] = useState(false);
+  const [currentNotification, setCurrentNotification] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
 
+  const notifications = [
+    { name: "Jan z Prahy", action: "právě koupil", time: "před 2 minutami" },
+    { name: "Petr z Brna", action: "přidal do košíku", time: "před 4 minutami" },
+    { name: "Pavel z Ostravy", action: "právě koupil", time: "před 6 minutami" },
+    { name: "Adam z Plzně", action: "právě prohlíží", time: "před 1 minutou" },
+  ];
+
+  useEffect(() => {
+    // Aspetta 10 secondi prima di iniziare a mostrare le notifiche
+    const initialDelay = setTimeout(() => {
+      setHasStarted(true);
+    }, 10000);
+
+    return () => clearTimeout(initialDelay);
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    const showNotification = () => {
+      setVisible(true);
+      setTimeout(() => setVisible(false), 4000);
+      setTimeout(() => {
+        setCurrentNotification((prev) => (prev + 1) % notifications.length);
+      }, 5000);
+    };
+
+    const interval = setInterval(showNotification, 8000);
+    showNotification();
+
+    return () => clearInterval(interval);
+  }, [hasStarted]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed bottom-20 md:bottom-4 left-4 z-40 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm animate-slide-up">
+      <div className="flex items-center space-x-3">
+        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-900">
+            {notifications[currentNotification].name}
+          </p>
+          <p className="text-xs text-gray-600">
+            {notifications[currentNotification].action} • {notifications[currentNotification].time}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // FAQ Component
 const FAQ = ({ question, answer }: { question: string; answer: string }) => {
@@ -438,126 +494,7 @@ const StockIndicator = () => {
     <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 p-3 rounded-lg text-center font-bold">
       <div className="flex items-center justify-center space-x-2">
         <AlertCircle className="w-5 h-5" />
-        <span>⚡ Tylko {stock} sztuk pozostało w magazynie!</span>
-      </div>
-    </div>
-  );
-};
-
-// Results Section with Progress Bars
-const ResultsSection = () => {
-  return (
-    <div className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <img
-              src="/images/smartwatch-5.jpg"
-              alt="Zadowoleni użytkownicy smartwatcha"
-              className="w-full h-auto rounded-lg shadow-lg"
-            />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">
-              Przekształć Swój Styl Życia z Niezniszczalnym Smartwatchem
-            </h2>
-
-            <div className="space-y-8">
-              {/* Progress bar 1 */}
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#e5e7eb"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#16a34a"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${95 * 3.14159} ${100 * 3.14159}`}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-gray-900">95%</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-gray-700">Uważa, że smartwatch jest niezniszczalny!</p>
-              </div>
-
-              {/* Progress bar 2 */}
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#e5e7eb"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#16a34a"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${97 * 3.14159} ${100 * 3.14159}`}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-gray-900">97%</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-gray-700">Poleca go znajomym i rodzinie!</p>
-              </div>
-
-              {/* Progress bar 3 */}
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#e5e7eb"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#16a34a"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${93 * 3.14159} ${100 * 3.14159}`}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-gray-900">93%</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-gray-700">Używa go codziennie w ekstremalnych warunkach!</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <span>⚡ Pouze {stock} kusů zůstává na skladě!</span>
       </div>
     </div>
   );
@@ -575,8 +512,8 @@ const DeliveryTracking = () => {
 
   useEffect(() => {
     const formatData = (data: Date): string => {
-      const giorni = ['nd', 'pn', 'wt', 'śr', 'cz', 'pt', 'sb'];
-      const mesi = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
+      const giorni = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
+      const mesi = ['led', 'úno', 'bře', 'dub', 'kvě', 'čer', 'čvc', 'srp', 'zář', 'říj', 'lis', 'pro'];
       const giornoSettimana = giorni[data.getDay()];
       const giorno = String(data.getDate()).padStart(2, '0');
       const mese = mesi[data.getMonth()];
@@ -589,7 +526,7 @@ const DeliveryTracking = () => {
       while (count < giorni) {
         nuovaData.setDate(nuovaData.getDate() + 1);
         const giorno = nuovaData.getDay();
-        if (giorno !== 0 && giorno !== 6) count++; // 0 = niedziela, 6 = sobota
+        if (giorno !== 0 && giorno !== 6) count++; // 0 = neděle, 6 = sobota
       }
       return nuovaData;
     };
@@ -605,29 +542,29 @@ const DeliveryTracking = () => {
       shipDate: formatData(dataSpedizione),
       deliveryStart: formatData(dataConsegnaInizio),
       deliveryEnd: formatData(dataConsegnaFine),
-      deliveryRange: `${formatData(dataConsegnaInizio)} a ${formatData(dataConsegnaFine)}`
+      deliveryRange: `${formatData(dataConsegnaInizio)} až ${formatData(dataConsegnaFine)}`
     });
   }, []);
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <p className="text-center text-gray-700 mb-4">
-        Zamów <strong>TERAZ</strong> i otrzymasz swoją paczkę między <strong>{deliveryDates.deliveryRange}</strong>
+        Objednejte <strong>NYNÍ</strong> a obdržíte balíček mezi <strong>{deliveryDates.deliveryRange}</strong>
       </p>
       <div className="flex justify-between items-center text-sm">
-        <div className="text-center">
-          <div className="text-2xl mb-1">📦</div>
-          <div className="font-medium">Zamówione</div>
+        <div className="text-center flex-1">
+          <div className="text-2xl mb-1 text-center">📦</div>
+          <div className="font-medium">Objednáno</div>
           <div className="text-gray-500">{deliveryDates.orderDate}</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl mb-1">🚚</div>
-          <div className="font-medium">Wysłane</div>
+        <div className="text-center flex-1">
+          <div className="text-2xl mb-1 text-center">🚚</div>
+          <div className="font-medium">Odesláno</div>
           <div className="text-gray-500">{deliveryDates.shipDate}</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl mb-1">📍</div>
-          <div className="font-medium">Dostarczone</div>
+        <div className="text-center flex-1">
+          <div className="text-2xl mb-1 text-center">📍</div>
+          <div className="font-medium">Doručeno</div>
           <div className="text-gray-500">{deliveryDates.deliveryStart} - {deliveryDates.deliveryEnd}</div>
         </div>
       </div>
@@ -635,108 +572,26 @@ const DeliveryTracking = () => {
   );
 };
 
-// Footer Component - LINK APRONO IN NUOVA SCHEDA
-const Footer = () => {
-  return (
-    <footer className="bg-gray-800 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">Newheras</h3>
-            <p className="text-gray-300 text-sm">
-              Najwyższej jakości smartwatche niezniszczalne dla aktywnego stylu życia.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Obsługa Klienta</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-white">Kontakt</a></li>
-              <li><a href="#" className="hover:text-white">FAQ</a></li>
-              <li><a href="/returns" target="_blank" rel="noopener noreferrer" className="hover:text-white">Zwroty</a></li>
-              <li><a href="#" className="hover:text-white">Gwarancja</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Informacje Prawne</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-white">Regulamin</a></li>
-              <li><a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white">Polityka Prywatności</a></li>
-              <li><a href="/cookies" target="_blank" rel="noopener noreferrer" className="hover:text-white">Polityka Cookies</a></li>
-              <li><a href="/gdpr" target="_blank" rel="noopener noreferrer" className="hover:text-white">Prawa Konsumenta</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Firma</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-white">O Nas</a></li>
-              <li><a href="#" className="hover:text-white">Kariera</a></li>
-              <li><a href="#" className="hover:text-white">Blog</a></li>
-              <li><a href="#" className="hover:text-white">Partnerzy</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400">
-              © 2025 Newheras. Wszystkie prawa zastrzeżone.
-            </p>
-            <div className="flex space-x-6">
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Polityka Prywatności</a>
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Regulamin</a>
-              <a href="/cookies" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Cookies</a>
-            </div>
-          </div>
-
-          <div className="mt-6 text-xs text-gray-500 max-w-4xl mx-auto">
-            <p className="mb-2">
-              <strong>Informacje prawne:</strong> Wszystkie ceny zawierają podatek VAT. Prawo do odstąpienia od umowy w ciągu 14 dni zgodnie z prawem konsumenckim.
-              Gwarancja 24 miesiące zgodnie z Kodeksem Cywilnym. Sprzedawca: Newheras Sp. z o.o.
-            </p>
-            <p>
-              <strong>Ochrona danych:</strong> Przetwarzamy Twoje dane osobowe zgodnie z RODO. Szczegóły w Polityce Prywatności.
-              Używamy plików cookies w celach analitycznych i marketingowych. Więcej informacji w Polityce Cookies.
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
-// Main Component
-// Componente Carosello
+// Product Carousel Component
 const ProductCarousel = () => {
   const [currentImage, setCurrentImage] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // Le tue immagini del prodotto
   const images = [
-    "/images/smartwatch-1.jpg",
-    "/images/smartwatch-2.jpg",
-    "/images/smartwatch-3.jpg",
-    "/images/smartwatch-4.jpg"
+    '/images/smartw-cz/smartwatch-1.png',
+    '/images/smartw-cz/smartwatch-2.jpg',
+    '/images/smartw-cz/smartwatch-3.jpg',
+    '/images/smartw-cz/smartwatch-4.png',
+    '/images/smartw-cz/smartwatch-5.png'
   ];
 
-  // Auto-slide ogni 8 secondi
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 8000);
-
-    return () => clearInterval(timer);
-  }, [images.length]);
-
-  // Gestione touch per mobile
-  const handleTouchStart = (e: any) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const handleTouchMove = (e: any) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
@@ -778,7 +633,7 @@ const ProductCarousel = () => {
       >
         {/* Badge sconto */}
         <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-          -60% TANIEJ
+          -60% LEVNĚJI
         </div>
 
         {/* Immagini */}
@@ -787,7 +642,7 @@ const ProductCarousel = () => {
             <img
               key={index}
               src={image}
-              alt={`Smartwatch Niezniszczalny - Vista ${index + 1}`}
+              alt={`Neničitelný Smartwatch - Pohled ${index + 1}`}
               className={`w-full h-auto max-h-[600px] object-contain mx-auto transition-opacity duration-500 ${index === currentImage ? 'opacity-100' : 'opacity-0'
                 } ${index !== currentImage ? 'absolute top-0 left-0' : ''}`}
             />
@@ -837,7 +692,7 @@ const ProductCarousel = () => {
           >
             <img
               src={image}
-              alt={`Thumbnail ${index + 1}`}
+              alt={`Náhled ${index + 1}`}
               className="w-full h-full object-cover"
             />
           </button>
@@ -856,7 +711,7 @@ const AutoplayVideo = () => {
     if (video) {
       // Forza l'autoplay su mobile
       video.play().catch((error: any) => {
-        console.log('Autoplay fallito:', error);
+        console.log('Autoplay selhalo:', error);
       });
     }
   }, []);
@@ -882,15 +737,15 @@ const AutoplayVideo = () => {
 
         {/* Fallback per browser che non supportano video */}
         <img
-          src="/images/smartwatch-1.jpg"
-          alt="Smartwatch in azione - Fallback"
+          src="/images/smartw-cz/smartwatch-1.png"
+          alt="Smartwatch v akci - Záložní obrázek"
           className="w-full h-auto"
         />
       </video>
 
       {/* Overlay opzionale */}
       <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm">
-        📹 Smartwatch w Akcji
+        📹 Smartwatch v Akci
       </div>
     </div>
   );
@@ -903,15 +758,15 @@ export default function SmartwatchLanding() {
   const [showStickyButton, setShowStickyButton] = useState(false);
   const [bounceAnimation, setBounceAnimation] = useState(false);
   const [formData, setFormData] = useState({
-    imie: '',
+    jmeno: '',
     telefon: '',
-    adres: ''
+    adresa: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({
-    imie: '',
+    jmeno: '',
     telefon: '',
-    adres: ''
+    adresa: ''
   });
 
   // Initialize tracking on component mount
@@ -924,7 +779,7 @@ export default function SmartwatchLanding() {
 
     // Track PageView for all platforms
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: 'Smartwatch Niezniszczalny - Strona Główna',
+      page_title: 'Neničitelný Smartwatch - Hlavní stránka',
       page_location: window.location.href
     });
 
@@ -994,27 +849,27 @@ export default function SmartwatchLanding() {
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
       content_type: 'product',
       content_ids: ['smartwatch-indestructible'],
-      content_name: 'Smartwatch Niezniszczalny',
-      value: 219.00,
-      currency: 'PLN',
+      content_name: 'Neničitelný Smartwatch',
+      value: 1249.00,
+      currency: 'CZK',
       num_items: 1
     });
 
     trackingUtils.trackGoogleEvent('view_item', {
-      currency: 'PLN',
-      value: 219.00,
+      currency: 'CZK',
+      value: 1249.00,
       items: [{
         item_id: 'smartwatch-indestructible',
-        item_name: 'Smartwatch Niezniszczalny',
+        item_name: 'Neničitelný Smartwatch',
         category: 'Electronics',
         quantity: 1,
-        price: 219.00
+        price: 1249.00
       }]
     });
 
     setShowOrderPopup(true);
     setReservationTimer({ minutes: 5, seconds: 0 });
-    setFormErrors({ imie: '', telefon: '', adres: '' });
+    setFormErrors({ jmeno: '', telefon: '', adresa: '' });
   };
 
   const handleFormChange = (field: string, value: string) => {
@@ -1025,33 +880,33 @@ export default function SmartwatchLanding() {
   };
 
   const validateForm = () => {
-    const errors = { imie: '', telefon: '', adres: '' };
+    const errors = { jmeno: '', telefon: '', adresa: '' };
     let isValid = true;
 
-    if (!formData.imie.trim()) {
-      errors.imie = 'Imię i nazwisko jest wymagane';
+    if (!formData.jmeno.trim()) {
+      errors.jmeno = 'Jméno a příjmení je povinné';
       isValid = false;
-    } else if (formData.imie.trim().length < 2) {
-      errors.imie = 'Imię musi zawierać co najmniej 2 znaki';
+    } else if (formData.jmeno.trim().length < 2) {
+      errors.jmeno = 'Jméno musí obsahovat nejméně 2 znaky';
       isValid = false;
     }
 
     if (!formData.telefon.trim()) {
-      errors.telefon = 'Numer telefonu jest wymagany';
+      errors.telefon = 'Telefonní číslo je povinné';
       isValid = false;
     } else {
       const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
       if (!phoneRegex.test(formData.telefon.trim())) {
-        errors.telefon = 'Wprowadź prawidłowy numer telefonu';
+        errors.telefon = 'Zadejte platné telefonní číslo';
         isValid = false;
       }
     }
 
-    if (!formData.adres.trim()) {
-      errors.adres = 'Adres jest wymagany';
+    if (!formData.adresa.trim()) {
+      errors.adresa = 'Adresa je povinná';
       isValid = false;
-    } else if (formData.adres.trim().length < 10) {
-      errors.adres = 'Adres musi być bardziej szczegółowy (ulica, numer, miasto, kod pocztowy)';
+    } else if (formData.adresa.trim().length < 10) {
+      errors.adresa = 'Zadejte úplnou adresu (ulice, město, PSČ)';
       isValid = false;
     }
 
@@ -1059,85 +914,51 @@ export default function SmartwatchLanding() {
     return isValid;
   };
 
-  const handleOrderSubmit = async () => {
-    if (isSubmitting) return;
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
-    // 🚨 ESSENTIAL: Track Purchase event con CAPI PRIMA dell'invio API
     try {
+      console.log('🎯 Purchase initiated - tracking Purchase event');
+
+      // Track Purchase event for Facebook
       await trackingUtils.trackFacebookEvent('Purchase', {
         content_type: 'product',
         content_ids: ['smartwatch-indestructible'],
-        content_name: 'Smartwatch Niezniszczalny',
-        value: 219.00,
-        currency: 'PLN',
+        content_name: 'Neničitelný Smartwatch',
+        value: 1249.00,
+        currency: 'CZK',
         num_items: 1
       }, formData);
-      console.log('✅ Purchase tracking completato con successo');
-    } catch (trackingError) {
-      console.error('❌ Purchase tracking fallito, ma continuiamo:', trackingError);
-    }
 
-    trackingUtils.trackGoogleEvent('Purchase', {
-      value: 219.00,
-      currency: 'PLN',
-      transaction_id: `SW${Date.now()}`,
-      items: [{
-        item_id: 'smartwatch-indestructible',
-        item_name: 'Smartwatch Niezniszczalny',
-        category: 'Electronics',
-        quantity: 1,
-        price: 219.00
-      }]
-    });
-
-    try {
-      const apiFormData = new FormData();
-
-      apiFormData.append('uid', '0198748b-2623-7379-97a9-c0ef86a67c39');
-      apiFormData.append('key', '1f6f5998082de2ebb0b318');
-      apiFormData.append('offer', '46');
-      apiFormData.append('lp', '46');
-      apiFormData.append('name', formData.imie.trim());
-      apiFormData.append('tel', formData.telefon.trim());
-      apiFormData.append('street-address', formData.adres.trim());
-
-      const tmfpInput = document.querySelector('input[name="tmfp"]') as HTMLInputElement | null;
-      if (!tmfpInput || !tmfpInput.value) {
-        apiFormData.append('ua', navigator.userAgent);
-      }
-
-      const response = await fetch('https://offers.supertrendaffiliateprogram.com/forms/api/', {
-        method: 'POST',
-        body: apiFormData,
+      // Track for Google Ads
+      trackingUtils.trackGoogleEvent('purchase', {
+        transaction_id: `cz-${Date.now()}`,
+        value: 1249.00,
+        currency: 'CZK',
+        items: [{
+          item_id: 'smartwatch-indestructible',
+          item_name: 'Neničitelný Smartwatch',
+          category: 'Electronics',
+          quantity: 1,
+          price: 1249.00
+        }]
       });
 
-      if (response.ok) {
-        const responseData = await response.text();
-        const orderId = `SW${Date.now()}`;
+      console.log('📋 Submitting order:', formData);
 
-        const orderData = {
-          ...formData,
-          orderId,
-          product: 'Smartwatch Niezniszczalny',
-          price: 219.00,
-          apiResponse: responseData
-        };
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-        localStorage.setItem('orderData', JSON.stringify(orderData));
-        window.location.href = '/ty-pl-smartw';
-      } else {
-        console.error('API Error:', response.status, response.statusText);
-        alert('Wystąpił błąd podczas wysyłania zamówienia. Spróbuj ponownie później.');
-      }
+      // Redirect to thank you page
+      window.location.href = '/ty-cz-smartw';
+
     } catch (error) {
-      console.error('Network Error:', error);
-      alert('Wystąpił błąd połączenia. Sprawdź połączenie internetowe i spróbuj ponownie.');
+      console.error('❌ Order submission error:', error);
+      alert('Chyba při odesílání objednávky. Zkuste to prosím znovu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1150,7 +971,7 @@ export default function SmartwatchLanding() {
 
       <div className="bg-red-600 text-white text-center py-2 px-4">
         <div className="flex items-center justify-center space-x-4 text-sm font-medium">
-          <span>🔥 OFERTA LIMITOWANA - Tylko dziś ze zniżką 60%!</span>
+          <span>🔥 OMEZENÁ NABÍDKA - Dnes pouze se slevou 60%!</span>
         </div>
       </div>
 
@@ -1165,37 +986,37 @@ export default function SmartwatchLanding() {
               <div className="flex items-center space-x-2">
                 <StarRating rating={5} size="w-5 h-5" />
                 <span className="text-yellow-600 font-medium">4.8</span>
-                <span className="text-gray-600">(1,247 opinii)</span>
+                <span className="text-gray-600">(1,247 recenzí)</span>
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                ⌚ Smartwatch Niezniszczalny
+                ⌚ Neničitelný Smartwatch
               </h1>
 
               <p className="text-lg text-gray-700 font-medium">
-                <strong>Zegarek, który przetrwa wszystko. Odporny na wodę, uderzenia i ekstremalne warunki. Styl militarny dla prawdziwych wojowników.</strong>
+                <strong>Hodinky, které přežijí všechno. Odolné proti vodě, nárazům a extrémním podmínkám. Vojenský styl pro skutečné bojovníky.</strong>
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">📞 <strong>Odbieraj połączenia</strong> – Głośnomówiący wbudowany - rozmawiaj bez telefonu</span>
+                  <span className="text-base">📞 <strong>Přijímejte hovory</strong> – Vestavěný reproduktor - mluvte bez telefonu</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🛰️ <strong>GPS wojskowy</strong> – Precyzja na poziomie 3 metrów - nigdy się nie zgubisz</span>
+                  <span className="text-base">🛰️ <strong>Vojenský GPS</strong> – Přesnost na úrovni 3 metrů - nikdy se neztratíte</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🏃 <strong>100+ trybów sportowych</strong> – Każda aktywność precyzyjnie monitorowana</span>
+                  <span className="text-base">🏃 <strong>100+ sportovních režimů</strong> – Každá aktivita přesně monitorována</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">📱 <strong>Wszystkie funkcje smart</strong> – Połączenia, SMS, GPS, fitness</span>
+                  <span className="text-base">📱 <strong>Všechny chytré funkce</strong> – Hovory, SMS, GPS, fitness</span>
                 </div>
               </div>
 
-              {/* NOWY BOX OFERTY */}
+              {/* NOVÝ BOX OFERTY */}
               <div style={{
                 fontFamily: 'sans-serif',
                 background: '#fff',
@@ -1212,7 +1033,7 @@ export default function SmartwatchLanding() {
                   marginBottom: '15px',
                   textAlign: 'center'
                 }}>
-                  ⌚ Smartwatch Niezniszczalny – Militarny, Wodoodporny, Niezniszczalny
+                  ⌚ Neničitelný Smartwatch – Vojenský, Vodotěsný, Neprůstřelný
                 </h2>
 
                 <div style={{
@@ -1224,13 +1045,13 @@ export default function SmartwatchLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>💧 Wodoodporność IP68: Pływanie, nurkowanie, ekstremalne warunki</span>
+                  <span style={{ flex: '1 1 70%' }}>💧 Vodotěsnost IP68: Plavání, potápění, extrémní podmínky</span>
                   <span style={{
                     color: 'red',
                     textDecoration: 'line-through',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
-                  }}>547,50 zł</span>
+                  }}>3 122,50 Kč</span>
                 </div>
 
                 <div style={{
@@ -1242,12 +1063,12 @@ export default function SmartwatchLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🛡️ Pancerny design: Wytrzyma wszystko co na niego rzucisz</span>
+                  <span style={{ flex: '1 1 70%' }}>🛡️ Pancířový design: Vydrží všechno, co na něj hodíte</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
-                  }}>✔ W zestawie</span>
+                  }}>✔ V sadě</span>
                 </div>
 
                 <div style={{
@@ -1259,12 +1080,12 @@ export default function SmartwatchLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🔋 Bateria 30 dni: Jeden ładunek na cały miesiąc</span>
+                  <span style={{ flex: '1 1 70%' }}>🔋 Baterie na 30 dní: Jedno nabití na celý měsíc</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
-                  }}>✔ W zestawie</span>
+                  }}>✔ V sadě</span>
                 </div>
 
                 <div style={{
@@ -1276,12 +1097,12 @@ export default function SmartwatchLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>📱 Funkcje smart: GPS, krokomierz, pulsometr, powiadomienia</span>
+                  <span style={{ flex: '1 1 70%' }}>📱 Chytré funkce: GPS, krokoměr, pulsometr, notifikace</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
-                  }}>✔ W zestawie</span>
+                  }}>✔ V sadě</span>
                 </div>
 
                 <div style={{
@@ -1291,7 +1112,7 @@ export default function SmartwatchLanding() {
                   margin: '10px 0',
                   fontSize: '15px'
                 }}>
-                  🚚 <strong>Darmowa dostawa</strong> w całej Polsce (dostawa w 3-4 dni robocze)
+                  🚚 <strong>Doručení zdarma</strong> po celé České republice (doručení za 3-4 pracovní dny)
                 </div>
 
                 <div style={{
@@ -1301,7 +1122,7 @@ export default function SmartwatchLanding() {
                   margin: '10px 0',
                   fontSize: '15px'
                 }}>
-                  💶 <strong>Płatność przy odbiorze</strong> dostępna
+                  💶 <strong>Platba na dobírku</strong> k dispozici
                 </div>
 
                 <div style={{
@@ -1314,9 +1135,9 @@ export default function SmartwatchLanding() {
                   color: '#16a34a',
                   fontWeight: 'bold'
                 }}>
-                  Cena katalogowa: <span style={{ textDecoration: 'line-through', color: 'red' }}>547,50 zł</span><br />
+                  Katalogová cena: <span style={{ textDecoration: 'line-through', color: 'red' }}>3 122,50 Kč</span><br />
                   <div style={{ marginTop: '10px' }}>
-                    Dziś tylko: <span style={{ fontSize: '26px' }}>219,00 zł</span>
+                    Dnes pouze: <span style={{ fontSize: '26px' }}>1 249,00 Kč</span>
                   </div>
                 </div>
 
@@ -1330,8 +1151,8 @@ export default function SmartwatchLanding() {
                   marginBottom: '10px',
                   fontSize: '14px'
                 }}>
-                  ⏳ <strong>Oferta ważna tylko przez kilka dni!</strong><br />
-                  Skorzystaj zanim wróci do pełnej ceny.
+                  ⏳ <strong>Nabídka platí pouze několik dní!</strong><br />
+                  Využijte ji předtím, než se vrátí na plnou cenu.
                 </div>
 
                 <div style={{
@@ -1354,11 +1175,11 @@ export default function SmartwatchLanding() {
                   margin: '10px 0',
                   fontSize: '15px'
                 }}>
-                  ⚡ Ostatnie sztuki dostępne w magazynie
+                  ⚡ Poslední kusy k dispozici na skladě
                 </div>
 
                 <p style={{ textAlign: 'center', fontSize: '14px', color: '#555' }}>
-                  📦 Wysyłka w 24/48h – Dostawa gwarantowana w 3-4 dni
+                  📦 Odeslání za 24/48h – Doručení garantováno za 3-4 dny
                 </p>
               </div>
 
@@ -1366,7 +1187,7 @@ export default function SmartwatchLanding() {
                 onClick={handleOrderClick}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 shadow-lg animate-pulse-button"
               >
-                🔥 ZAMÓW TERAZ - Płatność przy Odbiorze
+                🔥 OBJEDNAT NYNÍ - Platba na Dobírku
               </button>
 
               <DeliveryTracking />
@@ -1377,7 +1198,7 @@ export default function SmartwatchLanding() {
                 <div className="flex items-center space-x-4">
                   <img
                     src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                    alt="Marcin K."
+                    alt="Jan K."
                     className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                   />
 
@@ -1388,7 +1209,7 @@ export default function SmartwatchLanding() {
                     </div>
 
                     <p className="text-gray-800 text-sm leading-relaxed mb-3">
-                      "Ten zegarek to prawdziwy wojownik! 💪 Spadł mi z 3 metra na beton - ani ryski! Pływam z nim, biegam w deszczu, pracuję na budowie. Bateria faktycznie trzyma miesiąc. Najlepszy zakup w życiu!"
+                      "Tyto hodinky jsou skutečný bojovník! 💪 Spadly mi ze 3 metrů na beton - ani škrábanec! Plavat s nimi, běhám v dešti, pracuji na stavbě. Baterie skutečně vydrží měsíc. Nejlepší nákup v životě!"
                     </p>
 
                     {/* Nome con checkmark blu */}
@@ -1396,7 +1217,7 @@ export default function SmartwatchLanding() {
                       <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">✓</span>
                       </div>
-                      <span className="font-bold text-gray-900 text-sm">Marcin K.</span>
+                      <span className="font-bold text-gray-900 text-sm">Jan K.</span>
                     </div>
                   </div>
                 </div>
@@ -1412,13 +1233,13 @@ export default function SmartwatchLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                ⚔️ Stworzony dla Ekstremalnych Wyzwań – Twój Niezniszczalny Towarzysz!
+                ⚔️ Vytvořeno pro Extrémní Výzvy – Váš Neničitelný Společník!
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                <strong>Smartwatch Niezniszczalny</strong> został zaprojektowany dla ludzi, którzy nie znają kompromisów. Czy jesteś żołnierzem, strażakiem, robotnikiem czy sportowcem ekstremalnym.
+                <strong>Neničitelný Smartwatch</strong> byl navržen pro lidi, kteří neznají kompromisy. Ať už jste voják, hasič, dělník nebo extrémní sportovec.
               </p>
               <p className="text-lg text-gray-700">
-                Z <strong>certyfikatem IP68</strong>, <strong>pancerną obudową</strong> i <strong>baterią na 30 dni</strong>, ten zegarek przetrwa każdą misję, którą przed nim postawisz.
+                S <strong>certifikátem IP68</strong>, <strong>pancířovým krytem</strong> a <strong>baterií na 30 dní</strong>, tyto hodinky přežijí každou misi, kterou před nimi postavíte.
               </p>
             </div>
             <div>
@@ -1433,44 +1254,44 @@ export default function SmartwatchLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <img
-                src="/images/smartwatch-2.jpg"
-                alt="Cechy smartwatcha"
+                src="/images/smartw-cz/smartwatch-2.jpg"
+                alt="Vlastnosti smartwatch"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Główne cechy
+                Hlavní vlastnosti
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Wodoodporność IP68:</strong> Pełna ochrona przed wodą do 50 metrów głębokości. Idealne do pływania, nurkowania i sportów wodnych.
+                    <strong>Vodotěsnost IP68:</strong> Úplná ochrana před vodou do hloubky 50 metrů. Ideální na plavání, potápění a vodní sporty.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Pancerny design:</strong> Wytrzymała obudowa z aluminium lotniczego i szkło gorilla glass. Wytrzymuje upadki z 5 metrów.
+                    <strong>Pancířový design:</strong> Odolný kryt z leteckého hliníku a gorilla glass sklo. Vydrží pády z 5 metrů.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Bateria 30 dni:</strong> Potężna bateria 2000mAh zapewnia miesiąc użytkowania na jednym ładowaniu.
+                    <strong>Baterie na 30 dní:</strong> Mocná baterie 2000mAh zajišťuje měsíc používání na jedno nabití.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Pełne funkcje smart:</strong> GPS, pulsometr, krokomierz, powiadomienia, połączenia, 100+ trybów sportowych.
+                    <strong>Plné chytré funkce:</strong> GPS, pulsometr, krokoměr, notifikace, hovory, 100+ sportovních režimů.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Ekstremalny zasięg:</strong> Działa w temperaturach od -40°C do +70°C. Odporny na kurz, piasek i śnieg.
+                    <strong>Extrémní dosah:</strong> Funguje v teplotách od -40°C do +70°C. Odolné proti prachu, písku a sněhu.
                   </div>
                 </div>
               </div>
@@ -1483,18 +1304,18 @@ export default function SmartwatchLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Niezniszczalny i Funkcjonalny
+              Neničitelný a Funkční
             </h2>
             <p className="text-lg text-gray-700">
-              Odkryj, jak ten smartwatch łączy wytrzymałość militarną z nowoczesnymi funkcjami smart.
+              Objevte, jak tyto smartwatch kombinují vojenskou odolnost s moderními chytrými funkcemi.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <img
-                src="/images/smartwatch-3.jpg"
-                alt="Smartwatch w akcji"
+                src="/images/smartw-cz/smartwatch-3.jpg"
+                alt="Smartwatch v akci"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
@@ -1502,23 +1323,23 @@ export default function SmartwatchLanding() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🛡️</div>
-                  <h3 className="font-bold text-lg mb-2">Wytrzymałość</h3>
-                  <p className="text-gray-600">Pancerny design wytrzyma każde wyzwanie.</p>
+                  <h3 className="font-bold text-lg mb-2">Odolnost</h3>
+                  <p className="text-gray-600">Pancířový design vydrží každou výzvu.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">💧</div>
-                  <h3 className="font-bold text-lg mb-2">Wodoodporność</h3>
-                  <p className="text-gray-600">IP68 - pływanie, nurkowanie, deszcz.</p>
+                  <h3 className="font-bold text-lg mb-2">Vodotěsnost</h3>
+                  <p className="text-gray-600">IP68 - plavání, potápění, déšť.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🔋</div>
-                  <h3 className="font-bold text-lg mb-2">Długa Bateria</h3>
-                  <p className="text-gray-600">30 dni pracy na jednym ładowaniu.</p>
+                  <h3 className="font-bold text-lg mb-2">Dlouhá Baterie</h3>
+                  <p className="text-gray-600">30 dní provozu na jedno nabití.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">📱</div>
-                  <h3 className="font-bold text-lg mb-2">Smart Funkcje</h3>
-                  <p className="text-gray-600">GPS, fitness, powiadomienia, połączenia.</p>
+                  <h3 className="font-bold text-lg mb-2">Chytré Funkce</h3>
+                  <p className="text-gray-600">GPS, fitness, notifikace, hovory.</p>
                 </div>
               </div>
             </div>
@@ -1530,10 +1351,10 @@ export default function SmartwatchLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Co Czyni Smartwatch Niezniszczalny Wyjątkowym
+              Co Činí Neničitelný Smartwatch Výjimečným
             </h2>
             <p className="text-lg text-gray-700">
-              W przeciwieństwie do zwykłych smartwatchy, nasz model łączy militarną wytrzymałość z nowoczesnymi funkcjami, zapewniając niezawodność w każdych warunkach.
+              Na rozdíl od běžných smartwatch náš model kombinuje vojenskou odolnost s moderními funkcemi, zajišťuje spolehlivost za všech podmínek.
             </p>
           </div>
 
@@ -1541,447 +1362,484 @@ export default function SmartwatchLanding() {
             <div className="min-w-full">
               <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div></div>
-                <div className="font-bold text-lg">Smartwatch Niezniszczalny</div>
-                <div className="font-bold text-lg">Zwykłe smartwatche</div>
+                <div className="font-bold text-lg text-gray-900">Běžné Smartwatch</div>
+                <div className="font-bold text-lg text-green-600">Neničitelný Smartwatch</div>
               </div>
 
-              {[
-                'Wodoodporność IP68',
-                'Wytrzymałość upadków',
-                'Bateria 30 dni',
-                'Ekstremalne temperatury',
-                'Militarna jakość'
-              ].map((feature, index) => (
-                <div key={index} className="border-b border-gray-200 py-4">
-                  <div className="md:hidden">
-                    <div className="font-medium text-lg mb-3">{feature}</div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white p-3 rounded-lg text-center">
-                        <div className="font-medium text-green-600 mb-1">Nasz</div>
-                        <Check className="w-6 h-6 text-green-600 mx-auto" />
-                      </div>
-                      <div className="bg-white p-3 rounded-lg text-center">
-                        <div className="font-medium text-red-600 mb-1">Inne</div>
-                        <span className="text-red-600 text-xl">✗</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="hidden md:grid md:grid-cols-3 gap-4 py-3">
-                    <div className="font-medium">{feature}</div>
-                    <div className="text-center">
-                      <Check className="w-6 h-6 text-green-600 mx-auto" />
-                    </div>
-                    <div className="text-center">
-                      <span className="text-red-600 text-xl">✗</span>
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg">
+                  <div className="font-medium text-gray-900">Odolnost proti vodě</div>
+                  <div className="text-center text-red-600">❌ Základní (sprška)</div>
+                  <div className="text-center text-green-600">✅ IP68 (50m hloubka)</div>
                 </div>
-              ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg">
+                  <div className="font-medium text-gray-900">Odolnost proti nárazům</div>
+                  <div className="text-center text-red-600">❌ Křehké</div>
+                  <div className="text-center text-green-600">✅ Vojenský standard</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg">
+                  <div className="font-medium text-gray-900">Výdrž baterie</div>
+                  <div className="text-center text-red-600">❌ 1-2 dny</div>
+                  <div className="text-center text-green-600">✅ 30 dní</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg">
+                  <div className="font-medium text-gray-900">Operační teplota</div>
+                  <div className="text-center text-red-600">❌ 0°C až 40°C</div>
+                  <div className="text-center text-green-600">✅ -40°C až +70°C</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg">
+                  <div className="font-medium text-gray-900">Cena</div>
+                  <div className="text-center text-red-600">3000+ Kč</div>
+                  <div className="text-center text-green-600 font-bold">1249 Kč</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <ResultsSection />
+      {/* Customer Reviews Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Více než 1,247 Spokojených Zákazníků
+            </h2>
+            <p className="text-lg text-gray-700">
+              Zjistěte, proč čeští zákazníci milují Neničitelný Smartwatch
+            </p>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Review 1 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Petr M."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Petr M.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Praha</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Konečně hodinky, které vydrží! Jsem hasič a potřeboval jsem něco opravdu odolného. Po 6 měsících intenzivního používání stále vypadají jako nové. Nejlepší investice!"
+              </p>
+            </div>
+
+            {/* Review 2 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Anna K."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Anna K.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Brno</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Úžasná výdrž baterie! Nabíjím je jen jednou za měsíc. GPS funguje dokonale při běhání v horách. Design je krásný a funkce jsou úplné. Doporučuji!"
+              </p>
+            </div>
+
+            {/* Review 3 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Martin S."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Martin S.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Ostrava</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Pracuji na stavbě a potřeboval jsem odolné hodinky. Spadly mi ze 4. patra, ani škrábanec! Voděodolnost je také fantastická. Worth každou korunu!"
+              </p>
+            </div>
+
+            {/* Review 4 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Marie H."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Marie H.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Plzeň</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Miluji sportovní funkce! 100+ režimů je úžasné. Sleduje perfektně každé cvičení. Design je elegantní, ale zároveň robustní. Doporučujem všem sportovcům!"
+              </p>
+            </div>
+
+            {/* Review 5 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Pavel T."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Pavel T.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">České Budějovice</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Jsem vojenský důstojník a potřeboval jsem něco odolného. Tyto hodinky překonaly všechna očekávání. GPS přesnost je neuvěřitelná. Vojenský standard skutečně!"
+              </p>
+            </div>
+
+            {/* Review 6 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                  alt="Zuzana L."
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">Zuzana L.</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Hradec Králové</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <StarRating rating={5} size="w-4 h-4" />
+              </div>
+              <p className="text-gray-800 text-sm leading-relaxed">
+                "Fantastické hodinky! Poměr cena/výkon je neuvěřitelný. Za 1249 Kč dostanete funkce hodinek za 5000+ Kč. Doručení bylo rychlé, doporučuji!"
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Odpowiedzi na Twoje Najczęściej Zadawane Pytania
+              Často Kladené Otázky
             </h2>
             <p className="text-lg text-gray-700">
-              Wszystko co musisz wiedzieć o swoim nowym niezniszczalnym towarzyszu.
+              Odpovědi na nejčastější otázky o Neničitelném Smartwatch
             </p>
           </div>
 
           <div className="space-y-4">
             <FAQ
-              question="Czy rzeczywiście jest wodoodporny?"
-              answer="Tak! Certyfikat IP68 oznacza pełną ochronę przed wodą do 50 metrów głębokości. Możesz pływać, nurkować i używać go pod prysznicem bez obaw."
+              question="Je Neničitelný Smartwatch skutečně odolný proti vodě?"
+              answer="Ano! Má certifikaci IP68, což znamená úplnou ochranu před vodou až do hloubky 50 metrů. Můžete s ním plavat, potápět se nebo pracovat za deště bez obav."
             />
             <FAQ
-              question="Jak długo faktycznie trzyma bateria?"
-              answer="Przy normalnym użytkowaniu (powiadomienia, GPS, pulsometr) bateria wystarcza na 25-30 dni. W trybie oszczędzania energii może działać nawet 45 dni."
+              question="Jak dlouho vydrží baterie?"
+              answer="Naše mocná baterie 2000mAh vydrží až 30 dní při normálním používání. V úsporném režimu může vydržet ještě déle. To je 15x déle než běžné smartwatch!"
             />
             <FAQ
-              question="Czy wytrzyma naprawdę mocne uderzenia?"
-              answer="Obudowa z aluminium lotniczego i szkło Gorilla Glass wytrzymują upadki z wysokości do 5 metrów. Testowany przez wojsko i służby ratunkowe."
+              question="Jsou hodinky kompatibilní s mým telefonem?"
+              answer="Ano! Neničitelný Smartwatch je kompatibilní s telefony Android i iPhone. Jednoduše se připojuje přes Bluetooth a funguje s naší bezplatnou aplikací."
             />
             <FAQ
-              question="Jakie funkcje smart posiada?"
-              answer="Wszystkie: GPS, pulsometr, krokomierz, powiadomienia z telefonu, możliwość odbierania połączeń, 100+ trybów sportowych, monitoring snu."
+              question="Jaká je záruka na hodinky?"
+              answer="Poskytujeme 24měsíční záruku na všechny naše smartwatch. Pokud máte jakýkoli problém, náš zákaznický servis vám pomůže do 24 hodin."
             />
             <FAQ
-              question="Czy działa w ekstremalnych temperaturach?"
-              answer="Tak, przetestowany w zakresie od -40°C do +70°C. Idealny dla żołnierzy, ratowników i osób pracujących w trudnych warunkach."
+              question="Jak rychlé je doručení?"
+              answer="Odesíláme během 24-48 hodin po objednávce. Doručení po celé České republice trvá 3-4 pracovní dny. Doručení je zcela zdarma!"
+            />
+            <FAQ
+              question="Můžu platit při převzetí?"
+              answer="Ano! Nabízíme platbu na dobírku (platba při doručení). Můžete také platit kartou online nebo bankovním převodem."
+            />
+            <FAQ
+              question="Jaké sportovní režimy jsou k dispozici?"
+              answer="Máme více než 100 sportovních režimů včetně běhání, cyklistiky, plavání, turistiky, posilování, jógy a mnoha dalších. Všechny vaše aktivity budou přesně sledovány."
             />
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <StarRating rating={5} size="w-6 h-6" />
-              <span className="text-2xl font-bold">4.8/5</span>
+      {/* Trust Badges Section */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+            <div className="text-center">
+              <div className="text-4xl mb-2">🚚</div>
+              <h3 className="font-bold text-sm text-gray-900">Doručení Zdarma</h3>
+              <p className="text-xs text-gray-600">Po celé ČR</p>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Opinie użytkowników o smartwatchu
-            </h2>
-            <p className="text-lg text-gray-700">
-              Prawdziwe opinie od prawdziwych wojowników
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Tomasz K.",
-                rating: 5,
-                review: "Mam go już 6 miesięcy - spadł z dachu, był w morzu, w błocie. Ciągle działa jak nowy! 💪 Bateria faktycznie trzyma miesiąc. Najlepszy zegarek jaki miałem!"
-              },
-              {
-                name: "Piotr M.",
-                rating: 5,
-                review: "Kupowałem dla syna strażaka. Po roku intensywnego użytkowania w akcjach wygląda jak nowy. Wodoodporność 100% sprawdzona!"
-              },
-              {
-                name: "Marcin W.",
-                rating: 4,
-                review: "Solidny kawał sprzętu. Używam na budowie - kurz, cement, upadki. Nic mu nie szkodzi. GPS bardzo precyzyjny."
-              },
-              {
-                name: "Adam L.",
-                rating: 5,
-                review: "Żołnierz zawodowy poleca! Przetrwał manewry w Afganistanie. W 50°C działał bez zarzutu. To jest prawdziwy wojownik!"
-              },
-              {
-                name: "Jakub S.",
-                rating: 5,
-                review: "Ratownik górski tutaj. Ten zegarek uratował mi życie - GPS działał gdy telefon padł. Niezniszczalny to mało powiedziane!"
-              },
-              {
-                name: "Michał R.",
-                rating: 4,
-                review: "Kupowałem dla treningów MMA. Po roku ciągłych uderzeń nie ma ani zadrapania. Pulsometr bardzo dokładny."
-              },
-              {
-                name: "Paweł D.",
-                rating: 5,
-                review: "Mechanik samochodowy poleca! Olej, benzyna, uderzenia kluczami - nic mu nie szkodzi. Bateria faktycznie miesiąc!"
-              },
-              {
-                name: "Łukasz T.",
-                rating: 5,
-                review: "Nurek amator - 40 metrów pod wodą, zero problemów! Wszystkie funkcje działają. Najlepsza inwestycja!"
-              },
-              {
-                name: "Krzysztof P.",
-                rating: 5,
-                review: "Strażak poleca na 100%! W 200°C w zadymionym budynku GPS wskazał drogę powrotną. Uratował życie mojej drużynie!"
-              }
-            ].map((review, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md">
-                <div className="flex items-center space-x-2 mb-3">
-                  <StarRating rating={review.rating} />
-                  <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
-                </div>
-                <p className="text-gray-700 mb-3">{review.review}</p>
-                <p className="font-medium text-gray-900">- {review.name}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 bg-white p-8 rounded-lg shadow-lg border-l-4 border-yellow-400">
-            <div className="flex items-start space-x-4">
-              <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                alt="Tomasz K."
-                className="w-16 h-16 rounded-full"
-              />
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <StarRating rating={5} />
-                  <span className="font-medium">Tomasz K.</span>
-                  <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
-                </div>
-                <p className="text-gray-700">
-                  "Ten zegarek to prawdziwy wojownik! 💪 Spadł mi z 3 metra na beton - ani ryski! Pływam z nim, biegam w deszczu, pracuję na budowie. Bateria faktycznie trzyma miesiąc. Po 6 miesiącach intensywnego użytkowania wygląda jak nowy. Najlepszy zakup w życiu - żałuję tylko, że nie kupiłem wcześniej!"
-                </p>
-              </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">🔒</div>
+              <h3 className="font-bold text-sm text-gray-900">Bezpečná Platba</h3>
+              <p className="text-xs text-gray-600">SSL šifrování</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">↩️</div>
+              <h3 className="font-bold text-sm text-gray-900">14 Dní na Vrácení</h3>
+              <p className="text-xs text-gray-600">Bez ptaní</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">🛡️</div>
+              <h3 className="font-bold text-sm text-gray-900">2 Roky Záruka</h3>
+              <p className="text-xs text-gray-600">Plná ochrana</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-            <Shield className="w-16 h-16 text-green-600 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              30-Dniowa Gwarancja Zwrotu Pieniędzy
-            </h2>
-            <p className="text-lg text-gray-700 mb-6">
-              Przetestuj smartwatch niezniszczalny przez pełny miesiąc z całkowitym bezpieczeństwem. Sprawdź jego wytrzymałość w najbardziej ekstremalnych warunkach. Jeśli nie spełni Twoich oczekiwań, zwrócimy całą kwotę.
-            </p>
-            <p className="text-xl font-bold text-green-600">
-              Bez pytań, bez problemów - 100% gwarancji zwrotu.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-gray-50">
+      {/* Stock Counter */}
+      <section className="py-8 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Dlaczego kupować od nas?
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Numer śledzenia dla każdego zamówienia</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Płatności bezpośrednio przy odbiorze</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Pomoc 24 godziny na dobę, 7 dni w tygodniu</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Brak ukrytych kosztów!</span>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="font-bold text-lg mb-4">DOSTAWA</h3>
-              <p className="text-gray-700 mb-4">
-                Wysyłamy w całej Polsce, a jeśli zamówienie zostanie złożone przed 21:59, zostanie wysłane następnego dnia roboczego.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">Dostarczone w 3-4 dni robocze</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">W zestawie numer śledzenia</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mt-4">
-                Sprzedawane wyłącznie przez <strong>NEWHERAS</strong>
-              </p>
-            </div>
-          </div>
+          <StockIndicator />
         </div>
       </section>
 
-      <section className="py-16 bg-orange-600 text-white">
+      {/* Final CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            🔥 Nie Przegap Tej Specjalnej Oferty!
+          <h2 className="text-3xl font-bold mb-4">
+            Získejte Svůj Neničitelný Smartwatch Dnes!
           </h2>
           <p className="text-xl mb-8">
-            Tylko na dziś: <span className="line-through opacity-75">547,50 zł</span> <span className="text-5xl font-bold">219,00 zł</span>
+            Pouze <span className="text-yellow-300 font-bold">1 249 Kč</span> místo 3 122,50 Kč - Úspora 60%!
           </p>
-
-          <div className="bg-white/10 backdrop-blur rounded-lg p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-              <div>
-                <Users className="w-8 h-8 mx-auto mb-2" />
-                <div className="font-bold">4,127+</div>
-                <div className="text-sm opacity-90">Zadowolonych Wojowników</div>
-              </div>
-              <div>
-                <Package className="w-8 h-8 mx-auto mb-2" />
-                <div className="font-bold">99.2%</div>
-                <div className="text-sm opacity-90">Wskaźnik Zadowolenia</div>
-              </div>
-              <div>
-                <Clock className="w-8 h-8 mx-auto mb-2" />
-                <div className="font-bold">24/7</div>
-                <div className="text-sm opacity-90">Obsługa Klientów</div>
-              </div>
-            </div>
-          </div>
-
           <button
             onClick={handleOrderClick}
-            className="bg-white text-orange-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-200 shadow-lg mb-4 w-full md:w-auto"
+            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-200 shadow-lg"
           >
-            🛒 ZAMÓW TERAZ - OSTATNIE SZTUKI DOSTĘPNE
+            🔥 OBJEDNAT NYNÍ SE SLEVOU 60%
           </button>
-
-          <p className="text-sm opacity-90">
-            ⚡ Oferta ograniczona w czasie • 🚚 Darmowa dostawa • 💯 Gwarancja 30 dni
+          <p className="text-sm mt-4 opacity-90">
+            ⏰ Omezená nabídka - Pouze několik dní! 📦 Doručení zdarma po celé ČR
           </p>
         </div>
       </section>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-30" style={{
-        transform: showStickyButton ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.3s ease-in-out'
-      }}>
-        <button
-          onClick={handleOrderClick}
-          className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-200 shadow-lg ${bounceAnimation ? 'animate-bounce' : ''
-            }`}
-        >
-          🔥 ZAMÓW TERAZ - Płatność przy Odbiorze
-        </button>
-      </div>
-
-      {showOrderPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 md:p-8 max-w-md w-full relative my-4 md:my-8 min-h-0">
+      {/* Sticky Bottom Button */}
+      {showStickyButton && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-lg">
+          <div className="max-w-md mx-auto">
             <button
-              onClick={() => setShowOrderPopup(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl z-10"
+              onClick={handleOrderClick}
+              className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-200 shadow-lg ${bounceAnimation ? 'animate-bounce' : ''
+                }`}
             >
-              ×
-            </button>
-
-            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 pr-8">Wypełnij aby zamówić</h3>
-            <p className="text-gray-600 mb-4 md:mb-6">Płatność przy odbiorze</p>
-
-            <div className="bg-gray-50 rounded-lg p-3 md:p-4 mb-4">
-              <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/images/smartwatch-1.jpg"
-                  alt="Smartwatch Niezniszczalny"
-                  className="w-16 h-auto md:w-20 md:h-auto object-contain flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm md:text-base">Smartwatch Niezniszczalny</div>
-                  <div className="text-xs md:text-sm text-gray-600">Militarny, Wodoodporny, Niezniszczalny</div>
-                  <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="font-bold text-lg md:text-xl text-gray-900">219,00 zł</div>
-                  <div className="text-xs text-gray-500 line-through">547,50 zł</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 md:mb-6">
-              <div className="text-center">
-                <div className="text-xs text-red-600 mb-1">🔒 Rezerwujemy Twoje zamówienie</div>
-                <div className="text-xl md:text-2xl font-mono font-bold text-red-700">
-                  {reservationTimer.minutes.toString().padStart(2, '0')}:{reservationTimer.seconds.toString().padStart(2, '0')}
-                </div>
-                <div className="text-xs text-red-600 mt-1">
-                  Pozostały czas na sfinalizowanie zamówienia
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3 md:space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Imię i Nazwisko *</label>
-                <input
-                  type="text"
-                  value={formData.imie}
-                  onChange={(e) => handleFormChange('imie', e.target.value)}
-                  className={`w-full px-3 py-3 md:py-2 border rounded-md focus:outline-none focus:ring-2 text-base ${formErrors.imie
-                    ? 'border-red-300 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-green-500'
-                    }`}
-                  placeholder="Twoje pełne imię i nazwisko"
-                />
-                {formErrors.imie && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.imie}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Numer Telefonu *</label>
-                <input
-                  type="tel"
-                  value={formData.telefon}
-                  onChange={(e) => handleFormChange('telefon', e.target.value)}
-                  className={`w-full px-3 py-3 md:py-2 border rounded-md focus:outline-none focus:ring-2 text-base ${formErrors.telefon
-                    ? 'border-red-300 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-green-500'
-                    }`}
-                  placeholder="Twój numer telefonu"
-                />
-                {formErrors.telefon && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.telefon}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pełny Adres *</label>
-                <textarea
-                  value={formData.adres}
-                  onChange={(e) => handleFormChange('adres', e.target.value)}
-                  className={`w-full px-3 py-3 md:py-2 border rounded-md focus:outline-none focus:ring-2 h-20 md:h-20 text-base resize-none ${formErrors.adres
-                    ? 'border-red-300 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-green-500'
-                    }`}
-                  placeholder="Ulica, numer domu, miasto, kod pocztowy"
-                />
-                {formErrors.adres && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.adres}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 mb-4 mt-4 text-gray-700">
-              <Shield className="w-5 h-5" />
-              <span className="font-medium text-sm md:text-base">Płatność przy odbiorze</span>
-            </div>
-
-            <button
-              onClick={handleOrderSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 text-base md:text-lg"
-            >
-              {isSubmitting ? 'PRZETWARZANIE...' : 'POTWIERDŹ ZAMÓWIENIE - 219,00 zł'}
+              🔥 OBJEDNAT ZA 1 249 Kč
             </button>
           </div>
         </div>
       )}
 
-      <Footer />
+      {/* Order Popup */}
+      {showOrderPopup && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => setShowOrderPopup(false)}></div>
 
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  🎉 Gratulujeme k Výběru!
+                </h3>
+                <p className="text-lg text-gray-600 mb-6">
+                  Rezervovali jste si <strong>Neničitelný Smartwatch</strong> za speciální cenu <span className="text-green-600 font-bold">1 249 Kč</span>
+                </p>
+
+                {/* Reservation Timer */}
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-800 font-medium mb-2">
+                    ⏰ Vaše rezervace vyprší za:
+                  </p>
+                  <div className="text-3xl font-bold text-red-600">
+                    {String(reservationTimer.minutes).padStart(2, '0')}:
+                    {String(reservationTimer.seconds).padStart(2, '0')}
+                  </div>
+                </div>
+
+                {/* Order Form */}
+                <form onSubmit={handleFormSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 text-left mb-2">
+                      Jméno a příjmení *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.jmeno}
+                      onChange={(e) => handleFormChange('jmeno', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${formErrors.jmeno ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      placeholder="Jan Novák"
+                      disabled={isSubmitting}
+                    />
+                    {formErrors.jmeno && (
+                      <p className="text-red-600 text-xs mt-1 text-left">{formErrors.jmeno}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 text-left mb-2">
+                      Telefonní číslo *
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.telefon}
+                      onChange={(e) => handleFormChange('telefon', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${formErrors.telefon ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      placeholder="+420 123 456 789"
+                      disabled={isSubmitting}
+                    />
+                    {formErrors.telefon && (
+                      <p className="text-red-600 text-xs mt-1 text-left">{formErrors.telefon}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 text-left mb-2">
+                      Adresa pro doručení *
+                    </label>
+                    <textarea
+                      value={formData.adresa}
+                      onChange={(e) => handleFormChange('adresa', e.target.value)}
+                      rows={3}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${formErrors.adresa ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      placeholder="Ulice 123, Praha 1, 110 00"
+                      disabled={isSubmitting}
+                    />
+                    {formErrors.adresa && (
+                      <p className="text-red-600 text-xs mt-1 text-left">{formErrors.adresa}</p>
+                    )}
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
+                    <h4 className="font-bold text-green-900 mb-2">📦 Shrnutí objednávky:</h4>
+                    <div className="space-y-1 text-sm text-green-800">
+                      <p>• Neničitelný Smartwatch</p>
+                      <p>• Doručení zdarma (3-4 dny)</p>
+                      <p>• 2 roky záruky</p>
+                      <p>• Platba na dobírku</p>
+                      <div className="border-t border-green-200 pt-2 mt-2">
+                        <p className="font-bold text-lg">Celkem: 1 249 Kč</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderPopup(false)}
+                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                      disabled={isSubmitting}
+                    >
+                      Zrušit
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? '⏳ Odesílání...' : '✅ Dokončit Objednávku'}
+                    </button>
+                  </div>
+                </form>
+
+                <p className="text-xs text-gray-500 mt-4">
+                  Odesláním objednávky souhlasíte s našimi obchodními podmínkami a zpracováním osobních údajů.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Custom CSS for animations */}
       <style jsx>{`
-  @keyframes slide-up {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
-  
-  @keyframes pulse-button {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-  }
-  .animate-pulse-button {
-    animation: pulse-button 2s ease-in-out infinite;
-  }
-`}</style>
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-up {
+          animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes pulseButton {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.02);
+          }
+        }
+        
+        .animate-pulse-button {
+          animation: pulseButton 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
