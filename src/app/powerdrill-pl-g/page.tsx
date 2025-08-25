@@ -907,10 +907,10 @@ export default function PowerDrillLanding() {
       // Prepara i dati per il Cloudflare Worker
       const leadData = {
         // Campi richiesti
-        uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
-        key: 'ad79469b31b0058f6ea72c',
-        offer: '53',
-        lp: '53',
+        uid: '9be48223-f2c9-4c3b-a7a8-76354eb1aa83',
+        key: 'b7bf1cb010046d1ca7d1ba',
+        offer: '3413',
+        lp: '3449',
         name: formData.imie.trim(),
         tel: formData.telefon.trim(),
         'street-address': formData.adres.trim(),
@@ -927,7 +927,7 @@ export default function PowerDrillLanding() {
 
         // Dati richiesti
         network_type: 'traffic',
-        url_network: 'https://offers.supertrendaffiliateprogram.com/forms/api/',
+        url_network: 'https://offers.uncappednetwork.com/forms/api/',
         click_id: clickId,
 
         // Dati di tracking
