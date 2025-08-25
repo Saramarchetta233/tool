@@ -898,20 +898,31 @@ export default function PowerDrillLanding() {
     try {
       const apiFormData = new FormData();
 
-      apiFormData.append('uid', '01980825-ae5a-7aca-8796-640a3c5ee3da');
-      apiFormData.append('key', 'ad79469b31b0058f6ea72c');
-      apiFormData.append('offer', '232');
-      apiFormData.append('lp', '232');
+      apiFormData.append('uid', '0198748b-2623-7379-97a9-c0ef86a67c39');
+      apiFormData.append('key', '1f6f5998082de2ebb0b318');
+      apiFormData.append('offer', '53');
+      apiFormData.append('lp', '53');
       apiFormData.append('name', formData.imie.trim());
       apiFormData.append('tel', formData.telefon.trim());
       apiFormData.append('street-address', formData.adres.trim());
+
+      // Aggiungi i nuovi parametri richiesti
+      apiFormData.append('network_type', 'traffic');
+      apiFormData.append('url_network', 'https://offers.supertrendaffiliateprogram.com/forms/api/');
+
+      // Ottieni click_id dai parametri URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const clickId = urlParams.get('click_id');
+      if (clickId) {
+        apiFormData.append('click_id', clickId);
+      }
 
       const tmfpInput = document.querySelector('input[name="tmfp"]') as HTMLInputElement | null;
       if (!tmfpInput || !tmfpInput.value) {
         apiFormData.append('ua', navigator.userAgent);
       }
 
-      const response = await fetch('https://offers.supertrendaffiliateprogram.com/forms/api/', {
+      const response = await fetch('https://leads-ingest.hidden-rain-9c8e.workers.dev/', {
         method: 'POST',
         body: apiFormData,
       });
