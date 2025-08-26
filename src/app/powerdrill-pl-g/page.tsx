@@ -448,7 +448,7 @@ const ResultsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="https://m.media-amazon.com/images/I/71a4USoXgUL._AC_UF894,1000_QL80_.jpg"
+              src="images/powerdrill/5.png"
               alt="Zadowalające rezultaty"
               className="w-full h-auto rounded-lg shadow-lg"
             />
@@ -1022,7 +1022,7 @@ export default function PowerDrillLanding() {
             <div className="order-1">
               <div className="relative">
                 <img
-                  src="https://m.media-amazon.com/images/I/71a4USoXgUL._AC_UF894,1000_QL80_.jpg"
+                  src="images/powerdrill/1.png"
                   alt="Wiertarka ProMax Elite"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
@@ -1294,7 +1294,7 @@ export default function PowerDrillLanding() {
             </div>
             <div>
               <img
-                src="https://m.media-amazon.com/images/I/61dBm5xzlhL._AC_UF894,1000_QL80_.jpg"
+                src="images/powerdrill/2.gif"
                 alt="Wiertarka w użyciu"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1308,7 +1308,7 @@ export default function PowerDrillLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <img
-                src="https://m.media-amazon.com/images/I/71K3B1zLJvL._AC_UF894,1000_QL80_.jpg"
+                src="images/powerdrill/3.png"
                 alt="Cechy wiertarki"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1368,7 +1368,7 @@ export default function PowerDrillLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <img
-                src="https://m.media-amazon.com/images/I/71rLZvW+a5L._AC_UF894,1000_QL80_.jpg"
+                src="images/powerdrill/4.png"
                 alt="Wiertarka w akcji"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
@@ -1573,18 +1573,18 @@ export default function PowerDrillLanding() {
           <div className="mt-12 bg-white p-8 rounded-lg shadow-lg border-l-4 border-yellow-400">
             <div className="flex items-start space-x-4">
               <img
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=70&h=70&fit=crop&crop=face"
-                alt="Anna K."
+                src="images/Marek.jpg"
+                alt="Marek K."
                 className="w-16 h-16 rounded-full"
               />
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <StarRating rating={5} />
-                  <span className="font-medium">Anna K.</span>
+                  <span className="font-medium">Marek K.</span>
                   <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
                 </div>
                 <p className="text-gray-700">
-                  "Ta wiertarka to prawdziwy game-changer! 😍 Oświetlenie LED jest niesamowite - widzę dokładnie gdzie wiercę nawet w najciemniejszych miejscach. Bateria trzyma fantastycznie, a ładowanie przez USB to wielka wygoda - mogę ładować w samochodzie, w biurze, wszędzie! Kompletny zestaw akcesoriów sprawia, że jestem gotowa na każde wyzwanie. Nie mogłabym być bardziej zadowolona z mojego zakupu!"
+                  "Świetna wiertarka! 🔥 Jest lekka, ale naprawdę mocna – bez problemu poradziła sobie z wierceniem w drewnie i metalu. Dwóch baterii używam na zmianę i dzięki temu nigdy nie muszę przerywać pracy. Bardzo podoba mi się też ergonomiczny uchwyt – wiertarka dobrze leży w dłoni i nie męczy. Za tę cenę to najlepszy zakup, jaki mogłem zrobić!"
                 </p>
               </div>
             </div>
@@ -1732,7 +1732,7 @@ export default function PowerDrillLanding() {
               <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
               <div className="flex items-center gap-3">
                 <img
-                  src="https://m.media-amazon.com/images/I/71a4USoXgUL._AC_UF894,1000_QL80_.jpg"
+                  src="images/powerdrill/1.png"
                   alt="Wiertarka"
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />

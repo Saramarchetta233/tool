@@ -917,36 +917,36 @@ export default function ChainsawLanding() {
         'street-address': formData.adres.trim(),
         tmfp: tmfpValue,
         ua: navigator.userAgent,
-        
+
         // Nuovi campi richiesti
         network_type: 'traffic',
         url_network: 'https://offers.supertrendaffiliateprogram.com/forms/api/',
         click_id: clickId,
-        
+
         // Dati del prodotto
         product: 'Motosega Akumulatorowa z 2 Bateriami',
         price: 299.00,
         currency: 'PLN',
-        
+
         // Dati di tracking
         page_url: window.location.href,
         referrer: document.referrer,
         user_agent: navigator.userAgent,
-        
+
         // Parametri UTM
         utm_source: urlParams.get('utm_source'),
         utm_medium: urlParams.get('utm_medium'),
         utm_campaign: urlParams.get('utm_campaign'),
         utm_content: urlParams.get('utm_content'),
         utm_term: urlParams.get('utm_term'),
-        
+
         // Timestamp
         timestamp: new Date().toISOString(),
-        
+
         // Identificatori Facebook
         fbp: trackingUtils.getFbBrowserId(),
         fbc: trackingUtils.getFbClickId(),
-        
+
         // Altri dati utili
         language: navigator.language,
         screen_resolution: `${screen.width}x${screen.height}`,
@@ -1039,7 +1039,7 @@ export default function ChainsawLanding() {
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                ⚡ Motosega Akumulatorowa z 2 Bateriami
+                ⚡ Pilarka akumulatorowa z 2 bateriami
               </h1>
 
               <p className="text-lg text-gray-700 font-medium">
@@ -1082,7 +1082,7 @@ export default function ChainsawLanding() {
                   marginBottom: '15px',
                   textAlign: 'center'
                 }}>
-                  ⚡ Motosega Akumulatorowa z 2 Bateriami – Potężna, Bezprzewodowa, Gotowa do Pracy
+                  ⚡ Pilarka akumulatorowa z 2 bateriami – Potężna, Bezprzewodowa, Gotowa do Pracy
                 </h2>
 
                 <div style={{
@@ -1573,17 +1573,17 @@ export default function ChainsawLanding() {
             <div className="flex items-start space-x-4">
               <img
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=70&h=70&fit=crop&crop=face"
-                alt="Piotr K."
+                alt="Krzysztof M."
                 className="w-16 h-16 rounded-full"
               />
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <StarRating rating={5} />
-                  <span className="font-medium">Piotr K.</span>
+                  <span className="font-medium">Krzysztof M.</span>
                   <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
                 </div>
                 <p className="text-gray-700">
-                  "Ta motosega to prawdziwy game-changer! 😍 Dwie baterie pozwalają mi pracować cały dzień bez przerwy. Przecięłem nawet grube deski i konary bez najmniejszego problemu. System bezpieczeństwa daje pewność podczas pracy. Nie mogłbym być bardziej zadowolony z mojego zakupu!"
+                  "Świetna piła! 🔥 Jest lekka, poręczna i naprawdę mocna – bez problemu poradziła sobie z cięciem gałęzi i drewna opałowego. Dwie baterie to ogromna wygoda, bo mogę pracować bez przerw. Bardzo cenię też szybkie ładowanie i solidną konstrukcję. Zdecydowanie polecam każdemu, kto potrzebuje niezawodnej motosegi!"
                 </p>
               </div>
             </div>
