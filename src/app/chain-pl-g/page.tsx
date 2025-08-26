@@ -197,7 +197,7 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: 'Motosega Akumulatorowa z 2 Bateriami',
+          content_name: '⚡ Pilarka akumulatorowa z 2 bateriami',
           content_category: 'Power Tools',
           content_ids: 'chainsaw-battery-2pack',
           content_type: 'product',
@@ -734,7 +734,7 @@ export default function ChainsawLanding() {
     // Track PageView for all platforms
     trackingUtils.trackFacebookEvent('PageView');
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: 'Motosega Akumulatorowa z 2 Bateriami - Strona Główna',
+      page_title: '⚡ Pilarka akumulatorowa z 2 bateriami - Strona Główna',
       page_location: window.location.href
     });
 
@@ -804,7 +804,7 @@ export default function ChainsawLanding() {
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
       content_type: 'product',
       content_ids: ['chainsaw-battery-2pack'],
-      content_name: 'Motosega Akumulatorowa z 2 Bateriami',
+      content_name: 'Pilarka akumulatorowa z 2 bateriami',
       value: 299.00,
       currency: 'PLN',
       num_items: 1
@@ -815,7 +815,7 @@ export default function ChainsawLanding() {
       value: 299.00,
       items: [{
         item_id: 'chainsaw-battery-2pack',
-        item_name: 'Motosega Akumulatorowa z 2 Bateriami',
+        item_name: 'Pilarka akumulatorowa z 2 bateriami',
         category: 'Power Tools',
         quantity: 1,
         price: 299.00
@@ -886,7 +886,7 @@ export default function ChainsawLanding() {
       await trackingUtils.trackFacebookEvent('Purchase', {
         content_type: 'product',
         content_ids: ['chainsaw-battery-2pack'],
-        content_name: 'Motosega Akumulatorowa z 2 Bateriami',
+        content_name: 'Pilarka akumulatorowa z 2 bateriami',
         value: 299.00,
         currency: 'PLN',
         num_items: 1
@@ -924,7 +924,7 @@ export default function ChainsawLanding() {
         click_id: clickId,
 
         // Dati del prodotto
-        product: 'Motosega Akumulatorowa z 2 Bateriami',
+        product: 'Pilarka akumulatorowa z 2 bateriami',
         price: 299.00,
         currency: 'PLN',
 
@@ -1285,7 +1285,7 @@ export default function ChainsawLanding() {
                 ⚡ Odkryj Motosegę Akumulatorową – Twoją Potężną Towarzyszkę dla Każdego Projektu!
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                <strong>Motosega Akumulatorowa z 2 Bateriami</strong> została zaprojektowana, aby zapewnić maksymalną moc i wygodę bez konieczności używania kabli.
+                <strong>Pilarka akumulatorowa z 2 bateriami</strong> została zaprojektowana, aby zapewnić maksymalną moc i wygodę bez konieczności używania kabli.
               </p>
               <p className="text-lg text-gray-700">
                 Z <strong>dwoma bateriami litowo-jonowymi</strong> możesz pracować nieprzerwanie przez całe godziny, bez ograniczeń związanych z dostępem do prądu.
@@ -1736,7 +1736,7 @@ export default function ChainsawLanding() {
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm md:text-base">Motosega Akumulatorowa z 2 Bateriami</div>
+                  <div className="font-medium text-gray-900 text-sm md:text-base">Pilarka akumulatorowa z 2 bateriami</div>
                   <div className="text-xs md:text-sm text-gray-600">Potężna, Bezprzewodowa, Gotowa do Pracy</div>
                   <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                 </div>
