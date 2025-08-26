@@ -1050,7 +1050,7 @@ export default function PowerDrillLanding() {
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🔋 <strong>Bateria 8V litowa</strong> – Długotrwała praca bez przerw</span>
+                  <span className="text-base">🔋 <strong>Bateria 21V litowa</strong> – Długotrwała praca bez przerw</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1095,7 +1095,7 @@ export default function PowerDrillLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🔋 Bateria 8V litowa (długa żywotność, szybkie ładowanie USB)</span>
+                  <span style={{ flex: '1 1 70%' }}>🔋 Bateria 21V litowa (długa żywotność, szybkie ładowanie USB)</span>
                   <span style={{
                     color: 'red',
                     textDecoration: 'line-through',
@@ -1289,7 +1289,7 @@ export default function PowerDrillLanding() {
                 <strong>Wiertarka ProMax Elite</strong> została zaprojektowana, aby zapewnić maksymalną precyzję i wygodę w każdym projekcie DIY i profesjonalnym.
               </p>
               <p className="text-lg text-gray-700">
-                Z <strong>baterią 8V litową i oświetleniem LED</strong> możesz pracować precyzyjnie w każdych warunkach, a kompletny zestaw akcesoriów sprawia, że jesteś gotowy na każde wyzwanie.
+                Z <strong>baterią 21V litową i oświetleniem LED</strong> możesz pracować precyzyjnie w każdych warunkach, a kompletny zestaw akcesoriów sprawia, że jesteś gotowy na każde wyzwanie.
               </p>
             </div>
             <div>
@@ -1321,7 +1321,7 @@ export default function PowerDrillLanding() {
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Bateria litowa 8V:</strong> Długotrwała praca bez przerw z szybkim ładowaniem przez port USB.
+                    <strong>Bateria litowa 21V:</strong> Długotrwała praca bez przerw z szybkim ładowaniem przez port USB.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -1383,7 +1383,7 @@ export default function PowerDrillLanding() {
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🔋</div>
                   <h3 className="font-bold text-lg mb-2">Wytrzymałość</h3>
-                  <p className="text-gray-600">Bateria litowa 8V zapewnia długą pracę bez przerw.</p>
+                  <p className="text-gray-600">Bateria litowa 21V zapewnia długą pracę bez przerw.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">💡</div>
@@ -1424,7 +1424,7 @@ export default function PowerDrillLanding() {
                 'Oświetlenie LED',
                 'Ładowanie USB',
                 'Kompletny zestaw',
-                'Bateria litowa 8V',
+                'Bateria litowa 21V',
                 'Gwarancja jakości'
               ].map((feature, index) => (
                 <div key={index} className="border-b border-gray-200 py-4">
@@ -1474,7 +1474,7 @@ export default function PowerDrillLanding() {
           <div className="space-y-4">
             <FAQ
               question="Jak długo działa bateria?"
-              answer="Bateria litowa 8V zapewnia do 2 godzin ciągłej pracy w normalnych warunkach. Ładowanie przez USB trwa około 1-2 godzin."
+              answer="Bateria litowa 21V zapewnia do 2 godzin ciągłej pracy w normalnych warunkach. Ładowanie przez USB trwa około 1-2 godzin."
             />
             <FAQ
               question="Jakie akcesoria są w zestawie?"
