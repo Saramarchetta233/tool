@@ -197,9 +197,9 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: '⚡ Pilarka akumulatorowa z 2 bateriami',
-          content_category: 'Power Tools',
-          content_ids: 'chainsaw-battery-2pack',
+          content_name: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
+          content_category: 'Professional Power Tools',
+          content_ids: 'titan-pro-saw-titanium',
           content_type: 'product',
           value: eventData.value || 299.00,
           currency: 'PLN', // Currency dinamica
@@ -734,7 +734,7 @@ export default function ChainsawLanding() {
     // Track PageView for all platforms
     trackingUtils.trackFacebookEvent('PageView');
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: '⚡ Pilarka akumulatorowa z 2 bateriami - Strona Główna',
+      page_title: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym - Strona Główna',
       page_location: window.location.href
     });
 
@@ -803,8 +803,8 @@ export default function ChainsawLanding() {
     // Track InitiateCheckout event (inizio processo acquisto)
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
       content_type: 'product',
-      content_ids: ['chainsaw-battery-2pack'],
-      content_name: 'Pilarka akumulatorowa z 2 bateriami',
+      content_ids: ['titan-pro-saw-titanium'],
+      content_name: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
       value: 299.00,
       currency: 'PLN',
       num_items: 1
@@ -814,9 +814,9 @@ export default function ChainsawLanding() {
       currency: 'PLN',
       value: 299.00,
       items: [{
-        item_id: 'chainsaw-battery-2pack',
-        item_name: 'Pilarka akumulatorowa z 2 bateriami',
-        category: 'Power Tools',
+        item_id: 'titan-pro-saw-titanium',
+        item_name: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
+        category: 'Professional Power Tools',
         quantity: 1,
         price: 299.00
       }]
@@ -885,8 +885,8 @@ export default function ChainsawLanding() {
     try {
       await trackingUtils.trackFacebookEvent('Purchase', {
         content_type: 'product',
-        content_ids: ['chainsaw-battery-2pack'],
-        content_name: 'Pilarka akumulatorowa z 2 bateriami',
+        content_ids: ['titan-pro-saw-titanium'],
+        content_name: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
         value: 299.00,
         currency: 'PLN',
         num_items: 1
@@ -924,7 +924,7 @@ export default function ChainsawLanding() {
         click_id: clickId,
 
         // Dati del prodotto
-        product: 'Pilarka akumulatorowa z 2 bateriami',
+        product: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
         price: 299.00,
         currency: 'PLN',
 
@@ -976,7 +976,7 @@ export default function ChainsawLanding() {
         const orderData = {
           ...formData,
           orderId,
-          product: 'Motosega Akumulatorowa z 2 Bateriami',
+          product: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
           price: 299.00,
           apiResponse: result
         };
@@ -1011,7 +1011,7 @@ export default function ChainsawLanding() {
 
       <div className="bg-red-600 text-white text-center py-2 px-4">
         <div className="flex items-center justify-center space-x-4 text-sm font-medium">
-          <span>🔥 OFERTA LIMITOWANA - Tylko dziś w specjalnej cenie!</span>
+          <span>🔥 OFERTA LIMITOWANA - Sconto -60% solo oggi!</span>
         </div>
       </div>
 
@@ -1022,11 +1022,11 @@ export default function ChainsawLanding() {
               <div className="relative">
                 <img
                   src="/images/Chain/1.png"
-                  alt="Motosega Akumulatorowa"
+                  alt="Piła Łańcuchowa Akumulatorowa"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
                 <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  -60% TANIEJ
+                  -60% SCONTO
                 </div>
               </div>
             </div>
@@ -1039,29 +1039,29 @@ export default function ChainsawLanding() {
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                ⚡ Pilarka akumulatorowa z 2 bateriami
+                💎 Titan Pro Saw – Piła Łańcuchowa Profesjonalna
               </h1>
 
               <p className="text-lg text-gray-700 font-medium">
-                <strong>Potężna motosega bezprzewodowa z dwoma bateriami litowo-jonowymi dla maksymalnej wydajności i wygody pracy.</strong>
+                <strong>Profesjonalna piła łańcuchowa z 40-cm ostrzem tytanowym i 2 bateriami – najwyższa jakość cięcia dla wymagających specjalistów.</strong>
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🔋 <strong>Podwójna moc</strong> – 2 baterie litowe dla nieprzerwanej pracy</span>
+                  <span className="text-base">🔪 <strong>Ostrze tytanowe 40 cm</strong> – Super wytrzymałe do cięć szybkich i precyzyjnych</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">⚡ <strong>Szybkie cięcie</strong> – Łańcuch wysokiej jakości dla precyzyjnej pracy</span>
+                  <span className="text-base">🔋 <strong>2 baterie w zestawie</strong> – Ponad 4 godziny ciągłej pracy</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🛡️ <strong>Bezpieczeństwo</strong> – System zabezpieczający przed przypadkowym uruchomieniem</span>
+                  <span className="text-base">🛠️ <strong>Pełne wyposażenie</strong> – Łańcuch zapasowy, zestaw konserwacyjny, ładowarka</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🔧 <strong>Łatwość użycia</strong> – Bezprzewodowa, lekka i ergonomiczna</span>
+                  <span className="text-base">🛡️ <strong>System bezpieczeństwa</strong> – Zaawansowana ochrona i design ergonomiczny</span>
                 </div>
               </div>
 
@@ -1082,7 +1082,7 @@ export default function ChainsawLanding() {
                   marginBottom: '15px',
                   textAlign: 'center'
                 }}>
-                  ⚡ Pilarka akumulatorowa z 2 bateriami – Potężna, Bezprzewodowa, Gotowa do Pracy
+                  💎 Titan Pro Saw – Piła łańcuchowa z 40-cm ostrzem tytanowym, profesjonalna jakość
                 </h2>
 
                 <div style={{
@@ -1094,7 +1094,7 @@ export default function ChainsawLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🔋 2 baterie litowo-jonowe w zestawie (długa żywotność pracy)</span>
+                  <span style={{ flex: '1 1 70%' }}>💎 Ostrze tytanowe 40 cm, super wytrzymałe + 2 baterie w zestawie</span>
                   <span style={{
                     color: 'red',
                     textDecoration: 'line-through',
@@ -1112,7 +1112,7 @@ export default function ChainsawLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>⚡ Łańcuch wysokiej jakości: Szybkie i precyzyjne cięcie</span>
+                  <span style={{ flex: '1 1 70%' }}>🔋 2 baterie w zestawie: Ponad 4 godziny ciągłej pracy</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1129,7 +1129,7 @@ export default function ChainsawLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🛡️ System bezpieczeństwa: Blokada przypadkowego uruchomienia</span>
+                  <span style={{ flex: '1 1 70%' }}>🛠️ Akcesoria w zestawie: Łańcuch zapasowy, zestaw konserwacyjny</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1146,7 +1146,7 @@ export default function ChainsawLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🔧 Kompletne wyposażenie: Ładowarka, instrukcja, futerał ochronny</span>
+                  <span style={{ flex: '1 1 70%' }}>🛡️ Design ergonomiczny: System zabezpieczeń i łatwość użycia</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1258,7 +1258,7 @@ export default function ChainsawLanding() {
                     </div>
 
                     <p className="text-gray-800 text-sm leading-relaxed mb-3">
-                      "Kupiłem tę motosegę 2 tygodnie temu i jestem bardzo zadowolony! 🌟 Dwie baterie to prawdziwy game-changer - mogę pracować bez przerwy przez wiele godzin. Przeciąłem grube konary, deski i nawet małe drzewa. Moc jest niesamowita jak na urządzenie bezprzewodowe. Najlepszy zakup tego roku!"
+                      "Kupiłem Titan Pro Saw miesiąc temu i jestem zachwycony! 💎 Ostrze tytanowe to prawdziwa rewolucja – cięcie jest niesamowicie precyzyjne i szybkie. Dwie baterie pozwalają mi pracować przez cały dzień bez przerwy. Przeciąłem grube gałęzie dębu, deski sosnowe i małe pnie. To najlepsza piła łańcuchowa, jaką miałem!"
                     </p>
 
                     {/* Nome con checkmark blu */}
@@ -1266,7 +1266,7 @@ export default function ChainsawLanding() {
                       <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">✓</span>
                       </div>
-                      <span className="font-bold text-gray-900 text-sm">Marek T.</span>
+                      <span className="font-bold text-gray-900 text-sm">Marek T. - Kraków</span>
                     </div>
                   </div>
                 </div>
@@ -1282,19 +1282,19 @@ export default function ChainsawLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                ⚡ Odkryj Motosegę Akumulatorową – Twoją Potężną Towarzyszkę dla Każdego Projektu!
+                💎 Titan Pro Saw – Profesjonalna Piła Łańcuchowa dla Najbardziej Wymagających Projektów!
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                <strong>Pilarka akumulatorowa z 2 bateriami</strong> została zaprojektowana, aby zapewnić maksymalną moc i wygodę bez konieczności używania kabli.
+                <strong>Titan Pro Saw z ostrzem tytanowym</strong> to rewolucyjna piła łańcuchowa profesjonalna, zaprojektowana dla specjalistów, którzy wymagają najwyższej jakości cięcia.
               </p>
               <p className="text-lg text-gray-700">
-                Z <strong>dwoma bateriami litowo-jonowymi</strong> możesz pracować nieprzerwanie przez całe godziny, bez ograniczeń związanych z dostępem do prądu.
+                Ostrze z <strong>tytanu super wytrzymałego</strong> gwarantuje szybkie i precyzyjne cięcie, a <strong>dwie baterie akumulatorowe</strong> zapewniają ponad 4 godziny nieprzerwanej pracy.
               </p>
             </div>
             <div>
               <img
                 src="/images/Chain/2.gif"
-                alt="Motosega w użyciu"
+                alt="Piła łańcuchowa w użyciu"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
@@ -1308,43 +1308,43 @@ export default function ChainsawLanding() {
             <div className="order-2 lg:order-1">
               <img
                 src="/images/Chain/3.png"
-                alt="Cechy motosegi"
+                alt="Cechy piły łańcuchowej"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Główne cechy
+                Cechy Profesjonalne Titan Pro Saw
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Podwójna moc baterii:</strong> Dwie baterie litowo-jonowe zapewniają długotrwałą pracę bez przerw na ładowanie.
+                    <strong>Ostrze tytanowe:</strong> Super wytrzymałe ostrze z tytanu do cięć szybkich, precyzyjnych i trwałych.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Wysokiej jakości łańcuch:</strong> Ostry łańcuch do precyzyjnego i szybkiego cięcia różnych materiałów.
+                    <strong>2 Baterie w zestawie:</strong> Ponad 4 godziny ciągłej pracy dzięki dwom bateriom akumulatorowym.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>System bezpieczeństwa:</strong> Blokada przeciw przypadkowemu uruchomieniu dla maksymalnego bezpieczeństwa.
+                    <strong>Akcesoria w zestawie:</strong> Łańcuch zapasowy, zestaw konserwacyjny, ładowarka szybka w zestawie.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Kompletne wyposażenie:</strong> W zestawie ładowarka, instrukcja obsługi, futerał ochronny i dodatkowe akcesoria.
+                    <strong>Design ergonomiczny i bezpieczny:</strong> System zaawansowanych zabezpieczeń z ergonomiczną konstrukcją.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Ergonomiczna konstrukcja:</strong> Lekka i wygodna w użyciu, zaprojektowana do długotrwałej pracy bez zmęczenia.
+                    <strong>Jakość profesjonalna:</strong> Zaprojektowana dla specjalistów wymagających najwyższej jakości i niezawodności.
                   </div>
                 </div>
               </div>
@@ -1357,10 +1357,10 @@ export default function ChainsawLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Cięcie Szybkie i Precyzyjne
+              Ostrze Tytanowe - Cięcia Szybkie i Ultra-Precyzyjne
             </h2>
             <p className="text-lg text-gray-700">
-              Odkryj, jak ta motosega upraszcza pracę, poprawiając precyzję i wydajność w Twoich projektach.
+              Odkryj moc ostrza tytanowego Titan Pro Saw - rewolucyjną technologię, która zmienia standard cięcia profesjonalnego.
             </p>
           </div>
 
@@ -1368,7 +1368,7 @@ export default function ChainsawLanding() {
             <div>
               <img
                 src="/images/Chain/4.png"
-                alt="Motosega w akcji"
+                alt="Piła łańcuchowa w akcji"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
@@ -1376,23 +1376,23 @@ export default function ChainsawLanding() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">⚡</div>
-                  <h3 className="font-bold text-lg mb-2">Moc</h3>
-                  <p className="text-gray-600">Potężny silnik bezprzewodowy z długą żywotnością.</p>
+                  <h3 className="font-bold text-lg mb-2">Ostrze Tytanowe</h3>
+                  <p className="text-gray-600">Ostrze z tytanu super wytrzymałego do profesjonalnych cięć.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🔋</div>
-                  <h3 className="font-bold text-lg mb-2">Wytrzymałość</h3>
-                  <p className="text-gray-600">Dwie baterie dla nieprzerwanej pracy przez cały dzień.</p>
+                  <h3 className="font-bold text-lg mb-2">Długa Praca</h3>
+                  <p className="text-gray-600">2 baterie akumulatorowe - ponad 4 godziny ciągłej pracy.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🛡️</div>
-                  <h3 className="font-bold text-lg mb-2">Bezpieczeństwo</h3>
-                  <p className="text-gray-600">System zabezpieczeń przeciw przypadkowemu uruchomieniu.</p>
+                  <h3 className="font-bold text-lg mb-2">Zaawansowana Ochrona</h3>
+                  <p className="text-gray-600">System zabezpieczeń profesjonalnych i design ergonomiczny.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
                   <div className="text-4xl mb-4">🔧</div>
-                  <h3 className="font-bold text-lg mb-2">Łatwość</h3>
-                  <p className="text-gray-600">Ergonomiczna, lekka konstrukcja dla wygodnego użytkowania.</p>
+                  <h3 className="font-bold text-lg mb-2">Pełne Wyposażenie</h3>
+                  <p className="text-gray-600">Łańcuch zapasowy, zestaw konserwacyjny, ładowarka szybka.</p>
                 </div>
               </div>
             </div>
@@ -1404,10 +1404,10 @@ export default function ChainsawLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Co Czyni Naszą Motosegę Wyjątkową
+              Co Czyni Titan Pro Saw Piłą Łańcuchową Profesjonalną #1
             </h2>
             <p className="text-lg text-gray-700">
-              W przeciwieństwie do innych, oferuje podwójną moc baterii, system bezpieczeństwa i kompletne wyposażenie, poprawiając wydajność pracy.
+              W przeciwieństwie do zwykłych pił łańcuchowych, Titan Pro Saw oferuje ostrze tytanowe, 2 baterie akumulatorowe i pełne wyposażenie profesjonalne.
             </p>
           </div>
 
@@ -1415,23 +1415,23 @@ export default function ChainsawLanding() {
             <div className="min-w-full">
               <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div></div>
-                <div className="font-bold text-lg">Nasza Motosega</div>
+                <div className="font-bold text-lg">Titan Pro Saw</div>
                 <div className="font-bold text-lg">Inne</div>
               </div>
 
               {[
-                'Podwójna bateria',
-                'System bezpieczeństwa',
-                'Ergonomia',
-                'Kompletne wyposażenie',
-                'Gwarancja jakości'
+                'Ostrze tytanowe super wytrzymałe',
+                '2 baterie akumulatorowe w zestawie',
+                'Design ergonomiczny i bezpieczny',
+                'Pełne wyposażenie profesjonalne',
+                'Jakość i gwarancja profesjonalna'
               ].map((feature, index) => (
                 <div key={index} className="border-b border-gray-200 py-4">
                   <div className="md:hidden">
                     <div className="font-medium text-lg mb-3">{feature}</div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white p-3 rounded-lg text-center">
-                        <div className="font-medium text-green-600 mb-1">Nasza</div>
+                        <div className="font-medium text-green-600 mb-1">Titan Pro Saw</div>
                         <Check className="w-6 h-6 text-green-600 mx-auto" />
                       </div>
                       <div className="bg-white p-3 rounded-lg text-center">
@@ -1485,10 +1485,10 @@ export default function ChainsawLanding() {
             />
             <FAQ
               question="Jak działa system bezpieczeństwa?"
-              answer="Motosega posiada blokadę przeciw przypadkowemu uruchomieniu i dodatkowe zabezpieczenia dla maksymalnego bezpieczeństwa."
+              answer="Piła łańcuchowa posiada blokadę przeciw przypadkowemu uruchomieniu i dodatkowe zabezpieczenia dla maksymalnego bezpieczeństwa."
             />
             <FAQ
-              question="Czy motosega jest łatwa w użyciu?"
+              question="Czy piła łańcuchowa jest łatwa w użyciu?"
               answer="Absolutnie, dzięki ergonomicznej konstrukcji i lekkiej wadze jest wygodna nawet podczas długotrwałej pracy."
             />
           </div>
@@ -1503,7 +1503,7 @@ export default function ChainsawLanding() {
               <span className="text-2xl font-bold">4.8/5</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Opinie klientów o motosedze
+              Opinie klientów o pile łańcuchowej
             </h2>
             <p className="text-lg text-gray-700">
               Autentyczne i wiarygodne opinie
@@ -1513,49 +1513,49 @@ export default function ChainsawLanding() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                name: "Piotr K.",
+                name: "Piotr K. - Warszawa",
                 rating: 5,
-                review: "Ta motosega to prawdziwy game-changer! 😍 Dwie baterie pozwalają mi pracować cały dzień bez przerwy. Przecięłem nawet grube deski bez problemu. Najlepszy zakup w tym roku!"
+                review: "Titan Pro Saw to prawdziwa rewolucja! 💎 Ostrze tytanowe tnie jak masło - przeciąłem grube gałęzie dębu bez wysiłku. 2 baterie pozwalają pracować cały dzień. Najlepsza inwestycja tego roku!"
               },
               {
-                name: "Marek D.",
+                name: "Anna M. - Gdańsk",
                 rating: 5,
-                review: "Bardzo mocna jak na urządzenie bezprzewodowe. Łańcuch ostrzy doskonale. Polecam każdemu, kto potrzebuje niezawodnego narzędzia."
+                review: "Jako kobieta obawiałam się, czy dam radę, ale Titan Pro Saw jest lekka i bardzo bezpieczna! Ostrze tytanowe to przyszłość - cięcie jest błyskawiczne i precyzyjne."
               },
               {
-                name: "Tomasz S.",
+                name: "Tomasz S. - Katowice",
+                rating: 5,
+                review: "Profesjonalne wykonanie! Ostrze tytanowe jest niesamowicie ostre i wytrzymałe. Po 3 miesiącach intensywnej pracy nadal cięcie jak nowe. Warto każdej złotówki!"
+              },
+              {
+                name: "Marek F. - Poznań",
+                rating: 5,
+                review: "Remont całego ogrodu zrobiłem w połowie czasu! System zabezpieczeń działa perfekcyjnie, a ergonomia na najwyższym poziomie. Polecam!"
+              },
+              {
+                name: "Jakub J. - Lublin",
+                rating: 5,
+                review: "Obsługa klienta na 5+! Pomogli mi wybrać odpowiednie akcesoria. Titan Pro Saw spełnia wszystkie moje oczekiwania profesjonalne."
+              },
+              {
+                name: "Robert K. - Wrocław",
+                rating: 5,
+                review: "Jako stolarz potrzebuję najlepszych narzędzi. Ostrze tytanowe Titan Pro Saw to przyszłość - precyzja cięcia na poziomie profesjonalnym!"
+              },
+              {
+                name: "Paweł N. - Łódź",
                 rating: 4,
-                review: "Solidne wykonanie, lekka w użyciu. Baterie rzeczywiście wytrzymują długo. Jedynym minusem jest cena, ale warto."
+                review: "Solidne wykonanie! Przeciąłem konary, deski bukowe i małe pnie sosny. Jedynym minusem jest że inni sąsiedzi też chcą pożyczyć! 😄"
               },
               {
-                name: "Andrzej F.",
+                name: "Krzysztof P. - Szczecin",
                 rating: 5,
-                review: "Funkcje tej motosegi pozwoliły mi zakończyć remont ogrodu w połowie czasu. System bezpieczeństwa działa świetnie!"
+                review: "To nie jest zwykła piła łańcuchowa - to profesjonalne narzędzie! Ostrze tytanowe i 2 baterie to kombinacja idealna dla każdego projektu."
               },
               {
-                name: "Jakub J.",
+                name: "Marcin H. - Białystok",
                 rating: 5,
-                review: "Motosega jest fantastyczna, ale obsługa klienta jest jeszcze lepsza. Pomogli mi z każdym pytaniem o konserwację."
-              },
-              {
-                name: "Krzysztof O.",
-                rating: 5,
-                review: "Doskonały zakup dla osób szukających mocy i wygody. Podwójna bateria to przełom w narzędziach bezprzewodowych!"
-              },
-              {
-                name: "Robert N.",
-                rating: 4,
-                review: "Naprawdę przydatna! Przeciąłem konary, deski, a nawet kawałek pnia! Ergonomiczne wykonanie ułatwia pracę."
-              },
-              {
-                name: "Paweł P.",
-                rating: 5,
-                review: "Nie mogę się obyć bez tej motosegi, to prawdziwy pomocnik w każdej pracy domowej i ogrodowej!"
-              },
-              {
-                name: "Marcin H.",
-                rating: 5,
-                review: "Idealna dla osób, które kochają pracować z drewnem. Po miesiącach intensywnego użytkowania nadal działa perfekcyjnie."
+                review: "Używam już 6 miesięcy i nadal jestem zachwycony! Ostrze tytanowe ciągle ostre, a baterie wytrzymują naprawdę długo. Najlepszy zakup!"
               }
             ].map((review, index) => (
               <div key={index} className="bg-white p-6 rounded-lg shadow-md">
@@ -1579,11 +1579,11 @@ export default function ChainsawLanding() {
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <StarRating rating={5} />
-                  <span className="font-medium">Krzysztof M.</span>
+                  <span className="font-medium">Krzysztof M. - Rzeszów</span>
                   <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
                 </div>
                 <p className="text-gray-700">
-                  "Świetna piła! 🔥 Jest lekka, poręczna i naprawdę mocna – bez problemu poradziła sobie z cięciem gałęzi i drewna opałowego. Dwie baterie to ogromna wygoda, bo mogę pracować bez przerw. Bardzo cenię też szybkie ładowanie i solidną konstrukcję. Zdecydowanie polecam każdemu, kto potrzebuje niezawodnej motosegi!"
+                  "Świetny Titan Pro Saw! 💎 Ostrze tytanowe to prawdziwa przyszłość - cięcie jest niesamowicie precyzyjne i błyskawiczne! Przeciąłem gałęzie świerku, deski dębowe i drewno opałowe bez wysiłku. 2 baterie to ogromna wygoda - pracuję cały dzień bez przerw. Najlepsza piła łańcuchowa profesjonalna na rynku!"
                 </p>
               </div>
             </div>
@@ -1599,7 +1599,7 @@ export default function ChainsawLanding() {
               30-Dniowa Gwarancja Zwrotu Pieniędzy
             </h2>
             <p className="text-lg text-gray-700 mb-6">
-              Wypróbuj motosegę z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz mocy i wygody bezprzewodowego cięcia bez ryzyka i odkryj, jak może przekształcić Twoją pracę.
+              Wypróbuj piłę łańcuchową z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz mocy i wygody bezprzewodowego cięcia bez ryzyka i odkryj, jak może przekształcić Twoją pracę.
             </p>
             <p className="text-xl font-bold text-green-600">
               Jeśli nie jesteś całkowicie zadowolony, zwrócimy Ci całą kwotę.
@@ -1732,11 +1732,11 @@ export default function ChainsawLanding() {
               <div className="flex items-center gap-3">
                 <img
                   src="/images/Chain/1.png"
-                  alt="Motosega"
+                  alt="Piła łańcuchowa"
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm md:text-base">Pilarka akumulatorowa z 2 bateriami</div>
+                  <div className="font-medium text-gray-900 text-sm md:text-base">💎 Titan Pro Saw – Piła Łańcuchowa Profesjonalna</div>
                   <div className="text-xs md:text-sm text-gray-600">Potężna, Bezprzewodowa, Gotowa do Pracy</div>
                   <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                 </div>
