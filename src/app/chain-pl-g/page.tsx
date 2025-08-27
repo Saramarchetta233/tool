@@ -715,6 +715,7 @@ const ProductCarousel = () => {
   // Le immagini del prodotto Titan Pro Saw
   const images = [
     "/images/Chain/1.png",
+    "/images/Chain/11.png",
     "/images/Chain/3.png",
     "/images/Chain/4.png",
     "/images/Chain/2.gif"
@@ -815,8 +816,8 @@ const ProductCarousel = () => {
             key={index}
             onClick={() => goToImage(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImage
-                ? 'bg-green-600 w-8'
-                : 'bg-gray-300 hover:bg-gray-400'
+              ? 'bg-green-600 w-8'
+              : 'bg-gray-300 hover:bg-gray-400'
               }`}
           />
         ))}
@@ -829,8 +830,8 @@ const ProductCarousel = () => {
             key={index}
             onClick={() => goToImage(index)}
             className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${index === currentImage
-                ? 'border-green-600 opacity-100'
-                : 'border-gray-200 opacity-70 hover:opacity-100'
+              ? 'border-green-600 opacity-100'
+              : 'border-gray-200 opacity-70 hover:opacity-100'
               }`}
           >
             <img
@@ -1863,7 +1864,7 @@ export default function ChainsawLanding() {
               <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
               <div className="flex items-center gap-3">
                 <img
-                  src="/images/Chain/1.png"
+                  src="/images/Chain/11.png"
                   alt="Piła łańcuchowa"
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />
