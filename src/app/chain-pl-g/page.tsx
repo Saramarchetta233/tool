@@ -14,6 +14,8 @@ import {
   MapPin,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Play
 } from 'lucide-react';
 
@@ -704,6 +706,145 @@ const Footer = () => {
   );
 };
 
+// Componente Carosello per Piła Łańcuchowa
+const ProductCarousel = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  // Le immagini del prodotto Titan Pro Saw
+  const images = [
+    "/images/Chain/1.png",
+    "/images/Chain/3.png",
+    "/images/Chain/4.png",
+    "/images/Chain/2.gif"
+  ];
+
+  // Auto-slide ogni 8 secondi
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  // Gestione touch per mobile
+  const handleTouchStart = (e: any) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: any) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
+  const nextImage = () => {
+    setCurrentImage((prev: any) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImage((prev: any) => (prev - 1 + images.length) % images.length);
+  };
+
+  const goToImage = (index: any) => {
+    setCurrentImage(index);
+  };
+
+  return (
+    <div className="relative">
+      {/* Container principale */}
+      <div
+        className="relative w-full h-auto"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Badge sconto */}
+        <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
+          -60% ZNIŻKI
+        </div>
+
+        {/* Immagini */}
+        <div className="relative min-h-[300px] max-h-[600px]">
+          {images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Titan Pro Saw - Piła Łańcuchowa Profesjonalna - Vista ${index + 1}`}
+              className={`w-full h-auto max-h-[600px] object-contain mx-auto transition-opacity duration-500 rounded-lg shadow-lg ${index === currentImage ? 'opacity-100' : 'opacity-0'
+                } ${index !== currentImage ? 'absolute top-0 left-0' : ''}`}
+            />
+          ))}
+        </div>
+
+        {/* Frecce desktop */}
+        <button
+          onClick={prevImage}
+          className="hidden md:flex absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={nextImage}
+          className="hidden md:flex absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Dots indicatori */}
+      <div className="flex justify-center space-x-2 mt-4">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToImage(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImage
+                ? 'bg-green-600 w-8'
+                : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+          />
+        ))}
+      </div>
+
+      {/* Thumbnails desktop */}
+      <div className="hidden md:flex justify-center space-x-2 mt-4">
+        {images.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => goToImage(index)}
+            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${index === currentImage
+                ? 'border-green-600 opacity-100'
+                : 'border-gray-200 opacity-70 hover:opacity-100'
+              }`}
+          >
+            <img
+              src={image}
+              alt={`Thumbnail ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 export default function ChainsawLanding() {
   const [showOrderPopup, setShowOrderPopup] = useState(false);
@@ -1019,16 +1160,7 @@ export default function ChainsawLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div className="order-1">
-              <div className="relative">
-                <img
-                  src="/images/Chain/1.png"
-                  alt="Piła Łańcuchowa Akumulatorowa"
-                  className="w-full h-auto rounded-lg shadow-lg"
-                />
-                <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  -60% ZNIŻKI
-                </div>
-              </div>
+              <ProductCarousel />
             </div>
 
             <div className="order-2 space-y-6">
