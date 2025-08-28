@@ -234,7 +234,7 @@ const advancedTrackingUtils = {
 
         // Track Google Ads conversion
         window.gtag('event', 'conversion', {
-          send_to: 'AW-17122800574//ezAVCOvdhIAbEL7n5OQ_',
+          send_to: 'AW-17122800574/ezAVCOvdhIAbEL7n5OQ_',
           value: 69.99,
           currency: 'EUR',
           transaction_id: transactionId
