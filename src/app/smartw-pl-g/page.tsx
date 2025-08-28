@@ -28,6 +28,202 @@ declare global {
   }
 }
 
+// URL Parameters Management System
+interface TrackingParams {
+  uid: string;
+  key: string;
+  offer: string;
+  lp: string;
+  url_network: string;
+  network_type: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  landing_path: string;
+  referrer: string;
+}
+
+const trackingParamsManager = {
+  STORAGE_KEY: 'smartw_tracking_params',
+  TTL_DAYS: 30,
+
+  // Sanitization functions
+  sanitizeAlphaNumeric: (value: string): string => {
+    return value.replace(/[^A-Za-z0-9.-]/g, '');
+  },
+
+  isValidUrl: (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  },
+
+  // Parse URL parameters
+  parseUrlParams: (): Partial<TrackingParams> => {
+    if (typeof window === 'undefined') return {};
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const params: Partial<TrackingParams> = {};
+
+    // Sanitize alphanumeric fields
+    ['uid', 'key', 'offer', 'lp', 'network_type'].forEach(field => {
+      const value = urlParams.get(field);
+      if (value) {
+        const sanitized = trackingParamsManager.sanitizeAlphaNumeric(value);
+        if (sanitized) {
+          params[field as keyof TrackingParams] = sanitized;
+        }
+      }
+    });
+
+    // Validate URL field
+    const urlNetwork = urlParams.get('url_network');
+    if (urlNetwork && trackingParamsManager.isValidUrl(urlNetwork)) {
+      params.url_network = urlNetwork;
+    }
+
+    return params;
+  },
+
+  // Get stored parameters from localStorage
+  getStoredParams(): TrackingParams | null {
+    if (typeof window === 'undefined') return null;
+
+    try {
+      const stored = localStorage.getItem(trackingParamsManager.STORAGE_KEY);
+      if (!stored) return null;
+
+      const data = JSON.parse(stored);
+      const now = new Date().getTime();
+      const ttl = trackingParamsManager.TTL_DAYS * 24 * 60 * 60 * 1000;
+
+      if (data.first_seen_at && (now - new Date(data.first_seen_at).getTime() > ttl)) {
+        localStorage.removeItem(trackingParamsManager.STORAGE_KEY);
+        return null;
+      }
+
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  // Fallback to cookies
+  getCookieParams(): Partial<TrackingParams> {
+    if (typeof document === 'undefined') return {};
+
+    const params: Partial<TrackingParams> = {};
+    const cookies = document.cookie.split(';');
+
+    ['uid', 'key', 'offer', 'lp', 'url_network', 'network_type'].forEach(field => {
+      const cookie = cookies.find(c => c.trim().startsWith(`smartw_${field}=`));
+      if (cookie) {
+        const value = cookie.split('=')[1];
+        if (value) {
+          params[field as keyof TrackingParams] = decodeURIComponent(value);
+        }
+      }
+    });
+
+    return params;
+  },
+
+  // Save parameters to localStorage and cookies
+  saveParams(params: TrackingParams): void {
+    if (typeof window === 'undefined') return;
+
+    // Check no_track parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('no_track') === '1') return;
+
+    try {
+      // Save to localStorage
+      localStorage.setItem(trackingParamsManager.STORAGE_KEY, JSON.stringify(params));
+
+      // Save to cookies as fallback
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + trackingParamsManager.TTL_DAYS);
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (['uid', 'key', 'offer', 'lp', 'url_network', 'network_type'].includes(key)) {
+          document.cookie = `smartw_${key}=${encodeURIComponent(value)}; expires=${expiry.toUTCString()}; path=/; SameSite=Lax`;
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to save tracking params:', error);
+    }
+  },
+
+  // Merge parameters with first-non-empty-wins rule
+  mergeParams(stored: TrackingParams | null, url: Partial<TrackingParams>): TrackingParams {
+    const now = new Date().toISOString();
+
+    const defaultParams: TrackingParams = {
+      uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
+      key: 'ad79469b31b0058f6ea72c',
+      offer: '154',
+      lp: '154',
+      url_network: 'https://offers.supertrendaffiliateprogram.com/forms/api/',
+      network_type: 'default',
+      first_seen_at: now,
+      last_seen_at: now,
+      landing_path: typeof window !== 'undefined' ? window.location.pathname : '',
+      referrer: typeof document !== 'undefined' ? document.referrer : ''
+    };
+
+    const result = { ...defaultParams };
+
+    if (stored) {
+      // Keep stored values if they exist
+      Object.keys(defaultParams).forEach(key => {
+        const k = key as keyof TrackingParams;
+        if (stored[k]) {
+          result[k] = stored[k];
+        }
+      });
+
+      // Update with new valid values if they differ
+      Object.entries(url).forEach(([key, value]) => {
+        const k = key as keyof TrackingParams;
+        if (value && value !== stored[k]) {
+          result[k] = value;
+        }
+      });
+
+      // Always update last_seen_at
+      result.last_seen_at = now;
+    } else {
+      // First visit - merge URL params with defaults
+      Object.assign(result, url);
+    }
+
+    return result;
+  },
+
+  // Get final parameters for form submission
+  getTrackingParams(): TrackingParams {
+    const urlParams = trackingParamsManager.parseUrlParams();
+    const storedParams = trackingParamsManager.getStoredParams();
+
+    let finalParams: TrackingParams;
+
+    if (!storedParams) {
+      // Try cookie fallback
+      const cookieParams = trackingParamsManager.getCookieParams();
+      finalParams = trackingParamsManager.mergeParams(null, { ...cookieParams, ...urlParams });
+    } else {
+      finalParams = trackingParamsManager.mergeParams(storedParams, urlParams);
+    }
+
+    // Save the final parameters
+    trackingParamsManager.saveParams(finalParams);
+
+    return finalParams;
+  }
+};
+
 // Tracking utilities
 const trackingUtils = {
   // Initialize Facebook Pixel
@@ -970,7 +1166,30 @@ export default function SmartwatchLanding() {
     adres: ''
   });
 
+  // State for tracking parameters
+  const [trackingParams, setTrackingParams] = useState<TrackingParams | null>(null);
+
   // Initialize tracking on component mount
+  useEffect(() => {
+    // Initialize tracking parameters from URL/storage
+    const params = trackingParamsManager.getTrackingParams();
+    setTrackingParams(params);
+
+    console.log('Tracking params initialized:', params);
+
+    // Debug: Add URL params to console for testing
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log('URL parameters detected:', {
+      uid: urlParams.get('uid'),
+      key: urlParams.get('key'),
+      offer: urlParams.get('offer'),
+      lp: urlParams.get('lp'),
+      url_network: urlParams.get('url_network'),
+      network_type: urlParams.get('network_type'),
+      no_track: urlParams.get('no_track')
+    });
+  }, []);
+
   useEffect(() => {
     // AGGIUNGI QUESTA LINEA QUI
     trackingUtils.setFbClickId();
@@ -1155,10 +1374,29 @@ export default function SmartwatchLanding() {
     try {
       const apiFormData = new FormData();
 
-      apiFormData.append('uid', '01980825-ae5a-7aca-8796-640a3c5ee3da');
-      apiFormData.append('key', 'ad79469b31b0058f6ea72c');
-      apiFormData.append('offer', '154');
-      apiFormData.append('lp', '154');
+      // Get current tracking parameters (fallback to stored if state is null)
+      const currentParams = trackingParams || trackingParamsManager.getTrackingParams();
+
+      // Debug logging
+      console.log('Form submission - Using tracking params:', {
+        uid: currentParams.uid,
+        key: currentParams.key,
+        offer: currentParams.offer,
+        lp: currentParams.lp,
+        url_network: currentParams.url_network,
+        network_type: currentParams.network_type
+      });
+
+      // Ensure we have all required parameters
+      if (!currentParams.uid || !currentParams.key || !currentParams.offer || !currentParams.lp) {
+        throw new Error('Missing required tracking parameters');
+      }
+
+      apiFormData.append('uid', currentParams.uid);
+      apiFormData.append('key', currentParams.key);
+      apiFormData.append('offer', currentParams.offer);
+      apiFormData.append('lp', currentParams.lp);
+      apiFormData.append('network_type', currentParams.network_type);
       apiFormData.append('name', formData.imie.trim());
       apiFormData.append('tel', formData.telefon.trim());
       apiFormData.append('street-address', formData.adres.trim());
@@ -1168,7 +1406,8 @@ export default function SmartwatchLanding() {
         apiFormData.append('ua', navigator.userAgent);
       }
 
-      const response = await fetch('https://offers.supertrendaffiliateprogram.com/forms/api/', {
+      // Use dynamic network URL
+      const response = await fetch(currentParams.url_network, {
         method: 'POST',
         body: apiFormData,
       });
@@ -1202,6 +1441,21 @@ export default function SmartwatchLanding() {
   return (
     <div className="min-h-screen bg-gray-50">
       <input type="hidden" name="tmfp" />
+
+      {/* Debug panel - only show if debug=1 in URL */}
+      {new URLSearchParams(window.location.search).get('debug') === '1' && trackingParams && (
+        <div className="fixed top-0 left-0 z-50 bg-black bg-opacity-90 text-white p-4 text-xs max-w-md">
+          <div className="font-bold mb-2">🔍 Debug: Tracking Parameters</div>
+          <div>UID: {trackingParams.uid}</div>
+          <div>Key: {trackingParams.key}</div>
+          <div>Offer: {trackingParams.offer}</div>
+          <div>LP: {trackingParams.lp}</div>
+          <div>Network: {trackingParams.url_network}</div>
+          <div>Type: {trackingParams.network_type}</div>
+          <div>First seen: {trackingParams.first_seen_at}</div>
+          <div>Last seen: {trackingParams.last_seen_at}</div>
+        </div>
+      )}
 
 
       <div className="bg-red-600 text-white text-center py-2 px-4">
