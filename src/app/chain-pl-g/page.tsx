@@ -1020,23 +1020,7 @@ export default function ChainsawLanding() {
 
     setIsSubmitting(true);
 
-    console.log('🎯 Form submitted, tracking Purchase with form data:', formData);
-
-    // 🚨 ESSENTIAL: Track Purchase event con CAPI PRIMA dell'invio API
-    // Questo garantisce che i dati arrivino sempre a N8N
-    try {
-      await trackingUtils.trackFacebookEvent('Purchase', {
-        content_type: 'product',
-        content_ids: ['titan-pro-saw-titanium'],
-        content_name: 'Titan Pro Saw - Piła Łańcuchowa Profesjonalna z Ostrzem Tytanowym',
-        value: 299.00,
-        currency: 'PLN',
-        num_items: 1
-      }, formData);
-      console.log('✅ Purchase tracking completato con successo');
-    } catch (trackingError: unknown) {
-      console.error('❌ Purchase tracking fallito, ma continuiamo:', trackingError);
-    }
+    console.log('🎯 Form submitted with form data:', formData);
 
     try {
       // Ottieni click_id dai parametri URL
