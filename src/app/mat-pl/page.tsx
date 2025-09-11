@@ -1425,7 +1425,7 @@ export default function MattressLanding() {
                 {/* Layout con foto centrata verticalmente rispetto al testo */}
                 <div className="flex items-center space-x-4">
                   <img
-                    src="https://images.unsplash.com/photo-1494790108755-2616b612b002?w=100&h=100&fit=crop&crop=face"
+                    src="images/anna.jpg"
                     alt="Anna K."
                     className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                   />
