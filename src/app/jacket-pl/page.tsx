@@ -2209,8 +2209,8 @@ export default function JacketLanding() {
                   {/* Wybór Rozmiaru */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Rozmiar *</label>
-                    <div className="grid grid-cols-5 gap-2 md:gap-3">
-                      {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                      {['S', 'M', 'L', 'XL', 'XXL', '3XL'].map((size) => (
                         <button
                           key={size}
                           type="button"
@@ -2242,19 +2242,56 @@ export default function JacketLanding() {
                   {/* Tabela Rozmiarów */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-blue-800 mb-3 text-center">📏 Tabela Rozmiarów</h4>
-                    <div className="grid grid-cols-5 gap-2 text-xs">
+                    
+                    {/* Mobile: Layout compatto 2x3 */}
+                    <div className="block md:hidden text-xs">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">S:</span>
+                          <span className="text-gray-700">96-104</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">M:</span>
+                          <span className="text-gray-700">104-112</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">L:</span>
+                          <span className="text-gray-700">112-120</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">XL:</span>
+                          <span className="text-gray-700">120-128</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">XXL:</span>
+                          <span className="text-gray-700">128-136</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">3XL:</span>
+                          <span className="text-gray-700">136-144</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop: Layout griglia */}
+                    <div className="hidden md:grid grid-cols-7 gap-2 text-xs">
                       <div className="text-center font-medium text-blue-700">Rozmiar</div>
                       <div className="text-center font-medium text-blue-700">S</div>
                       <div className="text-center font-medium text-blue-700">M</div>
                       <div className="text-center font-medium text-blue-700">L</div>
-                      <div className="text-center font-medium text-blue-700">XL/XXL</div>
+                      <div className="text-center font-medium text-blue-700">XL</div>
+                      <div className="text-center font-medium text-blue-700">XXL</div>
+                      <div className="text-center font-medium text-blue-700">3XL</div>
 
                       <div className="text-center font-medium text-blue-700">Klatka piersiowa</div>
                       <div className="text-center text-gray-700">96-104</div>
                       <div className="text-center text-gray-700">104-112</div>
                       <div className="text-center text-gray-700">112-120</div>
-                      <div className="text-center text-gray-700">120-136</div>
+                      <div className="text-center text-gray-700">120-128</div>
+                      <div className="text-center text-gray-700">128-136</div>
+                      <div className="text-center text-gray-700">136-144</div>
                     </div>
+                    
                     <p className="text-xs text-blue-600 text-center mt-2">Wymiary w cm (obwód klatki piersiowej)</p>
                   </div>
                 </div>
