@@ -65,12 +65,12 @@ const trackingUtils = {
         window.dataLayer.push(arguments);
       };
       window.gtag('js', new Date());
-      window.gtag('config', 'AW-17086993346');
+      window.gtag('config', 'AW-17553726122');
 
       // Load gtag script
       const script = document.createElement('script');
       script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17086993346';
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17553726122';
       document.head.appendChild(script);
     }
   },
