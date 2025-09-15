@@ -199,11 +199,11 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-          content_category: 'Bedroom & Sleep',
-          content_ids: 'airnest-queen-mattress',
+          content_name: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+          content_category: 'Electronics & Sports',
+          content_ids: 'voltcam-4k-pro-sportcam',
           content_type: 'product',
-          value: eventData.value || 499.00,
+          value: eventData.value || 299.00,
           currency: 'PLN', // Currency dinamica
           quantity: eventData.num_items || 1
         };
@@ -338,12 +338,12 @@ const trackingUtils = {
 
 // Countdown Timer Component
 const CountdownTimer = () => {
+  const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0
   });
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -351,7 +351,7 @@ const CountdownTimer = () => {
 
   useEffect(() => {
     if (!mounted) return;
-
+    
     const calculateTimeLeft = () => {
       const now = new Date();
       const midnight = new Date(now);
@@ -431,8 +431,8 @@ const FAQ = ({ question, answer }: { question: string; answer: string }) => {
 
 // Stock Indicator
 const StockIndicator = () => {
-  const [stock, setStock] = useState(15);
   const [mounted, setMounted] = useState(false);
+  const [stock, setStock] = useState(15);
 
   useEffect(() => {
     setMounted(true);
@@ -440,7 +440,7 @@ const StockIndicator = () => {
 
   useEffect(() => {
     if (!mounted) return;
-
+    
     const interval = setInterval(() => {
       setStock(prev => {
         const change = Math.random() > 0.7 ? -1 : 0;
@@ -469,49 +469,18 @@ const ResultsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="/images/Mattress/7.png"
+              src="/images/Camera/7.png"
               alt="Zadowalające rezultaty"
               className="w-full h-auto rounded-lg shadow-lg"
             />
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-8">
-              Przekształć Swój Sen z Wyjątkowymi Rezultatami
+              Przekształć Swoje Nagrania z Wyjątkowymi Rezultatami
             </h2>
 
             <div className="space-y-8">
               {/* Progress bar 1 */}
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#e5e7eb"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="50"
-                      stroke="#16a34a"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${96 * 3.14159} ${100 * 3.14159}`}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-gray-900">96%</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-gray-700">Stwierdziło lepszy sen i komfort dzięki ergonomicznej strukturze!</p>
-              </div>
-
-              {/* Progress bar 2 */}
               <div className="text-center">
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
@@ -539,10 +508,10 @@ const ResultsSection = () => {
                     <span className="text-2xl font-bold text-gray-900">94%</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Zauważyło wygodę podróżowania z kompaktowym rozwiązaniem!</p>
+                <p className="text-sm font-medium text-gray-700">Oceniło jakość 4K i stabilizację EIS jako doskonałą!</p>
               </div>
 
-              {/* Progress bar 3 */}
+              {/* Progress bar 2 */}
               <div className="text-center">
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
@@ -570,7 +539,38 @@ const ResultsSection = () => {
                     <span className="text-2xl font-bold text-gray-900">97%</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Doceniło jakość materiałów i trwałość produktu!</p>
+                <p className="text-sm font-medium text-gray-700">Doceniło wodoodporność i kompletny zestaw akcesoriów!</p>
+              </div>
+
+              {/* Progress bar 3 */}
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                      fill="none"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#16a34a"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${96 * 3.14159} ${100 * 3.14159}`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">96%</span>
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-gray-700">Poleca pilot i łatwość obsługi przez aplikację Wi-Fi!</p>
               </div>
             </div>
           </div>
@@ -661,7 +661,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Newheras</h3>
             <p className="text-gray-300 text-sm">
-              Najwyższej jakości produkty dla komfortowego snu i wypoczynku.
+              Najwyższej jakości produkty elektroniczne i sportowe.
             </p>
           </div>
 
@@ -724,19 +724,19 @@ const Footer = () => {
   );
 };
 
-// Componente Carosello per Materasso
+// Componente Carosello per Camera
 const ProductCarousel = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // Le immagini del prodotto AirNest Queen
+  // Le immagini del prodotto VoltCam 4K Pro
   const images = [
-    "/images/Mattress/1.png",
-    "/images/Mattress/11.png",
-    "/images/Mattress/3.png",
-    "/images/Mattress/4.png",
-    "/images/Mattress/2.gif"
+    "/images/Camera/1.png",
+    "/images/Camera/2.png",
+    "/images/Camera/3.png",
+    "/images/Camera/4.png",
+    "/images/Camera/5.gif"
   ];
 
   // Auto-slide ogni 8 secondi
@@ -804,7 +804,7 @@ const ProductCarousel = () => {
             <img
               key={index}
               src={image}
-              alt={`AirNest™ Queen – Materac Dmuchany Komfort Premium - Vista ${index + 1}`}
+              alt={`VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem - Vista ${index + 1}`}
               className={`w-full h-auto max-h-[600px] object-contain mx-auto transition-opacity duration-500 rounded-lg shadow-lg ${index === currentImage ? 'opacity-100' : 'opacity-0'
                 } ${index !== currentImage ? 'absolute top-0 left-0' : ''}`}
             />
@@ -865,7 +865,7 @@ const ProductCarousel = () => {
 };
 
 // Main Component
-export default function MattressLanding() {
+export default function CameraLanding() {
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [reservationTimer, setReservationTimer] = useState({ minutes: 5, seconds: 0 });
   const [showStickyButton, setShowStickyButton] = useState(false);
@@ -899,7 +899,7 @@ export default function MattressLanding() {
     // Track PageView for all platforms
     trackingUtils.trackFacebookEvent('PageView');
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: 'AirNest™ Queen – Materac Dmuchany Komfort Premium - Strona Główna',
+      page_title: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem - Strona Główna',
       page_location: window.location.href
     });
 
@@ -968,22 +968,22 @@ export default function MattressLanding() {
     // Track InitiateCheckout event (inizio processo acquisto)
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
       content_type: 'product',
-      content_ids: ['airnest-queen-mattress'],
-      content_name: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-      value: 499.00,
+      content_ids: ['voltcam-4k-pro-sportcam'],
+      content_name: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+      value: 299.00,
       currency: 'PLN',
       num_items: 1
     });
 
     trackingUtils.trackGoogleEvent('view_item', {
       currency: 'PLN',
-      value: 499.00,
+      value: 299.00,
       items: [{
-        item_id: 'airnest-queen-mattress',
-        item_name: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-        category: 'Bedroom & Sleep',
+        item_id: 'voltcam-4k-pro-sportcam',
+        item_name: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+        category: 'Electronics & Sports',
         quantity: 1,
-        price: 499.00
+        price: 299.00
       }]
     });
 
@@ -1081,11 +1081,11 @@ export default function MattressLanding() {
         fbp: trackingUtils.getFbBrowserId(),
         fbc: trackingUtils.getFbClickId(),
 
-        content_name: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-        content_category: 'Bedroom & Sleep',
-        content_ids: 'airnest-queen-mattress',
+        content_name: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+        content_category: 'Electronics & Sports',
+        content_ids: 'voltcam-4k-pro-sportcam',
         content_type: 'product',
-        value: 499.00,
+        value: 299.00,
         currency: 'PLN',
         quantity: 1
       };
@@ -1121,8 +1121,8 @@ export default function MattressLanding() {
         // Campi esistenti - preservati
         uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
         key: 'ad79469b31b0058f6ea72c',
-        offer: '438',
-        lp: '438',
+        offer: '341',
+        lp: '341',
         name: formData.imie.trim(),
         tel: formData.telefon.trim(),
         'street-address': formData.adres.trim(),
@@ -1135,8 +1135,8 @@ export default function MattressLanding() {
         click_id: clickId,
 
         // Dati del prodotto
-        product: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-        price: 499.00,
+        product: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+        price: 299.00,
         currency: 'PLN',
 
         // Dati di tracking
@@ -1180,22 +1180,22 @@ export default function MattressLanding() {
       if (response.status === 202) {
         // Successo - il worker ha accettato i dati
         const result = await response.json();
-        const orderId = `MTO${Date.now()}`;
+        const orderId = `VTO${Date.now()}`;
 
         console.log('✅ Lead successfully sent to Cloudflare Worker:', result);
 
         const orderData = {
           ...formData,
           orderId,
-          product: 'AirNest™ Queen – Materac Dmuchany Komfort Premium',
-          price: 499.00,
+          product: 'VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem',
+          price: 299.00,
           apiResponse: result
         };
 
         localStorage.setItem('orderData', JSON.stringify(orderData));
         console.log('✅ Order data saved to localStorage:', orderData);
 
-        window.location.href = '/ty-mat-pl';
+        window.location.href = '/ty-camera-pl';
       } else if (response.status === 401) {
         console.error('❌ Unauthorized: Invalid token');
         alert('Błąd autoryzacji. Skontaktuj się z obsługą klienta.');
@@ -1248,33 +1248,42 @@ export default function MattressLanding() {
               <div className="flex items-center space-x-2">
                 <StarRating rating={5} size="w-5 h-5" />
                 <span className="text-yellow-600 font-medium">4.9</span>
-                <span className="text-gray-600">(342 opinii)</span>
+                <span className="text-gray-600">(287 opinii)</span>
               </div>
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                🌙 AirNest™ Queen – Materac Dmuchany Komfort Premium
+                📹 VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem
               </h1>
 
               <p className="text-lg text-gray-700 font-medium">
-                <strong>Luksusowy materac dmuchany z wbudowaną pompą elektryczną i ergonomiczną strukturą – najwyższy komfort snu w każdym miejscu.</strong>
+                <strong>4K Ultra HD + Stabilizacja EIS</strong><br />
+                Wodoodporna do 30 m, pilot nadgarstkowy, Wi-Fi + aplikacja
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">💨 <strong>Wbudowana pompa elektryczna</strong> – Szybkie napełnienie w 3 minuty</span>
+                  <span className="text-base">📹 <strong>4K/30fps • 20MP</strong> – Najwyższa jakość nagrań i zdjęć</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🌙 <strong>Ergonomiczna struktura snu</strong> – Wsparcie kręgosłupa przez całą noc</span>
+                  <span className="text-base">⚡ <strong>EIS</strong> – Elektroniczna stabilizacja obrazu bez drgań</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">✈️ <strong>Kompaktowy i przenośny</strong> – Idealny na podróże, camping i dla gości</span>
+                  <span className="text-base">🌊 <strong>Wodoszczelna 30 m</strong> – Obudowa wodoodporna w zestawie</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-base">🛡️ <strong>Premium materiał</strong> – Wytrzymały, wodoodporny i anti-slip powierzchnia</span>
+                  <span className="text-base">📱 <strong>Pilot</strong> – Start/stop bez dotykania kamery</span>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-base">📐 <strong>Szeroki kąt 170°</strong> – Regulowany (70°/110°/170°)</span>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-base">📲 <strong>Wi-Fi + App</strong> – Podgląd/transfer/udostępnianie</span>
                 </div>
               </div>
 
@@ -1295,7 +1304,7 @@ export default function MattressLanding() {
                   marginBottom: '15px',
                   textAlign: 'center'
                 }}>
-                  🌙 AirNest™ Queen – Materac dmuchany z pompą elektryczną, rozmiar Queen
+                  📹 VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem
                 </h2>
 
                 <div style={{
@@ -1307,13 +1316,13 @@ export default function MattressLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🌙 Rozmiar Queen (203x152x46 cm) z pompą elektryczną wbudowaną</span>
+                  <span style={{ flex: '1 1 70%' }}>📹 Kamera 4K/30fps, 20MP, EIS, wodoszczelna 30 m</span>
                   <span style={{
                     color: 'red',
                     textDecoration: 'line-through',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
-                  }}>1249,99 zł</span>
+                  }}>749,99 zł</span>
                 </div>
 
                 <div style={{
@@ -1325,7 +1334,7 @@ export default function MattressLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>💨 Szybkie napełnianie: Gotowy do spania w zaledwie 3 minuty</span>
+                  <span style={{ flex: '1 1 70%' }}>📱 Pilot nadgarstkowy i aplikacja Wi-Fi</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1342,7 +1351,7 @@ export default function MattressLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>🌙 Struktura ergonomiczna: Wsparcie kręgosłupa i komfort snu</span>
+                  <span style={{ flex: '1 1 70%' }}>🔧 Kompletny zestaw akcesoriów montażowych</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1359,7 +1368,7 @@ export default function MattressLanding() {
                   fontSize: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  <span style={{ flex: '1 1 70%' }}>✈️ Torba podróżna: Kompaktowy i łatwy do przenoszenia</span>
+                  <span style={{ flex: '1 1 70%' }}>🔋 2× akumulator + ładowarka</span>
                   <span style={{
                     color: '#16a34a',
                     fontWeight: 'bold',
@@ -1397,9 +1406,9 @@ export default function MattressLanding() {
                   color: '#16a34a',
                   fontWeight: 'bold'
                 }}>
-                  Cena katalogowa: <span style={{ textDecoration: 'line-through', color: 'red' }}>1249,99 zł</span><br />
+                  Cena katalogowa: <span style={{ textDecoration: 'line-through', color: 'red' }}>749,99 zł</span><br />
                   <div style={{ marginTop: '10px' }}>
-                    Dziś tylko: <span style={{ fontSize: '26px' }}>499,00 zł</span>
+                    Dziś tylko: <span style={{ fontSize: '26px' }}>299,00 zł</span>
                   </div>
                 </div>
 
@@ -1459,8 +1468,8 @@ export default function MattressLanding() {
                 {/* Layout con foto centrata verticalmente rispetto al testo */}
                 <div className="flex items-center space-x-4">
                   <img
-                    src="images/anna.jpg"
-                    alt="Anna K."
+                    src="images/michal.jpg"
+                    alt="Michał K."
                     className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                   />
 
@@ -1471,7 +1480,7 @@ export default function MattressLanding() {
                     </div>
 
                     <p className="text-gray-800 text-sm leading-relaxed mb-3">
-                      "Kupiłam AirNest Queen miesiąc temu i jestem zachwycona! 🌙 Wbudowana pompa elektryczna to prawdziwa rewolucja – materac napełnia się w 3 minuty. Ergonomiczna struktura zapewnia świetne wsparcie kręgosłupa. Używam go na camping, dla gości i nawet jako główne łóżko. Najlepszy materac dmuchany na rynku!"
+                      "Kupiłem VoltCam 4K Pro na urlop w górach i jestem zachwycony! 📹 Jakość 4K to czysta perfekcja, a EIS sprawia, że nagrania są płynne jak masło. Wodoodporna obudowa przeszła test w potoku, pilot to prawdziwa wygoda. Aplikacja działa świetnie przez Wi-Fi. Najlepsza kamera sportowa jaką testowałem!"
                     </p>
 
                     {/* Nome con checkmark blu */}
@@ -1479,7 +1488,7 @@ export default function MattressLanding() {
                       <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">✓</span>
                       </div>
-                      <span className="font-bold text-gray-900 text-sm">Anna K. - Warszawa</span>
+                      <span className="font-bold text-gray-900 text-sm">Michał K. - Kraków</span>
                     </div>
                   </div>
                 </div>
@@ -1495,19 +1504,19 @@ export default function MattressLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                🌙 AirNest™ Queen – Luksusowy Materac Dmuchany dla Maksymalnego Komfortu!
+                📹 VoltCam™ 4K Pro – Kamera Sportowa Nowej Generacji!
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                <strong>AirNest™ Queen z pompą elektryczną</strong> to rewolucyjny materac dmuchany, zaprojektowany dla osób, które wymagają najwyższego komfortu snu.
+                <strong>VoltCam™ 4K Pro z EIS i pilotem</strong> to rewolucyjna kamera sportowa, zaprojektowana dla miłośników sportu i przygód, którzy wymagają najwyższej jakości.
               </p>
               <p className="text-lg text-gray-700">
-                <strong>Wbudowana pompa elektryczna</strong> gwarantuje szybkie napełnienie w 3 minuty, a <strong>ergonomiczna struktura</strong> zapewnia wsparcie kręgosłupa przez całą noc.
+                <strong>Stabilizacja EIS</strong> gwarantuje płynne ujęcia bez drgań, a <strong>pilot nadgarstkowy</strong> pozwala na start/stop bez dotykania kamery.
               </p>
             </div>
             <div>
               <img
-                src="/images/Mattress/2.gif"
-                alt="Materac w użyciu"
+                src="/images/Camera/5.gif"
+                alt="Kamera w użyciu"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
@@ -1520,44 +1529,44 @@ export default function MattressLanding() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <img
-                src="/images/Mattress/3.png"
-                alt="Cechy materaca"
+                src="/images/Camera/3.png"
+                alt="Cechy kamery"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Cechy Premium AirNest™ Queen
+                Cechy Premium VoltCam™ 4K Pro
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Pompa elektryczna wbudowana:</strong> Szybkie napełnianie w zaledwie 3 minuty - nie potrzebujesz zewnętrznej pompy.
+                    <strong>Wideo 4K/30fps + 20MP:</strong> Najwyższa jakość nagrań i zdjęć dla profesjonalnych rezultatów.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Rozmiar Queen:</strong> Przestronny 203x152x46 cm - idealny dla dwóch osób lub komfortowego snu solo.
+                    <strong>Stabilizacja EIS:</strong> Elektroniczna eliminacja drgań - płynne ujęcia nawet w ruchu.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Struktura ergonomiczna:</strong> Specjalna konstrukcja wspierająca kręgosłup dla zdrowego snu.
+                    <strong>Wodoszczelność 30 m:</strong> Obudowa wodoodporna w zestawie - idealna do nurkowania i sportu.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Materiał premium:</strong> Wytrzymały, wodoodporny z powierzchnią anti-slip dla bezpieczeństwa.
+                    <strong>Pilot zdalnego sterowania:</strong> Start/stop bez dotykania - nadgarstkowy pilot w zestawie.
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                   <div className="text-lg">
-                    <strong>Kompaktowy i przenośny:</strong> Składa się do małej torby podróżnej - idealny na camping i podróże.
+                    <strong>Wi-Fi + aplikacja:</strong> Podgląd na żywo, transfer i udostępnianie przez smartfona.
                   </div>
                 </div>
               </div>
@@ -1570,42 +1579,42 @@ export default function MattressLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Pompa Elektryczna - Napełnianie w 3 Minuty
+              Kompletny Zestaw VoltCam™ 4K Pro
             </h2>
             <p className="text-lg text-gray-700">
-              Odkryj wygodę wbudowanej pompy elektrycznej AirNest™ Queen - rewolucyjną technologię, która zmienia standard materacy dmuchanych.
+              Wszystko czego potrzebujesz do profesjonalnych nagrań sportowych - w jednym zestawie.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <img
-                src="/images/Mattress/4.png"
-                alt="Materac z pompą"
+                src="/images/Camera/4.png"
+                alt="Zestaw kamery"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
-                  <div className="text-4xl mb-4">💨</div>
-                  <h3 className="font-bold text-lg mb-2">Pompa Wbudowana</h3>
-                  <p className="text-gray-600">Szybkie napełnianie w 3 minuty bez zewnętrznych urządzeń.</p>
+                  <div className="text-4xl mb-4">📹</div>
+                  <h3 className="font-bold text-lg mb-2">Kamera 4K Pro</h3>
+                  <p className="text-gray-600">EIS, 20MP, regulowany kąt 170°.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
-                  <div className="text-4xl mb-4">🌙</div>
-                  <h3 className="font-bold text-lg mb-2">Komfort Snu</h3>
-                  <p className="text-gray-600">Ergonomiczna struktura wspierająca kręgosłup przez całą noc.</p>
+                  <div className="text-4xl mb-4">🌊</div>
+                  <h3 className="font-bold text-lg mb-2">Obudowa 30m</h3>
+                  <p className="text-gray-600">Wodoodporna do 30 metrów głębokości.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
-                  <div className="text-4xl mb-4">✈️</div>
-                  <h3 className="font-bold text-lg mb-2">Przenośność</h3>
-                  <p className="text-gray-600">Kompaktowy design - idealny na podróże, camping i dla gości.</p>
+                  <div className="text-4xl mb-4">📱</div>
+                  <h3 className="font-bold text-lg mb-2">Pilot + Wi-Fi</h3>
+                  <p className="text-gray-600">Nadgarstkowy pilot i aplikacja mobilna.</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-lg shadow-md">
-                  <div className="text-4xl mb-4">🛡️</div>
-                  <h3 className="font-bold text-lg mb-2">Jakość Premium</h3>
-                  <p className="text-gray-600">Wytrzymały materiał z powierzchnią anti-slip.</p>
+                  <div className="text-4xl mb-4">🔧</div>
+                  <h3 className="font-bold text-lg mb-2">Akcesoria</h3>
+                  <p className="text-gray-600">Uchwyty, klamry, 2× bateria, etui.</p>
                 </div>
               </div>
             </div>
@@ -1617,10 +1626,10 @@ export default function MattressLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Co Czyni AirNest™ Queen Materacem Dmuchanym #1
+              Co Czyni VoltCam™ 4K Pro Kamerą Sportową #1
             </h2>
             <p className="text-lg text-gray-700">
-              W przeciwieństwie do zwykłych materacy dmuchanych, AirNest™ Queen oferuje pompę wbudowaną, strukturę ergonomiczną i rozmiar Queen.
+              W przeciwieństwie do zwykłych kamer sportowych, VoltCam™ 4K Pro oferuje prawdziwą stabilizację EIS, pilot i kompletny zestaw.
             </p>
           </div>
 
@@ -1628,23 +1637,24 @@ export default function MattressLanding() {
             <div className="min-w-full">
               <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div></div>
-                <div className="font-bold text-lg">AirNest™ Queen</div>
+                <div className="font-bold text-lg">VoltCam™ 4K Pro</div>
                 <div className="font-bold text-lg">Inne</div>
               </div>
 
               {[
-                'Pompa elektryczna wbudowana',
-                'Rozmiar Queen (203x152x46 cm)',
-                'Struktura ergonomiczna wspierająca',
-                'Materiał premium wodoodporny',
-                'Kompaktowa torba podróżna'
+                'Prawdziwe 4K/30fps (nie interpolowane)',
+                'Stabilizacja EIS elektroniczna',
+                'Wodoszczelność 30 m z obudową',
+                'Pilot zdalnego sterowania w zestawie',
+                'Wi-Fi + aplikacja mobilna',
+                'Kompletny zestaw akcesoriów'
               ].map((feature, index) => (
                 <div key={index} className="border-b border-gray-200 py-4">
                   <div className="md:hidden">
                     <div className="font-medium text-lg mb-3">{feature}</div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white p-3 rounded-lg text-center">
-                        <div className="font-medium text-green-600 mb-1">AirNest™ Queen</div>
+                        <div className="font-medium text-green-600 mb-1">VoltCam™ 4K Pro</div>
                         <Check className="w-6 h-6 text-green-600 mx-auto" />
                       </div>
                       <div className="bg-white p-3 rounded-lg text-center">
@@ -1685,24 +1695,32 @@ export default function MattressLanding() {
 
           <div className="space-y-4">
             <FAQ
-              question="Jak szybko napełnia się materac?"
-              answer="Wbudowana pompa elektryczna napełnia materac w zaledwie 3 minuty. Nie potrzebujesz żadnych zewnętrznych urządzeń."
+              question="Czy to prawdziwe 4K/30fps?"
+              answer="Tak! VoltCam™ 4K Pro nagrywa w rzeczywistym 4K/30fps (3840×2160), nie jest to interpolowane. Można również nagrywać w 2.7K/30 i 1080p/60fps."
             />
             <FAQ
-              question="Jaki jest rozmiar materaca?"
-              answer="AirNest™ Queen ma wymiary 203x152x46 cm - idealny rozmiar dla dwóch osób lub bardzo komfortowego snu dla jednej osoby."
+              question="Jak działa stabilizacja EIS?"
+              answer="Elektroniczna stabilizacja obrazu EIS analizuje ruch w czasie rzeczywistym i koryguje drgania cyfrowo, zapewniając płynne ujęcia nawet podczas intensywnego sportu."
             />
             <FAQ
-              question="Czy materac jest wygodny do spania?"
-              answer="Tak, dzięki ergonomicznej strukturze zapewnia wsparcie kręgosłupa i komfort podobny do tradycyjnego materaca."
+              question="Do ilu metrów jest wodoszczelna?"
+              answer="Kamera jest wodoszczelna do 30 metrów głębokości w dołączonej obudowie wodoodpornej - idealna do nurkowania, surfingu i sportów wodnych."
             />
             <FAQ
-              question="Czy materac jest łatwy do transportu?"
-              answer="Absolutnie! Po spuszczeniu powietrza składa się do kompaktowej torby podróżnej - idealny na camping i podróże."
+              question="Czy w zestawie są 2 baterie i pilot?"
+              answer="Tak! W zestawie znajdziesz: 2× wymienną baterię, ładowarkę USB, pilot nadgarstkowy, obudowę wodoodporną, uchwyty i etui ochronne."
             />
             <FAQ
-              question="Jak wygląda gwarancja i zwroty?"
-              answer="Oferujemy 30-dniową gwarancję zwrotu pieniędzy i 24-miesięczną gwarancję producenta na wszystkie wady fabryczne."
+              question="Jaką kartę microSD polecacie?"
+              answer="Polecamy kartę microSD klasy 10 lub wyższej, minimum 32GB (obsługa do 128GB). Do nagrań 4K najlepsze są karty UHS-I U3."
+            />
+            <FAQ
+              question="Jak działa aplikacja i Wi-Fi?"
+              answer="Aplikacja mobilna pozwala na podgląd na żywo, sterowanie kamerą, transfer plików i udostępnianie w mediach społecznościowych. Zasięg Wi-Fi: do 10m."
+            />
+            <FAQ
+              question="Jak wygląda dostawa i zwroty?"
+              answer="Darmowa dostawa w 3-4 dni robocze. 30-dniowa gwarancja zwrotu pieniędzy i 24-miesięczna gwarancja producenta na wady fabryczne."
             />
           </div>
         </div>
@@ -1716,59 +1734,59 @@ export default function MattressLanding() {
               <span className="text-2xl font-bold">4.9/5</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Opinie klientów o materacu AirNest™ Queen
+              Opinie klientów o VoltCam™ 4K Pro
             </h2>
             <p className="text-lg text-gray-700">
-              Autentyczne i wiarygodne opinie
+              Autentyczne i wiarygodne opinie użytkowników
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                name: "Marcin K. - Warszawa",
+                name: "Michał K. - Kraków",
                 rating: 5,
-                review: "AirNest Queen to prawdziwa rewolucja! 🌙 Pompa wbudowana napełnia materac w 3 minuty. Ergonomiczna struktura zapewnia świetny sen - lepszy niż w wielu hotelach. Używam na camping i dla gości - wszyscy zachwyceni!"
+                review: "VoltCam 4K Pro to najlepsza kamera sportowa jaką testowałem! 📹 Jakość 4K jest niesamowita, a stabilizacja EIS działa perfekcyjnie. Wodoodporna obudowa przeszła test w górskim potoku. Pilot to prawdziwa wygoda!"
               },
               {
-                name: "Katarzyna M. - Gdańsk",
+                name: "Ania M. - Warszawa",
                 rating: 5,
-                review: "Jako właścicielka B&B potrzebowałam dodatkowych łóżek dla gości. AirNest Queen jest idealny! Szybko się napełnia, wygodny jak zwykły materac, a po użyciu chowam do szafy."
+                review: "Kupiłam na wakacje nad morzem. Stabilizacja EIS to game-changer - nagrania są płynne jak masło! Aplikacja Wi-Fi działa świetnie, łatwo przesyłam filmy na Instagram. Polecam każdemu miłośnikowi sportu!"
               },
               {
-                name: "Piotr S. - Kraków",
+                name: "Paweł S. - Wrocław",
                 rating: 5,
-                review: "Najlepszy materac dmuchany jaki testowałem! Rozmiar Queen to luksus - mieścimy się wygodnie we dwoje. Pompa elektryczna to przyszłość - koniec z męczącym pompowaniem ręcznym!"
+                review: "Jako instruktor narciarstwa potrzebowałem profesjonalnej kamery. VoltCam 4K Pro spełnia wszystkie oczekiwania! Pilot pozwala na start/stop bez zdejmowania rękawic. Montaż na kasku super łatwy!"
               },
               {
-                name: "Anna F. - Poznań",
+                name: "Kasia F. - Gdańsk",
                 rating: 5,
-                review: "Kupiłam na letni camping z dziećmi. Materiał jest super wytrzymały, nie przedziurawił się mimo intensywnego użytkowania. Powierzchnia anti-slip zapobiega zsuwaniu się pościeli."
+                review: "Używam do kitesurfingu. Obudowa wodoodporna to solidny sprzęt - kamera przetrwała upadek do wody z 5m wysokości. Jakość nagrań pod wodą również doskonała. Warto zainwestować!"
               },
               {
-                name: "Tomasz J. - Wrocław",
+                name: "Tomek J. - Poznań",
                 rating: 5,
-                review: "Jako kierowca ciężarówki często śpię w kabinie. AirNest Queen zmienił moje życie! Kompaktowy, szybko się rozkłada, a komfort snu jest niesamowity. Polecam każdemu!"
+                review: "Najlepsza kamera w tej cenie! Prawdziwe 4K, nie jak u konkurencji. EIS eliminuje wszystkie drgania. Baterie wystarczają na długie sesje. Kompletny zestaw akcesoriów - nic więcej nie trzeba kupować!"
               },
               {
-                name: "Magdalena K. - Łódź",
+                name: "Ewelina K. - Łódź",
                 rating: 5,
-                review: "Mamy małe mieszkanie, więc tradycyjne łóżko dla gości było problemem. AirNest Queen to idealne rozwiązanie - wygodny, szybki w przygotowaniu, nie zajmuje miejsca!"
+                review: "Świetny zakup! Aplikacja mobilna jest intuicyjna, podgląd na żywo działa bez opóźnień. Zestaw uchwytów pozwala na montaż wszędzie. Jakość zdjęć 20MP również imponująca. Polecam!"
               },
               {
                 name: "Robert N. - Szczecin",
                 rating: 4,
-                review: "Solidny produkt! Używam już pół roku na działce. Pompa działa bezawaryjnie, materac trzyma powietrze przez całą noc. Jedyny minus - torba mogłaby być nieco większa. 😊"
+                review: "Solidny sprzęt! Używam już 6 miesięcy do mountain bike'a. Wytrzymałość na najwyższym poziomie. Jedyny minus - mógłby być w zestawie drugi pilot. Poza tym - rewelacja! 😊"
               },
               {
-                name: "Joanna P. - Lublin",
+                name: "Magda P. - Lublin",
                 rating: 5,
-                review: "To nie jest zwykły materac dmuchany - to prawdziwe łóżko! Ergonomiczna struktura wspiera kręgosłup, rano nie boli plecy. Najlepsza inwestycja w komfort snu!"
+                review: "To nie jest zwykła kamera sportowa - to profesjonalne narzędzie! EIS rzeczywiście działa, kąt 170° pozwala na spektakularne ujęcia. Instrukcja po polsku bardzo pomocna!"
               },
               {
-                name: "Paweł H. - Białystok",
+                name: "Adam H. - Białystok",
                 rating: 5,
-                review: "Używamy już 8 miesięcy regularnie dla gości i na wyjazdy. Jakość materiału jest wyjątkowa - żadnych przecieków, pompa działa jak pierwszego dnia. Bardzo polecam!"
+                review: "Używam już rok do różnych sportów. Jakość pozostaje na tym samym wysokim poziomie. Pilot nadal działa bezawaryjnie, baterie trzymają długo. Najlepsza inwestycja sportowa!"
               }
             ].map((review, index) => (
               <div key={index} className="bg-white p-6 rounded-lg shadow-md">
@@ -1796,7 +1814,7 @@ export default function MattressLanding() {
                   <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
                 </div>
                 <p className="text-gray-700">
-                  "Fantastyczny AirNest Queen! 🌙 Pompa elektryczna to prawdziwa rewolucja - materac gotowy w 3 minuty! Struktura ergonomiczna zapewnia wsparcie kręgosłupa lepsze niż mój stary materac sprężynowy. Używam go jako główne łóżko od 4 miesięcy i śpię jak niemowlę. Rozmiar Queen pozwala na wygodny sen dla dwóch osób. Najlepszy zakup tego roku!"
+                  "Fantastyczna VoltCam 4K Pro! 📹 Stabilizacja EIS to prawdziwa rewolucja - nagrania płynne jak z profesjonalnego gimbal'a! Pilot nadgarstkowy pozwala na start/stop bez dotykania kamery - idealne podczas jazdy na rowerze. Wodoodporna obudowa przetrwała ekstremalne testy. Aplikacja Wi-Fi działa bez zarzutu. To najlepsza kamera sportowa na rynku!"
                 </p>
               </div>
             </div>
@@ -1812,7 +1830,7 @@ export default function MattressLanding() {
               30-Dniowa Gwarancja Zwrotu Pieniędzy
             </h2>
             <p className="text-lg text-gray-700 mb-6">
-              Wypróbuj materac AirNest™ Queen z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz komfortu i wygody luksusowego snu bez ryzyka.
+              Wypróbuj kamerę VoltCam™ 4K Pro z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz jakości 4K i stabilizacji EIS bez ryzyka.
             </p>
             <p className="text-xl font-bold text-green-600">
               Jeśli nie jesteś całkowicie zadowolony, zwrócimy Ci całą kwotę.
@@ -1878,19 +1896,19 @@ export default function MattressLanding() {
             🔥 Nie Przegap Tej Specjalnej Oferty!
           </h2>
           <p className="text-xl mb-8">
-            Tylko na dziś: <span className="line-through opacity-75">1249,99 zł</span> <span className="text-5xl font-bold">499,00 zł</span>
+            Tylko na dziś: <span className="line-through opacity-75">749,99 zł</span> <span className="text-5xl font-bold">299,00 zł</span>
           </p>
 
           <div className="bg-white/10 backdrop-blur rounded-lg p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div>
                 <Users className="w-8 h-8 mx-auto mb-2" />
-                <div className="font-bold">2,156+</div>
+                <div className="font-bold">1,890+</div>
                 <div className="text-sm opacity-90">Zadowolonych Klientów</div>
               </div>
               <div>
                 <Package className="w-8 h-8 mx-auto mb-2" />
-                <div className="font-bold">98.5%</div>
+                <div className="font-bold">97.8%</div>
                 <div className="text-sm opacity-90">Wskaźnik Zadowolenia</div>
               </div>
               <div>
@@ -1944,18 +1962,18 @@ export default function MattressLanding() {
               <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
               <div className="flex items-center gap-3">
                 <img
-                  src="/images/Mattress/11.png"
-                  alt="Materac dmuchany"
+                  src="/images/Camera/2.png"
+                  alt="Kamera sportowa"
                   className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm md:text-base">🌙 AirNest™ Queen – Materac Dmuchany Komfort Premium</div>
-                  <div className="text-xs md:text-sm text-gray-600">Luksusowy, z Pompą Elektryczną, Rozmiar Queen</div>
+                  <div className="font-medium text-gray-900 text-sm md:text-base">📹 VoltCam™ 4K Pro – Kamera Sportowa z EIS i Pilotem</div>
+                  <div className="text-xs md:text-sm text-gray-600">4K, EIS, Wodoszczelna 30m, Pilot, Akcesoria</div>
                   <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="font-bold text-lg md:text-xl text-gray-900">499,00 zł</div>
-                  <div className="text-xs text-gray-500 line-through">1249,99 zł</div>
+                  <div className="font-bold text-lg md:text-xl text-gray-900">299,00 zł</div>
+                  <div className="text-xs text-gray-500 line-through">749,99 zł</div>
                 </div>
               </div>
             </div>
@@ -2034,7 +2052,7 @@ export default function MattressLanding() {
               disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 text-base md:text-lg"
             >
-              {isSubmitting ? 'PRZETWARZANIE...' : 'POTWIERDŹ ZAMÓWIENIE - 499,00 zł'}
+              {isSubmitting ? 'PRZETWARZANIE...' : 'POTWIERDŹ ZAMÓWIENIE - 299,00 zł'}
             </button>
           </div>
         </div>
