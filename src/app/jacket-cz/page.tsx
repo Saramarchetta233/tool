@@ -19,6 +19,26 @@ import {
   Play
 } from 'lucide-react';
 
+// Centralized size table data source for CZ
+const SIZE_TABLE_CZ = {
+  man: [
+    { size: 'S', chest: '96–104', waist: '76–84', sleeve: '61' },
+    { size: 'M', chest: '104–112', waist: '84–92', sleeve: '63' },
+    { size: 'L', chest: '112–120', waist: '92–100', sleeve: '65' },
+    { size: 'XL', chest: '120–128', waist: '100–108', sleeve: '67' },
+    { size: 'XXL', chest: '128–136', waist: '108–116', sleeve: '69' },
+    { size: '3XL', chest: '136–144', waist: '116–124', sleeve: '71' },
+  ],
+  woman: [
+    { size: 'S', chest: '82–88', waist: '66–72', sleeve: '59' },
+    { size: 'M', chest: '89–95', waist: '73–79', sleeve: '61' },
+    { size: 'L', chest: '96–102', waist: '80–86', sleeve: '63' },
+    { size: 'XL', chest: '103–109', waist: '87–93', sleeve: '65' },
+    { size: 'XXL', chest: '110–116', waist: '94–100', sleeve: '67' },
+    { size: '3XL', chest: '117–123', waist: '101–107', sleeve: '69' },
+  ],
+} as const;
+
 // Declare global tracking functions
 declare global {
   interface Window {
@@ -202,12 +222,12 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+          content_name: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
           content_category: 'Motorcycle & Safety Gear',
-          content_ids: 'roadshield-4seasons-motorcycle-jacket',
+          content_ids: 'roadshield-4seasons-motorcycle-jacket-cz',
           content_type: 'product',
-          value: eventData.value || 299.00,
-          currency: 'PLN', // Currency dinamica
+          value: eventData.value || 1749.00,
+          currency: 'CZK', // Currency dinamica
           quantity: eventData.num_items || 1
         };
 
@@ -444,7 +464,7 @@ const StockIndicator = () => {
     <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 p-3 rounded-lg text-center font-bold">
       <div className="flex items-center justify-center space-x-2">
         <AlertCircle className="w-5 h-5" />
-        <span>⚡ Tylko {stock} sztuk pozostało w magazynie!</span>
+        <span>⚡ Pouze {stock} kusů zůstává na skladě!</span>
       </div>
     </div>
   );
@@ -459,13 +479,13 @@ const ResultsSection = () => {
           <div>
             <img
               src="/images/Jacket/5.jpg"
-              alt="Zadowalające rezultaty"
+              alt="Uspokojivé výsledky"
               className="w-full h-auto rounded-lg shadow-lg"
             />
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-8">
-              Przekształć Swoją Jazdę z Wyjątkowym Bezpieczeństwem
+              Přeměňte svou jízdu s výjimečnou bezpečností
             </h2>
 
             <div className="space-y-8">
@@ -497,7 +517,7 @@ const ResultsSection = () => {
                     <span className="text-2xl font-bold text-gray-900">97%</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Stwierdziło znacznie lepsze bezpieczeństwo dzięki ochraniacom CE!</p>
+                <p className="text-sm font-medium text-gray-700">Zjistilo výrazně lepší bezpečnost díky chráničům CE!</p>
               </div>
 
               {/* Progress bar 2 */}
@@ -528,7 +548,7 @@ const ResultsSection = () => {
                     <span className="text-2xl font-bold text-gray-900">95%</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Zauważyło komfort w każdych warunkach pogodowych!</p>
+                <p className="text-sm font-medium text-gray-700">Zpozorovali komfort za všech povětrnostních podmínek!</p>
               </div>
 
               {/* Progress bar 3 */}
@@ -559,7 +579,7 @@ const ResultsSection = () => {
                     <span className="text-2xl font-bold text-gray-900">98%</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Doceniło jakość materiałów i trwałość kurtki!</p>
+                <p className="text-sm font-medium text-gray-700">Ocenili kvalitu materiálů a odolnost bundy!</p>
               </div>
             </div>
           </div>
@@ -572,17 +592,17 @@ const ResultsSection = () => {
 // Delivery Tracking Component
 const DeliveryTracking = () => {
   const [deliveryDates, setDeliveryDates] = useState({
-    orderDate: 'pon, 16 wrz',
-    shipDate: 'wt, 17 wrz',
-    deliveryStart: 'cz, 19 wrz',
-    deliveryEnd: 'pt, 20 wrz',
-    deliveryRange: 'cz, 19 wrz a pt, 20 wrz'
+    orderDate: 'po, 16 zář',
+    shipDate: 'út, 17 zář',
+    deliveryStart: 'čt, 19 zář',
+    deliveryEnd: 'pá, 20 zář',
+    deliveryRange: 'čt, 19 zář a pá, 20 zář'
   });
 
   useEffect(() => {
     const formatData = (data: Date): string => {
-      const giorni = ['nd', 'pn', 'wt', 'śr', 'cz', 'pt', 'sb'];
-      const mesi = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
+      const giorni = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
+      const mesi = ['led', 'únor', 'břez', 'dub', 'květ', 'červ', 'červen', 'srp', 'zář', 'říj', 'list', 'pros'];
       const giornoSettimana = giorni[data.getDay()];
       const giorno = String(data.getDate()).padStart(2, '0');
       const mese = mesi[data.getMonth()];
@@ -619,17 +639,17 @@ const DeliveryTracking = () => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <p className="text-center text-gray-700 mb-4">
-        Zamów <strong>TERAZ</strong> i otrzymasz swoją paczkę między <strong>{deliveryDates.deliveryRange}</strong>
+        Objednej <strong>NYNÎ</strong> a obdržíš balíček mezi <strong>{deliveryDates.deliveryRange}</strong>
       </p>
       <div className="flex justify-between items-center text-sm">
         <div className="text-center">
           <div className="text-2xl mb-1">📦</div>
-          <div className="font-medium">Zamówione</div>
+          <div className="font-medium">Objednatné</div>
           <div className="text-gray-500">{deliveryDates.orderDate}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl mb-1">🚚</div>
-          <div className="font-medium">Wysłane</div>
+          <div className="font-medium">Odesláno</div>
           <div className="text-gray-500">{deliveryDates.shipDate}</div>
         </div>
         <div className="text-center">
@@ -651,37 +671,37 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Newheras</h3>
             <p className="text-gray-300 text-sm">
-              Najwyższej jakości produkty dla bezpiecznej i komfortowej jazdy motocyklowej.
+              Nejvyšší kvalita produktů pro bezpečnou a komfortní motocyklovou jízdu.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Obsługa Klienta</h4>
+            <h4 className="font-semibold mb-4">Zákaznická podpora</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><a href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-white">Kontakt</a></li>
               <li><a href="#" className="hover:text-white">FAQ</a></li>
-              <li><a href="/returns" target="_blank" rel="noopener noreferrer" className="hover:text-white">Zwroty</a></li>
-              <li><a href="#" className="hover:text-white">Gwarancja</a></li>
+              <li><a href="/returns" target="_blank" rel="noopener noreferrer" className="hover:text-white">Vrácení</a></li>
+              <li><a href="#" className="hover:text-white">Záruka</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4">Informacje Prawne</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-white">Regulamin</a></li>
-              <li><a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white">Polityka Prywatności</a></li>
-              <li><a href="/cookies" target="_blank" rel="noopener noreferrer" className="hover:text-white">Polityka Cookies</a></li>
-              <li><a href="/gdpr" target="_blank" rel="noopener noreferrer" className="hover:text-white">Prawa Konsumenta</a></li>
+              <li><a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-white">Obchodní podmínky</a></li>
+              <li><a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white">Zásady ochrany osobních údajů</a></li>
+              <li><a href="/cookies" target="_blank" rel="noopener noreferrer" className="hover:text-white">Zásady cookies</a></li>
+              <li><a href="/gdpr" target="_blank" rel="noopener noreferrer" className="hover:text-white">Práva spotřebitele</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4">Firma</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-white">O Nas</a></li>
-              <li><a href="#" className="hover:text-white">Kariera</a></li>
+              <li><a href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-white">O nás</a></li>
+              <li><a href="#" className="hover:text-white">Kariéra</a></li>
               <li><a href="#" className="hover:text-white">Blog</a></li>
-              <li><a href="#" className="hover:text-white">Partnerzy</a></li>
+              <li><a href="#" className="hover:text-white">Partneři</a></li>
             </ul>
           </div>
         </div>
@@ -689,23 +709,23 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-gray-400">
-              © 2025 Newheras. Wszystkie prawa zastrzeżone.
+              © 2025 Newheras. Všechna práva vyhrazena.
             </p>
             <div className="flex space-x-6">
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Polityka Prywatności</a>
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Regulamin</a>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Zásady ochrany osobních údajů</a>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Obchodní podmínky</a>
               <a href="/cookies" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Cookies</a>
             </div>
           </div>
 
           <div className="mt-6 text-xs text-gray-500 max-w-4xl mx-auto">
             <p className="mb-2">
-              <strong>Informacje prawne:</strong> Wszystkie ceny zawierają podatek VAT. Prawo do odstąpienia od umowy w ciągu 14 dni zgodnie z prawem konsumenckim.
-              Gwarancja 24 miesiące zgodnie z Kodeksem Cywilnym. Sprzedawca: Newheras Sp. z o.o.
+              <strong>Právní informace:</strong> Všechny ceny obsahují DPH. Právo odstoupit od smlouvy do 14 dní v souladu se spotřebitelskou ochranou.
+              Záruka 24 měsíců v souladu s Občanským zákoníkem. Prodejce: Newheras Sp. z o.o.
             </p>
             <p>
-              <strong>Ochrona danych:</strong> Przetwarzamy Twoje dane osobowe zgodnie z RODO. Szczegóły w Polityce Prywatności.
-              Używamy plików cookies w celach analitycznych i marketingowych. Więcej informacji w Polityce Cookies.
+              <strong>Ochrana dat:</strong> Zpracováváme vaše osobní údaje v souladu s GDPR. Podrobnosti v Zásadách ochrany osobních údajů.
+              Používáme cookies pro analytické a marketingové účely. Více informací v Zásadách cookies.
             </p>
           </div>
         </div>
@@ -867,15 +887,15 @@ export default function JacketLanding() {
   const [bounceAnimation, setBounceAnimation] = useState(false);
 
   // Global state for model and size (hoisted outside form)
-  const [model, setModel] = useState<'Mężczyzna' | 'Kobieta'>('Mężczyzna');
+  const [model, setModel] = useState<'Muž' | 'Žena'>('Muž');
   const [size, setSize] = useState<'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL'>('S');
 
   const [formData, setFormData] = useState({
     imie: '',
     telefon: '',
     adres: '',
-    modello: '',
-    taglia: ''
+    modello: 'Muž',
+    taglia: 'S'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({
@@ -903,7 +923,7 @@ export default function JacketLanding() {
     // Track PageView for all platforms
     trackingUtils.trackFacebookEvent('PageView');
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE - Strona Główna',
+      page_title: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE - Hlavní stránka',
       page_location: window.location.href
     });
 
@@ -966,9 +986,98 @@ export default function JacketLanding() {
     };
   }, [showOrderPopup]);
 
+  const handleOrderClick = () => {
+    console.log('🎯 Order button clicked - tracking InitiateCheckout');
+
+    // Track InitiateCheckout event (inizio processo acquisto)
+    trackingUtils.trackFacebookEvent('InitiateCheckout', {
+      content_type: 'product',
+      content_ids: ['roadshield-4seasons-motorcycle-jacket-cz'],
+      content_name: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
+      value: 1749.00,
+      currency: 'CZK',
+      num_items: 1
+    });
+
+    trackingUtils.trackGoogleEvent('view_item', {
+      currency: 'CZK',
+      value: 1749.00,
+      items: [{
+        item_id: 'roadshield-4seasons-motorcycle-jacket-cz',
+        item_name: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
+        category: 'Motorcycle & Safety Gear',
+        quantity: 1,
+        price: 1749.00
+      }]
+    });
+
+    // Sync global state with form data when opening popup
+    setFormData(prev => ({
+      ...prev,
+      modello: model,
+      taglia: size
+    }));
+
+    setShowOrderPopup(true);
+    setReservationTimer({ minutes: 5, seconds: 0 });
+    setFormErrors({ imie: '', telefon: '', adres: '', modello: '', taglia: '' });
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field as keyof typeof formErrors]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = { imie: '', telefon: '', adres: '', modello: '', taglia: '' };
+    let isValid = true;
+
+    if (!formData.imie.trim()) {
+      errors.imie = 'Jméno a příjmení je povinné';
+      isValid = false;
+    } else if (formData.imie.trim().length < 2) {
+      errors.imie = 'Jméno musí obsahovat alespoň 2 znaky';
+      isValid = false;
+    }
+
+    if (!formData.telefon.trim()) {
+      errors.telefon = 'Numer telefonu jest wymagany';
+      isValid = false;
+    } else {
+      const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
+      if (!phoneRegex.test(formData.telefon.trim())) {
+        errors.telefon = 'Zadejte platné telefonní číslo';
+        isValid = false;
+      }
+    }
+
+    if (!formData.adres.trim()) {
+      errors.adres = 'Adres jest wymagany';
+      isValid = false;
+    } else if (formData.adres.trim().length < 10) {
+      errors.adres = 'Adresa musí být podrobnější (ulice, číslo, město, PSČ)';
+      isValid = false;
+    }
+
+    if (!formData.modello.trim()) {
+      errors.modello = 'Vyberte model bundy';
+      isValid = false;
+    }
+
+    if (!formData.taglia.trim()) {
+      errors.taglia = 'Vyberte velikost';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
   const validateVariantSelection = () => {
     if (!model || !size) {
-      alert('Wybierz model i rozmiar.');
+      alert('Vyberte prosím model a velikost.');
       return false;
     }
     return true;
@@ -999,95 +1108,6 @@ export default function JacketLanding() {
       delete (window as any).showSizeTab;
     };
   }, []);
-
-  const handleOrderClick = () => {
-    console.log('🎯 Order button clicked - tracking InitiateCheckout');
-
-    // Track InitiateCheckout event (inizio processo acquisto)
-    trackingUtils.trackFacebookEvent('InitiateCheckout', {
-      content_type: 'product',
-      content_ids: ['roadshield-4seasons-motorcycle-jacket'],
-      content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
-      value: 299.00,
-      currency: 'PLN',
-      num_items: 1
-    });
-
-    trackingUtils.trackGoogleEvent('view_item', {
-      currency: 'PLN',
-      value: 299.00,
-      items: [{
-        item_id: 'roadshield-4seasons-motorcycle-jacket',
-        item_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
-        category: 'Motorcycle & Safety Gear',
-        quantity: 1,
-        price: 299.00
-      }]
-    });
-
-    // Sync global state with form data when opening popup
-    setFormData(prev => ({
-      ...prev,
-      modello: model,
-      taglia: size
-    }));
-
-    setShowOrderPopup(true);
-    setReservationTimer({ minutes: 5, seconds: 0 });
-    setFormErrors({ imie: '', telefon: '', adres: '', modello: '', taglia: '' });
-  };
-
-  const handleFormChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field as keyof typeof formErrors]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const errors = { imie: '', telefon: '', adres: '', modello: '', taglia: '' };
-    let isValid = true;
-
-    if (!formData.imie.trim()) {
-      errors.imie = 'Imię i nazwisko jest wymagane';
-      isValid = false;
-    } else if (formData.imie.trim().length < 2) {
-      errors.imie = 'Imię musi zawierać co najmniej 2 znaki';
-      isValid = false;
-    }
-
-    if (!formData.telefon.trim()) {
-      errors.telefon = 'Numer telefonu jest wymagany';
-      isValid = false;
-    } else {
-      const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
-      if (!phoneRegex.test(formData.telefon.trim())) {
-        errors.telefon = 'Wprowadź prawidłowy numer telefonu';
-        isValid = false;
-      }
-    }
-
-    if (!formData.adres.trim()) {
-      errors.adres = 'Adres jest wymagany';
-      isValid = false;
-    } else if (formData.adres.trim().length < 10) {
-      errors.adres = 'Adres musi być bardziej szczegółowy (ulica, numer, miasto, kod pocztowy)';
-      isValid = false;
-    }
-
-    if (!formData.modello.trim()) {
-      errors.modello = 'Wybierz model kurtki';
-      isValid = false;
-    }
-
-    if (!formData.taglia.trim()) {
-      errors.taglia = 'Wybierz rozmiar';
-      isValid = false;
-    }
-
-    setFormErrors(errors);
-    return isValid;
-  };
 
   const handleOrderSubmit = async () => {
     if (isSubmitting) return;
@@ -1137,12 +1157,12 @@ export default function JacketLanding() {
         fbp: trackingUtils.getFbBrowserId(),
         fbc: trackingUtils.getFbClickId(),
 
-        content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+        content_name: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
         content_category: 'Motorcycle & Safety Gear',
-        content_ids: 'roadshield-4seasons-motorcycle-jacket',
+        content_ids: 'roadshield-4seasons-motorcycle-jacket-cz',
         content_type: 'product',
-        value: 299.00,
-        currency: 'PLN',
+        value: 1749.00,
+        currency: 'CZK',
         quantity: 1
       };
 
@@ -1177,8 +1197,8 @@ export default function JacketLanding() {
         // Campi esistenti - preservati
         uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
         key: 'ad79469b31b0058f6ea72c',
-        offer: '463',
-        lp: '463',
+        offer: '464',
+        lp: '464',
         name: formData.imie.trim(),
         tel: formData.telefon.trim(),
         'street-address': formData.adres.trim(),
@@ -1191,9 +1211,9 @@ export default function JacketLanding() {
         click_id: clickId,
 
         // Dati del prodotto
-        product: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
-        price: 299.00,
-        currency: 'PLN',
+        product: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
+        price: 1749.00,
+        currency: 'CZK',
         modello: model,
         taglia: size,
 
@@ -1245,29 +1265,29 @@ export default function JacketLanding() {
         const orderData = {
           ...formData,
           orderId,
-          product: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
-          price: 299.00,
+          product: 'RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE',
+          price: 1749.00,
           apiResponse: result
         };
 
         localStorage.setItem('orderData', JSON.stringify(orderData));
         console.log('✅ Order data saved to localStorage:', orderData);
 
-        window.location.href = '/ty-jacket-pl';
+        window.location.href = '/ty-jacket-cz';
       } else if (response.status === 401) {
         console.error('❌ Unauthorized: Invalid token');
-        alert('Błąd autoryzacji. Skontaktuj się z obsługą klienta.');
+        alert('Chyba autorizace. Kontaktujte zákaznickou podporu.');
       } else if (response.status === 429) {
         console.error('❌ Rate limit exceeded');
-        alert('Zbyt wiele żądań. Spróbuj ponownie za chwilę.');
+        alert('Příliš mnoho požadavků. Zkuste to znovu za chvíli.');
       } else {
         const errorText = await response.text();
         console.error('❌ API Error:', response.status, response.statusText, errorText);
-        alert(`Wystąpił błąd podczas wysyłania zamówienia (${response.status}). Spróbuj ponownie później.`);
+        alert(`Vyskytla se chyba při odesílání objednávky (${response.status}). Zkuste to znovu později.`);
       }
     } catch (error: unknown) {
       console.error('Network Error:', error);
-      alert('Wystąpił błąd połączenia. Sprawdź połączenie internetowe i spróbuj ponownie.');
+      alert('Vyskytla se chyba připojení. Zkontrolujte internetové připojení a zkuste to znovu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1293,7 +1313,7 @@ export default function JacketLanding() {
 
         <div className="bg-red-600 text-white text-center py-2 px-4">
           <div className="flex items-center justify-center space-x-4 text-sm font-medium">
-            <span>🔥 OFERTA LIMITOWANA – Zniżka -60% tylko dziś!</span>
+            <span>🔥 OMEZENÁ NABÍDKA – Sleva -60% pouze dnes!</span>
           </div>
         </div>
 
@@ -1312,42 +1332,42 @@ export default function JacketLanding() {
                 </div>
 
                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                  🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca
+                  🏍️ RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE
                 </h1>
 
                 <p className="text-lg text-gray-700 font-medium">
-                  <strong>Kurtka 4-sezonowa z ochraniaczyami CE, wodoodporną membraną i systemem wentylacji – bezpieczeństwo i komfort w każdych warunkach.</strong>
+                  <strong>4-sezónní bunda s chrániči CE, vodoněpropustné membráně a systémem ventilace – bezpečnost a komfort za všech podmínek.</strong>
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">🛡️ Ochraniacze CE</span>
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">💧 Wodoodporna</span>
-                  <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">🌬️ Oddychająca</span>
-                  <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">🔥 Podszewka termo</span>
-                  <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">✨ Odblaski 360°</span>
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">🛡️ Chrániče CE</span>
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">💧 Vodoněpropustná</span>
+                  <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">🌬️ Prodyšná</span>
+                  <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">🔥 Termo podvázka</span>
+                  <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">✨ Reflexní prvky 360°</span>
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">📏 Rozmiary S-3XL</span>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🛡️ <strong>Bezpieczeństwo CE</strong> – Ochraniacze barki/łokcie/plecy poziom 1</span>
+                    <span className="text-base">🛡️ <strong>Bezpečnost CE</strong> – Chrániče ramen/loktů/zád úroveň 1</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🌦️ <strong>Komfort w każdą pogodę</strong> – Membrana wodoodporna + oddychająca</span>
+                    <span className="text-base">🌦️ <strong>Komfort za každého počasí</strong> – Vodoněpropustná + prodyšná membrána</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🌬️ <strong>Wentylacja</strong> – Otwory pod pachami i na plecach z zamkami</span>
+                    <span className="text-base">🌬️ <strong>Ventilace</strong> – Otvory pod paží a na zádech se zipy</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🔥 <strong>Podszewka termo</strong> – Wypinana na zimę dla maksymalnego komfortu</span>
+                    <span className="text-base">🔥 <strong>Termo podvázka</strong> – Vypínací na zimu pro maximální komfort</span>
                   </div>
                 </div>
 
-                {/* MINIMAL BRAND SELECTORS - POLISH */}
+                {/* MINIMAL BRAND SELECTORS */}
                 <section
                   aria-labelledby="variantsTitle"
                   style={{
@@ -1367,7 +1387,7 @@ export default function JacketLanding() {
                       letterSpacing: '0'
                     }}
                   >
-                    Wybierz model i rozmiar
+                    Vyberte model a velikost
                   </h3>
 
                   {/* Model Selection */}
@@ -1392,13 +1412,13 @@ export default function JacketLanding() {
                       <button
                         type="button"
                         role="radio"
-                        aria-checked={model === 'Mężczyzna'}
+                        aria-checked={model === 'Muž'}
                         tabIndex={0}
-                        onClick={() => setModel('Mężczyzna')}
+                        onClick={() => setModel('Muž')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setModel('Mężczyzna');
+                            setModel('Muž');
                           }
                         }}
                         style={{
@@ -1408,22 +1428,22 @@ export default function JacketLanding() {
                           height: '42px',
                           padding: '0 14px',
                           fontSize: '14px',
-                          fontWeight: model === 'Mężczyzna' ? '600' : '500',
+                          fontWeight: model === 'Muž' ? '600' : '500',
                           color: '#111',
-                          background: model === 'Mężczyzna' ? '#F3F4F6' : '#fff',
-                          border: `1px solid ${model === 'Mężczyzna' ? '#111' : '#D1D5DB'}`,
+                          background: model === 'Muž' ? '#F3F4F6' : '#fff',
+                          border: `1px solid ${model === 'Muž' ? '#111' : '#D1D5DB'}`,
                           borderRadius: '8px',
                           transition: 'background .15s, border-color .15s',
                           cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
-                          if (model !== 'Mężczyzna') {
+                          if (model !== 'Muž') {
                             (e.target as HTMLElement).style.background = '#F9FAFB';
                             (e.target as HTMLElement).style.borderColor = '#9CA3AF';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (model !== 'Mężczyzna') {
+                          if (model !== 'Muž') {
                             (e.target as HTMLElement).style.background = '#fff';
                             (e.target as HTMLElement).style.borderColor = '#D1D5DB';
                           }
@@ -1436,19 +1456,19 @@ export default function JacketLanding() {
                           (e.target as HTMLElement).style.outline = 'none';
                         }}
                       >
-                        Mężczyzna
+                        Muž
                       </button>
 
                       <button
                         type="button"
                         role="radio"
-                        aria-checked={model === 'Kobieta'}
+                        aria-checked={model === 'Žena'}
                         tabIndex={0}
-                        onClick={() => setModel('Kobieta')}
+                        onClick={() => setModel('Žena')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setModel('Kobieta');
+                            setModel('Žena');
                           }
                         }}
                         style={{
@@ -1458,22 +1478,22 @@ export default function JacketLanding() {
                           height: '42px',
                           padding: '0 14px',
                           fontSize: '14px',
-                          fontWeight: model === 'Kobieta' ? '600' : '500',
+                          fontWeight: model === 'Žena' ? '600' : '500',
                           color: '#111',
-                          background: model === 'Kobieta' ? '#F3F4F6' : '#fff',
-                          border: `1px solid ${model === 'Kobieta' ? '#111' : '#D1D5DB'}`,
+                          background: model === 'Žena' ? '#F3F4F6' : '#fff',
+                          border: `1px solid ${model === 'Žena' ? '#111' : '#D1D5DB'}`,
                           borderRadius: '8px',
                           transition: 'background .15s, border-color .15s',
                           cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
-                          if (model !== 'Kobieta') {
+                          if (model !== 'Žena') {
                             (e.target as HTMLElement).style.background = '#F9FAFB';
                             (e.target as HTMLElement).style.borderColor = '#9CA3AF';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (model !== 'Kobieta') {
+                          if (model !== 'Žena') {
                             (e.target as HTMLElement).style.background = '#fff';
                             (e.target as HTMLElement).style.borderColor = '#D1D5DB';
                           }
@@ -1486,7 +1506,7 @@ export default function JacketLanding() {
                           (e.target as HTMLElement).style.outline = 'none';
                         }}
                       >
-                        Kobieta
+                        Žena
                       </button>
                     </div>
                   </div>
@@ -1499,11 +1519,11 @@ export default function JacketLanding() {
                       color: '#111',
                       marginBottom: '6px'
                     }}>
-                      Rozmiar *
+                      Velikost *
                     </div>
                     <div
                       role="radiogroup"
-                      aria-label="Rozmiar"
+                      aria-label="Velikost"
                       style={{
                         display: 'flex',
                         gap: '8px',
@@ -1571,7 +1591,7 @@ export default function JacketLanding() {
                         const overlay = document.querySelector('.sizeguide-overlay') as HTMLElement;
                         if (overlay) {
                           overlay.style.display = 'block';
-                          const targetTab = model === 'Kobieta' ? 'kobieta' : 'mezczyzna';
+                          const targetTab = model === 'Žena' ? 'zena' : 'muz';
                           setTimeout(() => {
                             showSizeTab(targetTab);
                           }, 50);
@@ -1594,7 +1614,7 @@ export default function JacketLanding() {
                         (e.target as HTMLElement).style.color = '#2563EB';
                       }}
                     >
-                      Tablica rozmiarów
+                      Tabulka velikostí
                     </button>
                   </div>
 
@@ -1604,7 +1624,7 @@ export default function JacketLanding() {
                     fontSize: '14px',
                     color: '#374151'
                   }}>
-                    Twój wybór: <strong>{model}</strong>, <strong>Rozmiar {size}</strong>
+                    Vaše volba: <strong>{model}</strong>, <strong>Velikost {size}</strong>
                   </div>
                 </section>
 
@@ -1625,7 +1645,7 @@ export default function JacketLanding() {
                     marginBottom: '15px',
                     textAlign: 'center'
                   }}>
-                    🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca
+                    🏍️ RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE
                   </h2>
 
                   <div style={{
@@ -1637,13 +1657,13 @@ export default function JacketLanding() {
                     fontSize: '16px',
                     flexWrap: 'wrap'
                   }}>
-                    <span style={{ flex: '1 1 70%' }}>🛡️ Kurtka z ochraniaczyami CE (barki/łokcie/plecy)</span>
+                    <span style={{ flex: '1 1 70%' }}>🛡️ Bunda s chrániči CE (ramena/lokty/záda)</span>
                     <span style={{
                       color: 'red',
                       textDecoration: 'line-through',
                       fontWeight: 'bold',
                       whiteSpace: 'nowrap'
-                    }}>749 zł</span>
+                    }}>4373 Kč</span>
                   </div>
 
                   <div style={{
@@ -1655,7 +1675,7 @@ export default function JacketLanding() {
                     fontSize: '16px',
                     flexWrap: 'wrap'
                   }}>
-                    <span style={{ flex: '1 1 70%' }}>💧 Membrana wodoodporna + oddychająca w każdych warunkach</span>
+                    <span style={{ flex: '1 1 70%' }}>💧 Vodoněpropustná membrána + prodyšná za všech podmínek</span>
                     <span style={{
                       color: '#16a34a',
                       fontWeight: 'bold',
@@ -1672,7 +1692,7 @@ export default function JacketLanding() {
                     fontSize: '16px',
                     flexWrap: 'wrap'
                   }}>
-                    <span style={{ flex: '1 1 70%' }}>🌬️ System wentylacji: Otwory pod pachami i na plecach</span>
+                    <span style={{ flex: '1 1 70%' }}>🌬️ Systém ventilace: Otvory pod paží a na zádech</span>
                     <span style={{
                       color: '#16a34a',
                       fontWeight: 'bold',
@@ -1704,7 +1724,7 @@ export default function JacketLanding() {
                     margin: '10px 0',
                     fontSize: '15px'
                   }}>
-                    🚚 <strong>Darmowa dostawa</strong> w całej Polsce (dostawa w 3-4 dni robocze)
+                    🚚 <strong>Dopravné zdarma</strong> po celé České republice (dodání za 3-4 pracovní dny)
                   </div>
 
                   <div style={{
@@ -1714,7 +1734,7 @@ export default function JacketLanding() {
                     margin: '10px 0',
                     fontSize: '15px'
                   }}>
-                    💶 <strong>Płatność przy odbiorze</strong> dostępna
+                    💶 <strong>Platba na dobírku</strong> dostupná
                   </div>
 
                   <div style={{
@@ -1727,9 +1747,9 @@ export default function JacketLanding() {
                     color: '#16a34a',
                     fontWeight: 'bold'
                   }}>
-                    Cena katalogowa: <span style={{ textDecoration: 'line-through', color: 'red' }}>749 zł</span><br />
+                    Cena katalogová: <span style={{ textDecoration: 'line-through', color: 'red' }}>4 373 Kč</span><br />
                     <div style={{ marginTop: '10px' }}>
-                      Dziś tylko: <span style={{ fontSize: '26px' }}>299 zł</span>
+                      Pouze dnes: <span style={{ fontSize: '26px' }}>1 749 Kč</span>
                     </div>
                   </div>
 
@@ -1743,8 +1763,8 @@ export default function JacketLanding() {
                     marginBottom: '10px',
                     fontSize: '14px'
                   }}>
-                    ⏳ <strong>Oferta ważna tylko przez kilka dni!</strong><br />
-                    Skorzystaj zanim wróci do pełnej ceny.
+                    ⏳ <strong>Nabídka platná pouze několik dní!</strong><br />
+                    Využijte, než se vrátí na plnou cenu.
                   </div>
 
                   <div style={{
@@ -1767,11 +1787,11 @@ export default function JacketLanding() {
                     margin: '10px 0',
                     fontSize: '15px'
                   }}>
-                    ⚡ Ostatnie sztuki dostępne w magazynie
+                    ⚡ Poslední kusy dostupné na skladě
                   </div>
 
                   <p style={{ textAlign: 'center', fontSize: '14px', color: '#555' }}>
-                    📦 Wysyłka w 24/48h – Dostawa gwarantowana w 3-4 dni
+                    📦 Odeslání do 24/48h – Dodání garantováno za 3-4 dny
                   </p>
                 </div>
 
@@ -1779,7 +1799,7 @@ export default function JacketLanding() {
                   onClick={handleOrderClick}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 shadow-lg animate-pulse-button"
                 >
-                  🔥 ZAMÓW TERAZ - Płatność przy Odbiorze
+                  🔥 KOUPIT NYNÍ - Platba na dobírku
                 </button>
 
                 <DeliveryTracking />
@@ -1801,7 +1821,7 @@ export default function JacketLanding() {
                       </div>
 
                       <p className="text-gray-800 text-sm leading-relaxed mb-3">
-                        "Kupiłem RoadShield 4-Seasons miesiąc temu i jestem zachwycony! 🛡️ Ochraniacze CE dają pełne bezpieczeństwo, membrana wodoodporna trzyma sucho w deszczu. System wentylacji ratuje latem, a podszewka termo świetnie sprawdza się zimą. Najlepsza kurtka motocyklowa jaką miałem!"
+                        "Koupil jsem RoadShield 4-Seasons před měsícem a jsem nadšený! 🛡️ Chrániče CE poskytují úplnou bezpečnost, vodoněpropustná membrána udrží sucho za deště. Systém ventilace zachřaní v létě a termo podvázka skvěle funguje v zimě. Nejlepší motocyklová bunda, jakou jsem měl!"
                       </p>
 
                       {/* Nome con checkmark blu */}
@@ -1809,7 +1829,7 @@ export default function JacketLanding() {
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-xs font-bold">✓</span>
                         </div>
-                        <span className="font-bold text-gray-900 text-sm">Marcin K. - Kraków</span>
+                        <span className="font-bold text-gray-900 text-sm">Petr K. - Praha</span>
                       </div>
                     </div>
                   </div>
@@ -1825,19 +1845,19 @@ export default function JacketLanding() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  🏍️ RoadShield™ 4-Seasons – Bezpieczeństwo na Każdym Kilometrze!
+                  🏍️ RoadShield™ 4-Seasons – Bezpečnost na každém kilometru!
                 </h2>
                 <p className="text-lg text-gray-700 mb-6">
-                  <strong>RoadShield™ 4-Seasons z ochraniaczyami CE</strong> to rewolucyjna kurtka motocyklowa, zaprojektowana dla motocyklistów, którzy wymagają najwyższego poziomu ochrony.
+                  <strong>RoadShield™ 4-Seasons s chrániči CE</strong> je revoluční motocyklová bunda, navrhená pro motocyklisty, kteří vyžadují nejvyšší úroveň ochrany.
                 </p>
                 <p className="text-lg text-gray-700">
-                  <strong>Ochraniacze CE poziom 1</strong> gwarantują ochronę barków, łokci i pleców, a <strong>wodoodporna membrana</strong> zapewnia komfort w każdych warunkach pogodowych.
+                  <strong>Chrániče CE úroveň 1</strong> garantují ochranu ramen, loktů a zád, a <strong>vodoněpropustná membrána</strong> zajišťuje komfort za všech povětrnostních podmínek.
                 </p>
               </div>
               <div>
                 <img
                   src="/images/Jacket/4.gif"
-                  alt="Kurtka w użyciu"
+                  alt="Bunda v použití"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
               </div>
@@ -1857,19 +1877,19 @@ export default function JacketLanding() {
               </div>
               <div className="order-1 lg:order-2">
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Dlaczego RoadShield™ 4-Seasons?
+                  Proč RoadShield™ 4-Seasons?
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
                     <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                     <div className="text-lg">
-                      <strong>Bezpieczeństwo CE:</strong> Ochraniacze barki/łokcie/plecy poziom 1 – pełna ochrona w razie upadku.
+                      <strong>Bezpečnost CE:</strong> Chrániče ramen/loktů/zád úroveň 1 – úplná ochrana v případě pádu.
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                     <div className="text-lg">
-                      <strong>Komfort w każdą pogodę:</strong> Membrana wodoodporna + oddychająca – sucho i komfortowo zawsze.
+                      <strong>Komfort za každého počasí:</strong> Vodoněpropustná + prodyšná membrána – sucho a komfortně vždy.
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
@@ -1881,13 +1901,13 @@ export default function JacketLanding() {
                   <div className="flex items-start space-x-3">
                     <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                     <div className="text-lg">
-                      <strong>Podszewka termo:</strong> Wypinana na zimę – jedna kurtka na 4 sezony.
+                      <strong>Termo podvázka:</strong> Vypínací na zimu – jedna bunda na 4 sezóny.
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
                     <div className="text-lg">
-                      <strong>Widoczność 360°:</strong> Odblaski na ramionach i plecach – bezpieczeństwo w nocy.
+                      <strong>Viditelnost 360°:</strong> Reflexní prvky na ramenou a zádech – bezpečnost v noci.
                     </div>
                   </div>
                 </div>
@@ -1900,10 +1920,10 @@ export default function JacketLanding() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                4 Sezony Wykorzystania – Jedna Kurtka na Cały Rok
+                4 sezóny využití – jedna bunda na celý rok
               </h2>
               <p className="text-lg text-gray-700">
-                RoadShield™ 4-Seasons to jedyna kurtka motocyklowa, która doskonale sprawdza się w każdych warunkach pogodowych.
+                RoadShield™ 4-Seasons je jedinečná motocyklová bunda, která perfektně funguje za všech povětrnostních podmínek.
               </p>
             </div>
 
@@ -1920,22 +1940,22 @@ export default function JacketLanding() {
                   <div className="text-center p-6 bg-white rounded-lg shadow-md">
                     <div className="text-4xl mb-4">❄️</div>
                     <h3 className="font-bold text-lg mb-2">ZIMA</h3>
-                    <p className="text-gray-600">Z podszewką termo + warstwa bazowa = ciepło i ochrona.</p>
+                    <p className="text-gray-600">S termo podvázkou + základní vrstva = teplo a ochrana.</p>
                   </div>
                   <div className="text-center p-6 bg-white rounded-lg shadow-md">
                     <div className="text-4xl mb-4">🌸</div>
-                    <h3 className="font-bold text-lg mb-2">WIOSNA/JESIEŃ</h3>
-                    <p className="text-gray-600">Bez podszewki, wentylacja zamknięta = idealny komfort.</p>
+                    <h3 className="font-bold text-lg mb-2">JARO/PODZIM</h3>
+                    <p className="text-gray-600">Bez podvázky, ventilace zavřená = ideální komfort.</p>
                   </div>
                   <div className="text-center p-6 bg-white rounded-lg shadow-md">
                     <div className="text-4xl mb-4">☀️</div>
                     <h3 className="font-bold text-lg mb-2">LATO</h3>
-                    <p className="text-gray-600">Wszystkie wentylacje otwarte, oddychająca membrana.</p>
+                    <p className="text-gray-600">Všechny ventilace otevřené, prodyšná membrána.</p>
                   </div>
                   <div className="text-center p-6 bg-white rounded-lg shadow-md">
                     <div className="text-4xl mb-4">🌧️</div>
-                    <h3 className="font-bold text-lg mb-2">DESZCZ</h3>
-                    <p className="text-gray-600">Wodoodporna membrana chroni w każdych warunkach.</p>
+                    <h3 className="font-bold text-lg mb-2">DEŠŤ</h3>
+                    <p className="text-gray-600">Vodoněpropustná membrána chrání za všech podmínek.</p>
                   </div>
                 </div>
               </div>
@@ -1950,7 +1970,7 @@ export default function JacketLanding() {
                 Zestaw W Komplecie
               </h2>
               <p className="text-lg text-gray-700">
-                Wszystko czego potrzebujesz do bezpiecznej i komfortowej jazdy w każdych warunkach.
+                Vše, co potřebujete pro bezpečnou a komfortní jízdu za všech podmínek.
               </p>
             </div>
 
@@ -1959,7 +1979,7 @@ export default function JacketLanding() {
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">🏍️</div>
                   <h3 className="font-bold text-lg mb-2">Kurtka RoadShield™ 4-Seasons</h3>
-                  <p className="text-gray-600">Główna kurtka z membraną wodoodporną i systemem wentylacji</p>
+                  <p className="text-gray-600">Hlavní bunda s vodoněpropustné membráně a systémem ventilace</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">🛡️</div>
@@ -1974,12 +1994,12 @@ export default function JacketLanding() {
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">📋</div>
                   <h3 className="font-bold text-lg mb-2">Instrukcja w Języku Polskim</h3>
-                  <p className="text-gray-600">Szczegółowe instrukcje użytkowania i pielęgnacji</p>
+                  <p className="text-gray-600">Podrobné instrukce pro použití a peči</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">🏆</div>
                   <h3 className="font-bold text-lg mb-2">Certyfikat CE</h3>
-                  <p className="text-gray-600">Potwierdzenie jakości i bezpieczeństwa</p>
+                  <p className="text-gray-600">Potvrzení kvality a bezpečnosti</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">📏</div>
@@ -2006,37 +2026,37 @@ export default function JacketLanding() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Materiał:</h4>
-                    <p className="text-gray-600">Oxford 600D/900D z wzmocnieniami</p>
+                    <h4 className="font-semibold text-gray-800">Materiál:</h4>
+                    <p className="text-gray-600">Oxford 600D/900D s vyztžením</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Membrana:</h4>
-                    <p className="text-gray-600">Wodoodporna + oddychająca</p>
+                    <h4 className="font-semibold text-gray-800">Membrána:</h4>
+                    <p className="text-gray-600">Vodoněpropustná + prodyšná</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Ochraniacze:</h4>
-                    <p className="text-gray-600">CE Level 1 (barki, łokcie, plecy)</p>
+                    <h4 className="font-semibold text-gray-800">Chrániče:</h4>
+                    <p className="text-gray-600">CE Level 1 (ramena, lokty, záda)</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Wentylacja:</h4>
-                    <p className="text-gray-600">Otwory pod pachami i na plecach z zamkami</p>
+                    <h4 className="font-semibold text-gray-800">Ventilace:</h4>
+                    <p className="text-gray-600">Otvory pod paží a na zádech se zipy</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Odblaski:</h4>
-                    <p className="text-gray-600">Na ramionach, plecach i mankietach</p>
+                    <h4 className="font-semibold text-gray-800">Reflexní prvky:</h4>
+                    <p className="text-gray-600">Na ramenou, zádech a manžetách</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Zamki:</h4>
-                    <p className="text-gray-600">YKK (główny + kieszenie)</p>
+                    <h4 className="font-semibold text-gray-800">Zipy:</h4>
+                    <p className="text-gray-600">YKK (hlavní + kapsy)</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Podszewka:</h4>
-                    <p className="text-gray-600">Termo, wypinana</p>
+                    <h4 className="font-semibold text-gray-800">Podvázka:</h4>
+                    <p className="text-gray-600">Termo, vypínací</p>
                   </div>
                   <div className="border-b border-gray-200 pb-3">
-                    <h4 className="font-semibold text-gray-800">Rozmiary:</h4>
+                    <h4 className="font-semibold text-gray-800">Velikosti:</h4>
                     <p className="text-gray-600">S, M, L, XL, XXL, 3XL</p>
                   </div>
                 </div>
@@ -2045,54 +2065,26 @@ export default function JacketLanding() {
 
             {/* Tabella Rozmiarów */}
             <div className="mt-12 bg-white rounded-lg p-8 shadow-lg">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Tabela Rozmiarów</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Tabulka velikostí</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left font-semibold">Rozmiar</th>
-                      <th className="px-4 py-3 text-left font-semibold">Klatka Piersiowa</th>
-                      <th className="px-4 py-3 text-left font-semibold">Talia</th>
-                      <th className="px-4 py-3 text-left font-semibold">Długość Rękawa</th>
+                      <th className="px-4 py-3 text-left font-semibold">Velikost</th>
+                      <th className="px-4 py-3 text-left font-semibold">Hrudník (cm)</th>
+                      <th className="px-4 py-3 text-left font-semibold">Pas (cm)</th>
+                      <th className="px-4 py-3 text-left font-semibold">Délka rukávu (cm)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    <tr>
-                      <td className="px-4 py-3 font-medium">S</td>
-                      <td className="px-4 py-3">96-104 cm</td>
-                      <td className="px-4 py-3">76-84 cm</td>
-                      <td className="px-4 py-3">61 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-medium">M</td>
-                      <td className="px-4 py-3">104-112 cm</td>
-                      <td className="px-4 py-3">84-92 cm</td>
-                      <td className="px-4 py-3">63 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-medium">L</td>
-                      <td className="px-4 py-3">112-120 cm</td>
-                      <td className="px-4 py-3">92-100 cm</td>
-                      <td className="px-4 py-3">65 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-medium">XL</td>
-                      <td className="px-4 py-3">120-128 cm</td>
-                      <td className="px-4 py-3">100-108 cm</td>
-                      <td className="px-4 py-3">67 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-medium">XXL</td>
-                      <td className="px-4 py-3">128-136 cm</td>
-                      <td className="px-4 py-3">108-116 cm</td>
-                      <td className="px-4 py-3">69 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-medium">3XL</td>
-                      <td className="px-4 py-3">136-144 cm</td>
-                      <td className="px-4 py-3">116-124 cm</td>
-                      <td className="px-4 py-3">71 cm</td>
-                    </tr>
+                    {SIZE_TABLE_CZ.man.map((item) => (
+                      <tr key={item.size}>
+                        <td className="px-4 py-3 font-medium">{item.size}</td>
+                        <td className="px-4 py-3">{item.chest} cm</td>
+                        <td className="px-4 py-3">{item.waist} cm</td>
+                        <td className="px-4 py-3">{item.sleeve} cm</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -2115,32 +2107,32 @@ export default function JacketLanding() {
 
             <div className="space-y-4">
               <FAQ
-                question="Czy ochraniacze są certyfikowane CE?"
-                answer="Tak, wszystkie ochraniacze (barki, łokcie, plecy) posiadają certyfikat CE poziom 1, co gwarantuje najwyższy standard bezpieczeństwa zgodny z normami europejskimi."
+                question="Jsou chrániče certifikovány CE?"
+                answer="Ano, všechny chrániče (ramena, lokty, záda) mají certifikát CE úroveň 1, což zaruuje nejvyšší standard bezpečnosti v souladu s evropskými normami."
               />
               <FAQ
-                question="Jak działa membrana wodoodporna?"
-                answer="Membrana jest w 100% wodoodporna i jednocześnie oddychająca. Zapobiega przedostawaniu się wody z zewnątrz, a jednocześnie odprowadza wilgoć z wnętrza kurtki."
+                question="Jak funguje vodoněpropustná membrána?"
+                answer="Membrána je 100% vodoněpropustná a zároveň prodyšná. Zabrauje průniku vody zvenčí a zároveň odvadí vlhkost z vnitřku bundy."
               />
               <FAQ
-                question="Czy można regulować wentylację?"
-                answer="Tak, kurtka posiada otwory wentylacyjne pod pachami i na plecach z zamkami YKK. Możesz je otwierać i zamykać w zależności od warunków pogodowych."
+                question="Lze regulovat ventilaci?"
+                answer="Ano, bunda má ventilační otvory pod paží a na zádech se zipy YKK. Můžete je otvírat a zavírat podle povětrnostních podmínek."
               />
               <FAQ
-                question="Jak wybrać odpowiedni rozmiar?"
-                answer="Skorzystaj z naszej tabeli rozmiarów. Zmierz obwód klatki piersiowej i talii, a następnie dopasuj do tabeli. W razie wątpliwości wybierz większy rozmiar."
+                question="Jak vybrat správnou velikost?"
+                answer="Použijte naši tabulku velikostí. Změřte obvod hrudi a pasu a poté přiřaďte k tabulce. V případě pochybností vyberte větší velikost."
               />
               <FAQ
-                question="Jak pielęgnować kurtkę?"
+                question="Jak pečovat o bundu?"
                 answer="Kurtkę można prać w pralce w temp. 30°C z delikatnym detergentem. Nie używaj płynu do płukania ani wybielacza. Suszyć w pozycji wiszącej."
               />
               <FAQ
-                question="Jakie są czasy dostawy?"
-                answer="Standardowa dostawa w Polsce trwa 3-4 dni robocze. Wysyłka następuje w ciągu 24-48h od złożenia zamówienia."
+                question="Jaké jsou časy dodání?"
+                answer="Standardní dodání v České republice trvá 3-4 pracovní dny. Odeslání probíhají do 24-48h od uložení objednávky."
               />
               <FAQ
-                question="Czy są zwroty i gwarancja?"
-                answer="Oferujemy 30-dniową gwarancję zwrotu pieniędzy oraz 24-miesięczną gwarancję producenta na wszystkie wady fabryczne."
+                question="Jsou možné vrácení a záruka?"
+                answer="Nabízíme 30-denní záruku vrácení peněz a 24-měsíční záruku výobce na všechny výrobní závady."
               />
             </div>
           </div>
@@ -2157,51 +2149,51 @@ export default function JacketLanding() {
                 Opinie klientów o kurtce RoadShield™ 4-Seasons
               </h2>
               <p className="text-lg text-gray-700">
-                Autentyczne i wiarygodne opinie motocyklistów
+                Autentické a důvěryhodné recenze motocyklistů
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 {
-                  name: "Kamil K. - Kraków",
+                  name: "Anna P. - Praha",
                   rating: 5,
-                  review: "Jeżdżę od 3 lat na różnych kurtkach, ale RoadShield to prawdziwa rewolucja! 🛡️ Ochraniacze CE dają pełne bezpieczeństwo, a membrana wodoodporna trzyma sucho nawet w największy deszcz. Polecam każdemu motocykliście!"
+                  review: "Jízdím už 3 roky na různých bundách, ale RoadShield je skutečná revoluce! 🛡️ Chrániče CE poskytují úplnou bezpečnost a vodoněpropustná membrána udrží sucho i při největším dešti. Doporučuji každému motocyklistovi!"
                 },
                 {
-                  name: "Ania M. - Warszawa",
+                  name: "Petr H. - Brno",
                   rating: 5,
-                  review: "Wreszcie kurtka na każdą pogodę! 🌦️ Latem otwieramy wentylacje i jest komfortowo, zimą wkładamy podszewkę termo i ciepło. Świetna jakość materiałów i wykonania. Najlepsza inwestycja w bezpieczeństwo!"
+                  review: "konečně bunda na každé počasí! 🌦️ V létě otvíráme ventilaci a je pohodlně, v zimě vložíme termo podvázku a je teplo. Skvělá kvalita materiálů a provední. Nejlepší investice do bezpečnosti!"
                 },
                 {
-                  name: "Marek P. - Wrocław",
+                  name: "Jana N. - Ostrava",
                   rating: 5,
-                  review: "System wentylacji to strzał w dziesiątkę! 🌬️ Latem, gdy jest upał, otwieram wszystkie otwory i czuję się komfortowo. Odblaski świetnie widać w nocy - bezpieczeństwo na najwyższym poziomie."
+                  review: "Systém ventilace je úplně skvělý! 🌬️ V létě, kdy je horko, otevřu všechny otvory a cítím se pohodlně. Reflexní prvky jsou v noci skvěle viditelné - bezpečnost na nejvyšší úrovni."
                 },
                 {
-                  name: "Kasia L. - Gdańsk",
+                  name: "Michal D. - Plzeň",
                   rating: 5,
-                  review: "Wodoodporność na poziomie! 💧 Jeździłam w ulewnym deszczu i zostałam kompletnie sucha. Membrana oddycha, więc nie pocę się. Idealna kurtka dla każdego motocyklisty, niezależnie od doświadczenia."
+                  review: "Vodoněpropustnost na úrovni! 💧 Jízdil jsem v průvalovém dešti a zůstal jsem úplně suchý. Membrána dýchá, takže se nepotím. Ideální bunda pro každého motocyklistu, bez ohledu na zkušenosti."
                 },
                 {
-                  name: "Tomek S. - Poznań",
+                  name: "Kateřina V. - Liberec",
                   rating: 5,
-                  review: "Podszewka termo to strzał w dziesiątkę! 🔥 Zimą z nią jest ciepło, latem bez niej jest chłodno. Jedna kurtka na cały rok - to się nazywa praktyczność! Jakość materiałów rewelacyjna."
+                  review: "Termo podvázka je úplně skvělá! 🔥 V zimě s ní je teplo, v létě bez ní je chładno. Jedna bunda na celý rok - to se jmenuje praktická funkce! Kvalita materiálů je fantastická."
                 },
                 {
-                  name: "Ewelina K. - Łódź",
+                  name: "Tomáš K. - Olomouc",
                   rating: 5,
-                  review: "Odblaski świetnie widać w nocy! ✨ Bezpieczeństwo to podstawa, a ta kurtka ma odblaski na ramionach, plecach i mankietach. Czuję się bezpiecznie jeżdżąc po zmroku. Bardzo polecam!"
+                  review: "Reflexní prvky jsou v noci skvěle viditelné! ✨ Bezpečnost je základ a tato bunda má reflexní prvky na ramenou, zádech a manžetách. Cítím se bezpečně při jízdě za šera. Velmi doporučuji!"
                 },
                 {
-                  name: "Paweł J. - Katowice",
+                  name: "Martin Š. - České Budějovice",
                   rating: 5,
-                  review: "Materiał 600D/900D jest bardzo trwały! 💪 Używam kurtki od roku, jeżdżę codziennie i nie ma żadnych śladów zużycia. Zamki YKK działają płynnie, ochraniacze świetnie się trzymają."
+                  review: "Materiál 600D/900D je velmi odolny! 💪 Používám bundu už rok, jízdím denně a nejsou žádné stopy opotřebení. Zipy YKK fungují plynule, chrániče dokonale drží."
                 },
                 {
-                  name: "Magda R. - Lublin",
+                  name: "Lucie M. - Hradec Králové",
                   rating: 4,
-                  review: "Idealnie dopasowana, rozmiar M jak ulał! 📏 Tabela rozmiarów bardzo precyzyjna. Kurtka nie ogranicza ruchów, można swobodnie jeździć. Jedyny minus - mogłaby mieć więcej kieszeni. Poza tym super!"
+                  review: "Ideálně padnucí, velikost M jak uliť! 📏 Tabulka velikostí velmi přesná. Bunda neomezuje pohyb, lze svobodně jezdit. Jediný mínus - mohla by mít více kapes. Jinak super!"
                 }
               ].map((review, index) => (
                 <div key={index} className="bg-white p-6 rounded-lg shadow-md">
@@ -2229,7 +2221,7 @@ export default function JacketLanding() {
                     <span className="text-sm text-gray-600">Zweryfikowany Kupujący</span>
                   </div>
                   <p className="text-gray-700">
-                    "Fantastyczna kurtka RoadShield 4-Seasons! 🏍️ Ochraniacze CE poziom 1 to prawdziwa ochrona - sprawdziłem już kilka razy w praktyce. Membrana wodoodporna trzyma sucho w każdych warunkach, a system wentylacji ratuje latem. Podszewka termo świetnie sprawdza się zimą. To nie jest zwykła kurtka - to profesjonalny sprzęt dla każdego motocyklisty. Najlepsza kurtka jaką miałem!"
+                    "Fantastická bunda RoadShield 4-Seasons! 🏍️ Chrániče CE úroveň 1 jsou skutečná ochrana - ověřil jsem ji už několikrát v praxi. Vodoněpropustná membrána udrží sucho za všech podmínek a systém ventilace zachřaní v létě. Termo podvázka skvěle funguje v zimě. To není obyčejná bunda - to je profesionální výbava pro každého motocyklistu. Nejlepší bunda, jakou jsem měl!"
                   </p>
                 </div>
               </div>
@@ -2245,7 +2237,7 @@ export default function JacketLanding() {
                 30-Dniowa Gwarancja Zwrotu Pieniędzy
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                Wypróbuj kurtkę RoadShield™ 4-Seasons z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz bezpieczeństwa i komfortu jazdy bez ryzyka.
+                Vyzkousíte bundu RoadShield™ 4-Seasons s úplným klidem díky naší 30-denní záruce vrácení peněz. Zažijte bezpečnost a komfort jízdy bez rizika.
               </p>
               <p className="text-xl font-bold text-green-600">
                 Jeśli nie jesteś całkowicie zadowolony, zwrócimy Ci całą kwotę.
@@ -2258,7 +2250,7 @@ export default function JacketLanding() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Dlaczego kupować od nas?
+                Proč nakupovat u nás?
               </h2>
             </div>
 
@@ -2270,7 +2262,7 @@ export default function JacketLanding() {
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>Płatności bezpośrednio przy odbiorze</span>
+                  <span>Platba přímo na dobírku</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Check className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
@@ -2285,12 +2277,12 @@ export default function JacketLanding() {
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="font-bold text-lg mb-4">DOSTAWA</h3>
                 <p className="text-gray-700 mb-4">
-                  Wysyłamy w całej Polsce, a jeśli zamówienie zostanie złożone przed 21:59, zostanie wysłane następnego dnia roboczego.
+                  Posíláme po celé České republice, a pokud bude objednávka uložena před 21:59, bude odeslána další pracovní den.
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-sm">Dostarczone w 3-4 dni robocze</span>
+                    <span className="text-sm">Dodáno za 3-4 pracovní dny</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Check className="w-4 h-4 text-green-600" />
@@ -2311,7 +2303,7 @@ export default function JacketLanding() {
               🔥 Nie Przegap Tej Specjalnej Oferty!
             </h2>
             <p className="text-xl mb-8">
-              Tylko na dziś: <span className="line-through opacity-75">749 zł</span> <span className="text-5xl font-bold">299 zł</span>
+              Tylko na dziś: <span className="line-through opacity-75">4373 Kč</span> <span className="text-5xl font-bold">299 Kč</span>
             </p>
 
             <div className="bg-white/10 backdrop-blur rounded-lg p-6 mb-8">
@@ -2319,7 +2311,7 @@ export default function JacketLanding() {
                 <div>
                   <Users className="w-8 h-8 mx-auto mb-2" />
                   <div className="font-bold">1,847+</div>
-                  <div className="text-sm opacity-90">Zadowolonych Motocyklistów</div>
+                  <div className="text-sm opacity-90">Spokojených motocyklistů</div>
                 </div>
                 <div>
                   <Package className="w-8 h-8 mx-auto mb-2" />
@@ -2338,11 +2330,11 @@ export default function JacketLanding() {
               onClick={handleOrderClick}
               className="bg-white text-orange-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-200 shadow-lg mb-4 w-full md:w-auto"
             >
-              🛒 ZAMÓW TERAZ - OSTATNIE SZTUKI DOSTĘPNE
+              🛒 KOUPIT NYNÍ - POSLEDNÍ KUSY DOSTUPNÉ
             </button>
 
             <p className="text-sm opacity-90">
-              ⚡ Oferta ograniczona w czasie • 🚚 Darmowa dostawa • 💯 Gwarancja 30 dni
+              ⚡ Časově omezená nabídka • 🚚 Dopravné zdarma • 💯 Záruka 30 dní
             </p>
           </div>
         </section>
@@ -2356,7 +2348,7 @@ export default function JacketLanding() {
             className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-200 shadow-lg ${bounceAnimation ? 'animate-bounce' : ''
               }`}
           >
-            🔥 ZAMÓW TERAZ - Płatność przy Odbiorze
+            🔥 KOUPIT NYNÍ - Platba na dobírku
           </button>
         </div>
 
@@ -2370,11 +2362,11 @@ export default function JacketLanding() {
                 ×
               </button>
 
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 pr-8">Wypełnij aby zamówić</h3>
-              <p className="text-gray-600 mb-4 md:mb-6">Płatność przy odbiorze</p>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 pr-8">Vyplňte pro objednání</h3>
+              <p className="text-gray-600 mb-4 md:mb-6">Platba na dobírku</p>
 
               <div className="bg-gray-50 rounded-lg p-3 md:p-4 mb-4">
-                <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
+                <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Shrnutí objednávky</h4>
                 <div className="flex items-center gap-3">
                   <img
                     src="/images/Jacket/1.jpg"
@@ -2382,13 +2374,16 @@ export default function JacketLanding() {
                     className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm md:text-base">🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE</div>
-                    <div className="text-xs md:text-sm text-gray-600">Wodoodporna, Oddychająca, Ochraniacze CE</div>
-                    <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
+                    <div className="font-medium text-gray-900 text-sm md:text-base">🏍️ RoadShield™ 4-Seasons – Motocyklová bunda s chrániči CE</div>
+                    <div className="text-xs md:text-sm text-gray-600">Vodotěsná, prodyšná, chrániče CE</div>
+                    <div className="text-xs md:text-sm text-gray-600">
+                      <strong>{model}</strong>, <strong>Velikost {size}</strong>
+                    </div>
+                    <div className="text-xs md:text-sm text-green-600">✅ Dopravné zdarma</div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="font-bold text-lg md:text-xl text-gray-900">299 zł</div>
-                    <div className="text-xs text-gray-500 line-through">749 zł</div>
+                    <div className="font-bold text-lg md:text-xl text-gray-900">1 749 Kč</div>
+                    <div className="text-xs text-gray-500 line-through">4 373 Kč</div>
                   </div>
                 </div>
               </div>
@@ -2405,9 +2400,33 @@ export default function JacketLanding() {
                 </div>
               </div>
 
+              {/* Order Summary - Selected Variants */}
+              <div style={{
+                background: '#F9FAFB',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '16px'
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#111',
+                  marginBottom: '6px'
+                }}>
+                  Vaše volba:
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#374151'
+                }}>
+                  <strong>{model}</strong>, <strong>Velikost {size}</strong>
+                </div>
+              </div>
+
               <div className="space-y-3 md:space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Imię i Nazwisko *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Jméno a příjmení *</label>
                   <input
                     type="text"
                     value={formData.imie}
@@ -2416,7 +2435,7 @@ export default function JacketLanding() {
                       ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-green-500'
                       }`}
-                    placeholder="Twoje pełne imię i nazwisko"
+                    placeholder="Vaše plné jméno a příjmení"
                   />
                   {formErrors.imie && (
                     <p className="mt-1 text-sm text-red-600">{formErrors.imie}</p>
@@ -2424,7 +2443,7 @@ export default function JacketLanding() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Numer Telefonu *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefonní číslo *</label>
                   <input
                     type="tel"
                     value={formData.telefon}
@@ -2433,7 +2452,7 @@ export default function JacketLanding() {
                       ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-green-500'
                       }`}
-                    placeholder="Twój numer telefonu"
+                    placeholder="Vaše telefonní číslo"
                   />
                   {formErrors.telefon && (
                     <p className="mt-1 text-sm text-red-600">{formErrors.telefon}</p>
@@ -2441,7 +2460,7 @@ export default function JacketLanding() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pełny Adres *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Plná adresa *</label>
                   <textarea
                     value={formData.adres}
                     onChange={(e) => handleFormChange('adres', e.target.value)}
@@ -2449,45 +2468,83 @@ export default function JacketLanding() {
                       ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-green-500'
                       }`}
-                    placeholder="Ulica, numer domu, miasto, kod pocztowy"
+                    placeholder="Ulice, číslo domu, město, PSČ"
                   />
                   {formErrors.adres && (
                     <p className="mt-1 text-sm text-red-600">{formErrors.adres}</p>
                   )}
                 </div>
 
-                {/* Hidden inputs for external selection sync */}
-                <input type="hidden" name="model" value={model} />
-                <input type="hidden" name="size" value={size} />
+                {/* Sekcja Wyboru Modelu i Rozmiaru */}
+                <div className="space-y-4 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-800 text-center">Vyberte model a velikost</h3>
 
-                {/* Order Summary - Selected Variants */}
-                <div style={{
-                  background: '#F9FAFB',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#111',
-                    marginBottom: '6px'
-                  }}>
-                    Twój wybór:
-                  </div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#374151'
-                  }}>
-                    <strong>{model}</strong>, <strong>Rozmiar {size}</strong>
+                  {/* Hidden inputs for external selection sync */}
+                  <input type="hidden" name="model" value={model} />
+                  <input type="hidden" name="size" value={size} />
+
+                  {/* Tabela Rozmiarów */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-3 text-center">📏 Tabela Rozmiarów</h4>
+
+                    {/* Mobile: Layout compatto 2x3 */}
+                    <div className="block md:hidden text-xs">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">S:</span>
+                          <span className="text-gray-700">96-104</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">M:</span>
+                          <span className="text-gray-700">104-112</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">L:</span>
+                          <span className="text-gray-700">112-120</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">XL:</span>
+                          <span className="text-gray-700">120-128</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">XXL:</span>
+                          <span className="text-gray-700">128-136</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-blue-700">3XL:</span>
+                          <span className="text-gray-700">136-144</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop: Layout griglia */}
+                    <div className="hidden md:grid grid-cols-7 gap-2 text-xs">
+                      <div className="text-center font-medium text-blue-700">Rozmiar</div>
+                      <div className="text-center font-medium text-blue-700">S</div>
+                      <div className="text-center font-medium text-blue-700">M</div>
+                      <div className="text-center font-medium text-blue-700">L</div>
+                      <div className="text-center font-medium text-blue-700">XL</div>
+                      <div className="text-center font-medium text-blue-700">XXL</div>
+                      <div className="text-center font-medium text-blue-700">3XL</div>
+
+                      <div className="text-center font-medium text-blue-700">Klatka piersiowa</div>
+                      <div className="text-center text-gray-700">96-104</div>
+                      <div className="text-center text-gray-700">104-112</div>
+                      <div className="text-center text-gray-700">112-120</div>
+                      <div className="text-center text-gray-700">120-128</div>
+                      <div className="text-center text-gray-700">128-136</div>
+                      <div className="text-center text-gray-700">136-144</div>
+                    </div>
+
+                    <p className="text-xs text-blue-600 text-center mt-2">Wymiary w cm (obwód klatki piersiowej)</p>
                   </div>
                 </div>
               </div>
 
+
               <div className="flex items-center justify-center gap-2 mb-4 mt-4 text-gray-700">
                 <Shield className="w-5 h-5" />
-                <span className="font-medium text-sm md:text-base">Płatność przy odbiorze</span>
+                <span className="font-medium text-sm md:text-base">Platba na dobírku</span>
               </div>
 
               <button
@@ -2495,7 +2552,7 @@ export default function JacketLanding() {
                 disabled={isSubmitting}
                 className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 text-base md:text-lg"
               >
-                {isSubmitting ? 'PRZETWARZANIE...' : 'POTWIERDŹ ZAMÓWIENIE - 299 zł'}
+                {isSubmitting ? 'ZPRACOVÁVÁM...' : 'POTVRDIT OBJEDNÁVKU - 1 749 Kč'}
               </button>
             </div>
           </div>
@@ -2531,7 +2588,7 @@ export default function JacketLanding() {
     }
   `}</style>
 
-        {/* Polish Size Guide Popup */}
+        {/* Czech Size Guide Popup */}
         <div className="sizeguide-overlay" style={{ display: 'none' }} onClick={(e) => {
           if (e.target === e.currentTarget) {
             (e.target as HTMLElement).style.display = 'none';
@@ -2549,43 +2606,47 @@ export default function JacketLanding() {
               fontWeight: '600',
               color: '#111',
               letterSpacing: '0'
-            }}>Tablica rozmiarów</h3>
+            }}>Tabulka velikostí</h3>
 
-            {/* Tab Mężczyzna / Kobieta */}
+            {/* Tab Muž / Žena */}
             <div className="sizeguide-tabs">
-              <button className="active" data-target="mezczyzna" onClick={() => showSizeTab('mezczyzna')}>Mężczyzna</button>
-              <button data-target="kobieta" onClick={() => showSizeTab('kobieta')}>Kobieta</button>
+              <button className="active" data-target="muz" onClick={() => showSizeTab('muz')}>Muž</button>
+              <button data-target="zena" onClick={() => showSizeTab('zena')}>Žena</button>
             </div>
 
-            {/* MĘŻCZYZNA */}
-            <div id="tab-mezczyzna" className="sizeguide-content active">
+            {/* MUŽ */}
+            <div id="tab-muz" className="sizeguide-content active">
               <table>
-                <tr><th>Rozmiar</th><th>Klatka piersiowa (cm)</th><th>Talia (cm)</th><th>Długość rękawa (cm)</th></tr>
-                <tr><td>S</td><td>96-104</td><td>76-84</td><td>61</td></tr>
-                <tr><td>M</td><td>104-112</td><td>84-92</td><td>63</td></tr>
-                <tr><td>L</td><td>112-120</td><td>92-100</td><td>65</td></tr>
-                <tr><td>XL</td><td>120-128</td><td>100-108</td><td>67</td></tr>
-                <tr><td>XXL</td><td>128-136</td><td>108-116</td><td>69</td></tr>
-                <tr><td>3XL</td><td>136-144</td><td>116-124</td><td>71</td></tr>
+                <tr><th>Velikost</th><th>Hrudník (cm)</th><th>Pas (cm)</th><th>Délka rukávu (cm)</th></tr>
+                {SIZE_TABLE_CZ.man.map((item) => (
+                  <tr key={item.size}>
+                    <td>{item.size}</td>
+                    <td>{item.chest}</td>
+                    <td>{item.waist}</td>
+                    <td>{item.sleeve}</td>
+                  </tr>
+                ))}
               </table>
               <p style={{ marginTop: '8px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
-                Wymiary w cm (obwód klatki piersiowej, talii i długość rękawa).
+                Rozměry v cm (obvod hrudníku, pasu a délka rukávu).
               </p>
             </div>
 
-            {/* KOBIETA */}
-            <div id="tab-kobieta" className="sizeguide-content">
+            {/* ŽENA */}
+            <div id="tab-zena" className="sizeguide-content">
               <table>
-                <tr><th>Rozmiar</th><th>Klatka piersiowa (cm)</th><th>Talia (cm)</th><th>Długość rękawa (cm)</th></tr>
-                <tr><td>S</td><td>86-94</td><td>66-74</td><td>58</td></tr>
-                <tr><td>M</td><td>94-102</td><td>74-82</td><td>60</td></tr>
-                <tr><td>L</td><td>102-110</td><td>82-90</td><td>62</td></tr>
-                <tr><td>XL</td><td>110-118</td><td>90-98</td><td>64</td></tr>
-                <tr><td>XXL</td><td>118-126</td><td>98-106</td><td>66</td></tr>
-                <tr><td>3XL</td><td>126-134</td><td>106-114</td><td>68</td></tr>
+                <tr><th>Velikost</th><th>Hrudník (cm)</th><th>Pas (cm)</th><th>Délka rukávu (cm)</th></tr>
+                {SIZE_TABLE_CZ.woman.map((item) => (
+                  <tr key={item.size}>
+                    <td>{item.size}</td>
+                    <td>{item.chest}</td>
+                    <td>{item.waist}</td>
+                    <td>{item.sleeve}</td>
+                  </tr>
+                ))}
               </table>
               <p style={{ marginTop: '8px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
-                Wymiary w cm (obwód klatki piersiowej, talii i długość rękawa).
+                Rozměry v cm (obvod hrudníku, pasu a délka rukávu).
               </p>
             </div>
           </div>
@@ -2678,6 +2739,7 @@ export default function JacketLanding() {
             }
           }
         `}</style>
+
       </div>
     </>
   );
