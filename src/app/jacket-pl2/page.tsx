@@ -161,7 +161,7 @@ const trackingUtils = {
         const eventTimestamp = Math.max(maxPastTime, now - 10); // Massimo 10 secondi fa
 
         const capiData = {
-          event_name: eventName,
+          event_name: 'Purchase', // o 'InitiateCheckout'
           event_id: clientEventId,
           timestamp: eventTimestamp, // <-- TIMESTAMP CORRETTO
           event_source_url: window.location.href,
@@ -202,7 +202,7 @@ const trackingUtils = {
           screen_resolution: `${screen.width}x${screen.height}`,
 
           // Dati custom per questo prodotto - DINAMICI
-          content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+          content_name: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
           content_category: 'Motorcycle & Safety Gear',
           content_ids: 'roadshield-4seasons-motorcycle-jacket',
           content_type: 'product',
@@ -794,7 +794,7 @@ const ProductCarousel = () => {
             <img
               key={index}
               src={image}
-              alt={`RoadShield™ 4-Seasons – Kurtka Motocyklowa CE - Vista ${index + 1}`}
+              alt={`SportArmor™ Pro – Kurtka Motocyklowa CE - Vista ${index + 1}`}
               className={`w-full h-auto max-h-[600px] object-contain mx-auto transition-opacity duration-500 rounded-lg shadow-lg ${index === currentImage ? 'opacity-100' : 'opacity-0'
                 } ${index !== currentImage ? 'absolute top-0 left-0' : ''}`}
             />
@@ -866,15 +866,15 @@ export default function JacketLanding() {
   const [showStickyButton, setShowStickyButton] = useState(false);
   const [bounceAnimation, setBounceAnimation] = useState(false);
 
-  // Global state for model and size (hoisted outside form)
-  const [model, setModel] = useState<'Mężczyzna' | 'Kobieta'>('Mężczyzna');
+  // Global state for color and size (hoisted outside form)
+  const [color, setColor] = useState<'Czarny' | 'Szary' | 'Czerwony'>('Czarny');
   const [size, setSize] = useState<'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL'>('S');
 
   const [formData, setFormData] = useState({
     imie: '',
     telefon: '',
     adres: '',
-    modello: '',
+    colorlo: '',
     taglia: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -882,7 +882,7 @@ export default function JacketLanding() {
     imie: '',
     telefon: '',
     adres: '',
-    modello: '',
+    colorlo: '',
     taglia: ''
   });
 
@@ -903,7 +903,7 @@ export default function JacketLanding() {
     // Track PageView for all platforms
     trackingUtils.trackFacebookEvent('PageView');
     trackingUtils.trackGoogleEvent('page_view', {
-      page_title: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE - Strona Główna',
+      page_title: 'SportArmor™ Pro – Kurtka Motocyklowa CE - Strona Główna',
       page_location: window.location.href
     });
 
@@ -967,8 +967,8 @@ export default function JacketLanding() {
   }, [showOrderPopup]);
 
   const validateVariantSelection = () => {
-    if (!model || !size) {
-      alert('Wybierz model i rozmiar.');
+    if (!color || !size) {
+      alert('Wybierz kolor i rozmiar.');
       return false;
     }
     return true;
@@ -1007,7 +1007,7 @@ export default function JacketLanding() {
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
       content_type: 'product',
       content_ids: ['roadshield-4seasons-motorcycle-jacket'],
-      content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+      content_name: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
       value: 299.00,
       currency: 'PLN',
       num_items: 1
@@ -1018,7 +1018,7 @@ export default function JacketLanding() {
       value: 299.00,
       items: [{
         item_id: 'roadshield-4seasons-motorcycle-jacket',
-        item_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+        item_name: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
         category: 'Motorcycle & Safety Gear',
         quantity: 1,
         price: 299.00
@@ -1028,13 +1028,13 @@ export default function JacketLanding() {
     // Sync global state with form data when opening popup
     setFormData(prev => ({
       ...prev,
-      modello: model,
+      colorlo: color,
       taglia: size
     }));
 
     setShowOrderPopup(true);
     setReservationTimer({ minutes: 5, seconds: 0 });
-    setFormErrors({ imie: '', telefon: '', adres: '', modello: '', taglia: '' });
+    setFormErrors({ imie: '', telefon: '', adres: '', colorlo: '', taglia: '' });
   };
 
   const handleFormChange = (field: string, value: string) => {
@@ -1045,7 +1045,7 @@ export default function JacketLanding() {
   };
 
   const validateForm = () => {
-    const errors = { imie: '', telefon: '', adres: '', modello: '', taglia: '' };
+    const errors = { imie: '', telefon: '', adres: '', colorlo: '', taglia: '' };
     let isValid = true;
 
     if (!formData.imie.trim()) {
@@ -1075,8 +1075,8 @@ export default function JacketLanding() {
       isValid = false;
     }
 
-    if (!formData.modello.trim()) {
-      errors.modello = 'Wybierz model kurtki';
+    if (!formData.colorlo.trim()) {
+      errors.colorlo = 'Wybierz color kurtki';
       isValid = false;
     }
 
@@ -1137,7 +1137,7 @@ export default function JacketLanding() {
         fbp: trackingUtils.getFbBrowserId(),
         fbc: trackingUtils.getFbClickId(),
 
-        content_name: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+        content_name: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
         content_category: 'Motorcycle & Safety Gear',
         content_ids: 'roadshield-4seasons-motorcycle-jacket',
         content_type: 'product',
@@ -1191,10 +1191,10 @@ export default function JacketLanding() {
         click_id: clickId,
 
         // Dati del prodotto
-        product: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+        product: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
         price: 299.00,
         currency: 'PLN',
-        modello: model,
+        colorlo: color,
         taglia: size,
 
         // Dati di tracking
@@ -1245,7 +1245,7 @@ export default function JacketLanding() {
         const orderData = {
           ...formData,
           orderId,
-          product: 'RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca',
+          product: 'SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami',
           price: 299.00,
           apiResponse: result
         };
@@ -1312,7 +1312,7 @@ export default function JacketLanding() {
                 </div>
 
                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                  🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca
+                  🏍️ SportArmor™ Pro – Sportowa Kurtka Motocyklowa z Ochraniaczami CE i Zaawansowaną Membranami
                 </h1>
 
                 <p className="text-lg text-gray-700 font-medium">
@@ -1331,19 +1331,31 @@ export default function JacketLanding() {
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🛡️ <strong>Bezpieczeństwo CE</strong> – Ochraniacze barki/łokcie/plecy poziom 1</span>
+                    <span className="text-base">🛡️ <strong>Maksymalne Bezpieczeństwo CE</strong> – Zaawansowane ochraniacze barki/łokcie/plecy poziom 1 + ochrona kręgosłupa</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🌦️ <strong>Komfort w każdą pogodę</strong> – Membrana wodoodporna + oddychająca</span>
+                    <span className="text-base">🌦️ <strong>Perfekcyjny Komfort w Każdą Pogodę</strong> – Zaawansowana membrana 3-warstwowa + system kontroli wilgoci</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🌬️ <strong>Wentylacja</strong> – Otwory pod pachami i na plecach z zamkami</span>
+                    <span className="text-base">🌬️ <strong>Inteligentny System Wentylacji</strong> – 12 regulowanych otworów wentylacyjnych dla optymalnej cyrkulacji</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">🔥 <strong>Podszewka termo</strong> – Wypinana na zimę dla maksymalnego komfortu</span>
+                    <span className="text-base">🔥 <strong>Zaawansowana Podszewka Termo</strong> – Technologia Thinsulate 3M + regulacja 4 poziomów ciepła</span>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base">⚡ <strong>Sportowy Design Racing</strong> – Aerodynamiczny krój + elementy odblaskowe 360°</span>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base">💪 <strong>Wzmocnione Szwy Kevlar</strong> – Podwójne przeszycia + odporność na przetarcie</span>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base">🎯 <strong>Precyzyjne Dopasowanie</strong> – 15 punktów regulacji + ergonomiczny krój sportowy</span>
                   </div>
                 </div>
 
@@ -1367,10 +1379,10 @@ export default function JacketLanding() {
                       letterSpacing: '0'
                     }}
                   >
-                    Wybierz model i rozmiar
+                    Wybierz kolor i rozmiar
                   </h3>
 
-                  {/* Model Selection */}
+                  {/* Color Selection */}
                   <div style={{ margin: '10px 0' }}>
                     <div style={{
                       fontSize: '14px',
@@ -1378,11 +1390,11 @@ export default function JacketLanding() {
                       color: '#111',
                       marginBottom: '6px'
                     }}>
-                      Model *
+                      Kolor *
                     </div>
                     <div
                       role="radiogroup"
-                      aria-label="Model"
+                      aria-label="Kolor"
                       style={{
                         display: 'flex',
                         gap: '8px',
@@ -1392,13 +1404,13 @@ export default function JacketLanding() {
                       <button
                         type="button"
                         role="radio"
-                        aria-checked={model === 'Mężczyzna'}
+                        aria-checked={color === 'Czarny'}
                         tabIndex={0}
-                        onClick={() => setModel('Mężczyzna')}
+                        onClick={() => setColor('Czarny')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setModel('Mężczyzna');
+                            setColor('Czarny');
                           }
                         }}
                         style={{
@@ -1408,22 +1420,22 @@ export default function JacketLanding() {
                           height: '42px',
                           padding: '0 14px',
                           fontSize: '14px',
-                          fontWeight: model === 'Mężczyzna' ? '600' : '500',
+                          fontWeight: color === 'Czarny' ? '600' : '500',
                           color: '#111',
-                          background: model === 'Mężczyzna' ? '#F3F4F6' : '#fff',
-                          border: `1px solid ${model === 'Mężczyzna' ? '#111' : '#D1D5DB'}`,
+                          background: color === 'Czarny' ? '#F3F4F6' : '#fff',
+                          border: `1px solid ${color === 'Czarny' ? '#111' : '#D1D5DB'}`,
                           borderRadius: '8px',
                           transition: 'background .15s, border-color .15s',
                           cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
-                          if (model !== 'Mężczyzna') {
+                          if (color !== 'Czarny') {
                             (e.target as HTMLElement).style.background = '#F9FAFB';
                             (e.target as HTMLElement).style.borderColor = '#9CA3AF';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (model !== 'Mężczyzna') {
+                          if (color !== 'Czarny') {
                             (e.target as HTMLElement).style.background = '#fff';
                             (e.target as HTMLElement).style.borderColor = '#D1D5DB';
                           }
@@ -1436,19 +1448,19 @@ export default function JacketLanding() {
                           (e.target as HTMLElement).style.outline = 'none';
                         }}
                       >
-                        Mężczyzna
+                        Czarny
                       </button>
 
                       <button
                         type="button"
                         role="radio"
-                        aria-checked={model === 'Kobieta'}
+                        aria-checked={color === 'Szary'}
                         tabIndex={0}
-                        onClick={() => setModel('Kobieta')}
+                        onClick={() => setColor('Szary')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setModel('Kobieta');
+                            setColor('Szary');
                           }
                         }}
                         style={{
@@ -1458,22 +1470,22 @@ export default function JacketLanding() {
                           height: '42px',
                           padding: '0 14px',
                           fontSize: '14px',
-                          fontWeight: model === 'Kobieta' ? '600' : '500',
+                          fontWeight: color === 'Szary' ? '600' : '500',
                           color: '#111',
-                          background: model === 'Kobieta' ? '#F3F4F6' : '#fff',
-                          border: `1px solid ${model === 'Kobieta' ? '#111' : '#D1D5DB'}`,
+                          background: color === 'Szary' ? '#F3F4F6' : '#fff',
+                          border: `1px solid ${color === 'Szary' ? '#111' : '#D1D5DB'}`,
                           borderRadius: '8px',
                           transition: 'background .15s, border-color .15s',
                           cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
-                          if (model !== 'Kobieta') {
+                          if (color !== 'Szary') {
                             (e.target as HTMLElement).style.background = '#F9FAFB';
                             (e.target as HTMLElement).style.borderColor = '#9CA3AF';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (model !== 'Kobieta') {
+                          if (color !== 'Szary') {
                             (e.target as HTMLElement).style.background = '#fff';
                             (e.target as HTMLElement).style.borderColor = '#D1D5DB';
                           }
@@ -1486,7 +1498,57 @@ export default function JacketLanding() {
                           (e.target as HTMLElement).style.outline = 'none';
                         }}
                       >
-                        Kobieta
+                        Szary
+                      </button>
+
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={color === 'Czerwony'}
+                        tabIndex={0}
+                        onClick={() => setColor('Czerwony')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setColor('Czerwony');
+                          }
+                        }}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '42px',
+                          padding: '0 14px',
+                          fontSize: '14px',
+                          fontWeight: color === 'Czerwony' ? '600' : '500',
+                          color: '#111',
+                          background: color === 'Czerwony' ? '#F3F4F6' : '#fff',
+                          border: `1px solid ${color === 'Czerwony' ? '#111' : '#D1D5DB'}`,
+                          borderRadius: '8px',
+                          transition: 'background .15s, border-color .15s',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (color !== 'Czerwony') {
+                            (e.target as HTMLElement).style.background = '#F9FAFB';
+                            (e.target as HTMLElement).style.borderColor = '#9CA3AF';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (color !== 'Czerwony') {
+                            (e.target as HTMLElement).style.background = '#fff';
+                            (e.target as HTMLElement).style.borderColor = '#D1D5DB';
+                          }
+                        }}
+                        onFocus={(e) => {
+                          (e.target as HTMLElement).style.outline = '2px solid #111';
+                          (e.target as HTMLElement).style.outlineOffset = '1px';
+                        }}
+                        onBlur={(e) => {
+                          (e.target as HTMLElement).style.outline = 'none';
+                        }}
+                      >
+                        Czerwony
                       </button>
                     </div>
                   </div>
@@ -1564,38 +1626,6 @@ export default function JacketLanding() {
                       ))}
                     </div>
 
-                    {/* Size Guide Link */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const overlay = document.querySelector('.sizeguide-overlay') as HTMLElement;
-                        if (overlay) {
-                          overlay.style.display = 'block';
-                          const targetTab = model === 'Kobieta' ? 'kobieta' : 'mezczyzna';
-                          setTimeout(() => {
-                            showSizeTab(targetTab);
-                          }, 50);
-                        }
-                      }}
-                      style={{
-                        marginTop: '8px',
-                        display: 'inline-block',
-                        fontSize: '14px',
-                        color: '#2563EB',
-                        textDecoration: 'underline',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.target as HTMLElement).style.color = '#1D4ED8';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.target as HTMLElement).style.color = '#2563EB';
-                      }}
-                    >
-                      Tablica rozmiarów
-                    </button>
                   </div>
 
                   {/* Minimal Choice Summary */}
@@ -1604,133 +1634,31 @@ export default function JacketLanding() {
                     fontSize: '14px',
                     color: '#374151'
                   }}>
-                    Twój wybór: <strong>{model}</strong>, <strong>Rozmiar {size}</strong>
+                    Twój wybór: <strong>{color}</strong>, <strong>Rozmiar {size}</strong>
                   </div>
                 </section>
 
-                {/* NOWY BOX OFERTY */}
+                {/* Simplified Pricing Section */}
                 <div style={{
-                  fontFamily: 'sans-serif',
-                  background: '#fff',
+                  textAlign: 'center',
+                  margin: '20px 0',
                   padding: '20px',
+                  background: '#fff',
                   borderRadius: '10px',
-                  maxWidth: '650px',
-                  margin: 'auto',
-                  textAlign: 'left',
                   boxShadow: '0 0 10px rgba(0,0,0,0.05)'
                 }}>
-                  <h2 style={{
-                    color: '#1c1917',
-                    fontSize: '20px',
-                    marginBottom: '15px',
-                    textAlign: 'center'
-                  }}>
-                    🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE, Wodoodporna, Oddychająca
-                  </h2>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    borderBottom: '1px solid #eee',
-                    fontSize: '16px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span style={{ flex: '1 1 70%' }}>🛡️ Kurtka z ochraniaczyami CE (barki/łokcie/plecy)</span>
+                  <div style={{ marginBottom: '10px' }}>
                     <span style={{
                       color: 'red',
                       textDecoration: 'line-through',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
-                    }}>749 zł</span>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    borderBottom: '1px solid #eee',
-                    fontSize: '16px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span style={{ flex: '1 1 70%' }}>💧 Membrana wodoodporna + oddychająca w każdych warunkach</span>
+                      fontSize: '20px',
+                      marginRight: '15px'
+                    }}>747,50 zł</span>
                     <span style={{
                       color: '#16a34a',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
-                    }}>✔ W zestawie</span>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    borderBottom: '1px solid #eee',
-                    fontSize: '16px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span style={{ flex: '1 1 70%' }}>🌬️ System wentylacji: Otwory pod pachami i na plecach</span>
-                    <span style={{
-                      color: '#16a34a',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
-                    }}>✔ W zestawie</span>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    borderBottom: '1px solid #eee',
-                    fontSize: '16px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span style={{ flex: '1 1 70%' }}>🔥 Podszewka termiczna wypinana + odblaski 360°</span>
-                    <span style={{
-                      color: '#16a34a',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
-                    }}>✔ W zestawie</span>
-                  </div>
-
-                  <div style={{
-                    background: '#ecfdf5',
-                    borderLeft: '4px solid #10b981',
-                    padding: '10px 12px',
-                    margin: '10px 0',
-                    fontSize: '15px'
-                  }}>
-                    🚚 <strong>Darmowa dostawa</strong> w całej Polsce (dostawa w 3-4 dni robocze)
-                  </div>
-
-                  <div style={{
-                    background: '#ecfdf5',
-                    borderLeft: '4px solid #10b981',
-                    padding: '10px 12px',
-                    margin: '10px 0',
-                    fontSize: '15px'
-                  }}>
-                    💶 <strong>Płatność przy odbiorze</strong> dostępna
-                  </div>
-
-                  <div style={{
-                    background: '#f0fdf4',
-                    padding: '15px',
-                    margin: '20px 0',
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    fontSize: '22px',
-                    color: '#16a34a',
-                    fontWeight: 'bold'
-                  }}>
-                    Cena katalogowa: <span style={{ textDecoration: 'line-through', color: 'red' }}>749 zł</span><br />
-                    <div style={{ marginTop: '10px' }}>
-                      Dziś tylko: <span style={{ fontSize: '26px' }}>299 zł</span>
-                    </div>
+                      fontSize: '32px',
+                      fontWeight: 'bold'
+                    }}>299 zł</span>
                   </div>
 
                   <div style={{
@@ -1740,39 +1668,11 @@ export default function JacketLanding() {
                     background: '#fef2f2',
                     padding: '8px',
                     borderRadius: '6px',
-                    marginBottom: '10px',
+                    marginTop: '15px',
                     fontSize: '14px'
                   }}>
-                    ⏳ <strong>Oferta ważna tylko przez kilka dni!</strong><br />
-                    Skorzystaj zanim wróci do pełnej ceny.
+                    ⏳ <strong>Oferta ważna tylko przez kilka dni!</strong>
                   </div>
-
-                  <div style={{
-                    textAlign: 'center',
-                    fontSize: '14px',
-                    color: '#dc2626',
-                    fontWeight: 'bold',
-                    marginTop: '8px'
-                  }}>
-                    <CountdownTimer />
-                  </div>
-
-                  <div style={{
-                    background: 'repeating-linear-gradient(45deg, #facc15, #facc15 10px, #fde68a 10px, #fde68a 20px)',
-                    color: '#1f2937',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    margin: '10px 0',
-                    fontSize: '15px'
-                  }}>
-                    ⚡ Ostatnie sztuki dostępne w magazynie
-                  </div>
-
-                  <p style={{ textAlign: 'center', fontSize: '14px', color: '#555' }}>
-                    📦 Wysyłka w 24/48h – Dostawa gwarantowana w 3-4 dni
-                  </p>
                 </div>
 
                 <button
@@ -1825,10 +1725,10 @@ export default function JacketLanding() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  🏍️ RoadShield™ 4-Seasons – Bezpieczeństwo na Każdym Kilometrze!
+                  🏍️ SportArmor™ Pro – Bezpieczeństwo na Każdym Kilometrze!
                 </h2>
                 <p className="text-lg text-gray-700 mb-6">
-                  <strong>RoadShield™ 4-Seasons z ochraniaczyami CE</strong> to rewolucyjna kurtka motocyklowa, zaprojektowana dla motocyklistów, którzy wymagają najwyższego poziomu ochrony.
+                  <strong>SportArmor™ Pro z ochraniaczyami CE</strong> to rewolucyjna kurtka motocyklowa, zaprojektowana dla motocyklistów, którzy wymagają najwyższego poziomu ochrony.
                 </p>
                 <p className="text-lg text-gray-700">
                   <strong>Ochraniacze CE poziom 1</strong> gwarantują ochronę barków, łokci i pleców, a <strong>wodoodporna membrana</strong> zapewnia komfort w każdych warunkach pogodowych.
@@ -1857,7 +1757,7 @@ export default function JacketLanding() {
               </div>
               <div className="order-1 lg:order-2">
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Dlaczego RoadShield™ 4-Seasons?
+                  Dlaczego SportArmor™ Pro?
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
@@ -1903,7 +1803,7 @@ export default function JacketLanding() {
                 4 Sezony Wykorzystania – Jedna Kurtka na Cały Rok
               </h2>
               <p className="text-lg text-gray-700">
-                RoadShield™ 4-Seasons to jedyna kurtka motocyklowa, która doskonale sprawdza się w każdych warunkach pogodowych.
+                SportArmor™ Pro to jedyna kurtka motocyklowa, która doskonale sprawdza się w każdych warunkach pogodowych.
               </p>
             </div>
 
@@ -1958,7 +1858,7 @@ export default function JacketLanding() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl mb-4">🏍️</div>
-                  <h3 className="font-bold text-lg mb-2">Kurtka RoadShield™ 4-Seasons</h3>
+                  <h3 className="font-bold text-lg mb-2">Kurtka SportArmor™ Pro</h3>
                   <p className="text-gray-600">Główna kurtka z membraną wodoodporną i systemem wentylacji</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
@@ -1998,7 +1898,7 @@ export default function JacketLanding() {
                 Specyfikacja Techniczna
               </h2>
               <p className="text-lg text-gray-700">
-                Najważniejsze parametry techniczne kurtki RoadShield™ 4-Seasons
+                Najważniejsze parametry techniczne kurtki SportArmor™ Pro
               </p>
             </div>
 
@@ -2154,7 +2054,7 @@ export default function JacketLanding() {
                 <span className="text-2xl font-bold">4.9/5</span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Opinie klientów o kurtce RoadShield™ 4-Seasons
+                Opinie klientów o kurtce SportArmor™ Pro
               </h2>
               <p className="text-lg text-gray-700">
                 Autentyczne i wiarygodne opinie motocyklistów
@@ -2245,7 +2145,7 @@ export default function JacketLanding() {
                 30-Dniowa Gwarancja Zwrotu Pieniędzy
               </h2>
               <p className="text-lg text-gray-700 mb-6">
-                Wypróbuj kurtkę RoadShield™ 4-Seasons z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz bezpieczeństwa i komfortu jazdy bez ryzyka.
+                Wypróbuj kurtkę SportArmor™ Pro z całkowitym bezpieczeństwem dzięki naszej 30-dniowej gwarancji zwrotu pieniędzy. Doświadcz bezpieczeństwa i komfortu jazdy bez ryzyka.
               </p>
               <p className="text-xl font-bold text-green-600">
                 Jeśli nie jesteś całkowicie zadowolony, zwrócimy Ci całą kwotę.
@@ -2311,7 +2211,7 @@ export default function JacketLanding() {
               🔥 Nie Przegap Tej Specjalnej Oferty!
             </h2>
             <p className="text-xl mb-8">
-              Tylko na dziś: <span className="line-through opacity-75">749 zł</span> <span className="text-5xl font-bold">299 zł</span>
+              Tylko na dziś: <span className="line-through opacity-75">747,50 zł</span> <span className="text-5xl font-bold">299 zł</span>
             </p>
 
             <div className="bg-white/10 backdrop-blur rounded-lg p-6 mb-8">
@@ -2382,13 +2282,13 @@ export default function JacketLanding() {
                     className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm md:text-base">🏍️ RoadShield™ 4-Seasons – Kurtka Motocyklowa CE</div>
+                    <div className="font-medium text-gray-900 text-sm md:text-base">🏍️ SportArmor™ Pro – Kurtka Motocyklowa CE</div>
                     <div className="text-xs md:text-sm text-gray-600">Wodoodporna, Oddychająca, Ochraniacze CE</div>
                     <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="font-bold text-lg md:text-xl text-gray-900">299 zł</div>
-                    <div className="text-xs text-gray-500 line-through">749 zł</div>
+                    <div className="text-xs text-gray-500 line-through">747,50 zł</div>
                   </div>
                 </div>
               </div>
@@ -2457,7 +2357,7 @@ export default function JacketLanding() {
                 </div>
 
                 {/* Hidden inputs for external selection sync */}
-                <input type="hidden" name="model" value={model} />
+                <input type="hidden" name="color" value={color} />
                 <input type="hidden" name="size" value={size} />
 
                 {/* Order Summary - Selected Variants */}
@@ -2480,7 +2380,7 @@ export default function JacketLanding() {
                     fontSize: '14px',
                     color: '#374151'
                   }}>
-                    <strong>{model}</strong>, <strong>Rozmiar {size}</strong>
+                    <strong>{color}</strong>, <strong>Rozmiar {size}</strong>
                   </div>
                 </div>
               </div>
@@ -2531,153 +2431,6 @@ export default function JacketLanding() {
     }
   `}</style>
 
-        {/* Polish Size Guide Popup */}
-        <div className="sizeguide-overlay" style={{ display: 'none' }} onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            (e.target as HTMLElement).style.display = 'none';
-          }
-        }}>
-          <div className="sizeguide-box" onClick={(e) => e.stopPropagation()}>
-            <span className="sizeguide-close" onClick={() => {
-              const overlay = document.querySelector('.sizeguide-overlay') as HTMLElement;
-              if (overlay) overlay.style.display = 'none';
-            }}>&times;</span>
-            <h3 style={{
-              textAlign: 'center',
-              marginBottom: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#111',
-              letterSpacing: '0'
-            }}>Tablica rozmiarów</h3>
-
-            {/* Tab Mężczyzna / Kobieta */}
-            <div className="sizeguide-tabs">
-              <button className="active" data-target="mezczyzna" onClick={() => showSizeTab('mezczyzna')}>Mężczyzna</button>
-              <button data-target="kobieta" onClick={() => showSizeTab('kobieta')}>Kobieta</button>
-            </div>
-
-            {/* MĘŻCZYZNA */}
-            <div id="tab-mezczyzna" className="sizeguide-content active">
-              <table>
-                <tr><th>Rozmiar</th><th>Klatka piersiowa (cm)</th><th>Talia (cm)</th><th>Długość rękawa (cm)</th></tr>
-                <tr><td>S</td><td>96-104</td><td>76-84</td><td>61</td></tr>
-                <tr><td>M</td><td>104-112</td><td>84-92</td><td>63</td></tr>
-                <tr><td>L</td><td>112-120</td><td>92-100</td><td>65</td></tr>
-                <tr><td>XL</td><td>120-128</td><td>100-108</td><td>67</td></tr>
-                <tr><td>XXL</td><td>128-136</td><td>108-116</td><td>69</td></tr>
-                <tr><td>3XL</td><td>136-144</td><td>116-124</td><td>71</td></tr>
-              </table>
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
-                Wymiary w cm (obwód klatki piersiowej, talii i długość rękawa).
-              </p>
-            </div>
-
-            {/* KOBIETA */}
-            <div id="tab-kobieta" className="sizeguide-content">
-              <table>
-                <tr><th>Rozmiar</th><th>Klatka piersiowa (cm)</th><th>Talia (cm)</th><th>Długość rękawa (cm)</th></tr>
-                <tr><td>S</td><td>86-94</td><td>66-74</td><td>58</td></tr>
-                <tr><td>M</td><td>94-102</td><td>74-82</td><td>60</td></tr>
-                <tr><td>L</td><td>102-110</td><td>82-90</td><td>62</td></tr>
-                <tr><td>XL</td><td>110-118</td><td>90-98</td><td>64</td></tr>
-                <tr><td>XXL</td><td>118-126</td><td>98-106</td><td>66</td></tr>
-                <tr><td>3XL</td><td>126-134</td><td>106-114</td><td>68</td></tr>
-              </table>
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
-                Wymiary w cm (obwód klatki piersiowej, talii i długość rękawa).
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .sizeguide-overlay {
-            position: fixed;
-            z-index: 9999;
-            inset: 0;
-            background-color: rgba(0,0,0,0.5);
-            overflow: auto;
-          }
-          .sizeguide-box {
-            background: #fff;
-            width: 95%;
-            max-width: 640px;
-            margin: 64px auto;
-            padding: 20px;
-            border-radius: 12px;
-            position: relative;
-            border: 1px solid #E5E7EB;
-          }
-          .sizeguide-close {
-            position: absolute;
-            top: 10px; 
-            right: 14px;
-            font-size: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            line-height: 1;
-            color: #6B7280;
-          }
-          .sizeguide-close:hover {
-            color: #111;
-          }
-          .sizeguide-tabs {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 12px 0 16px;
-          }
-          .sizeguide-tabs button {
-            flex: 1;
-            padding: 10px;
-            cursor: pointer;
-            background: #F3F4F6;
-            color: #111;
-            font-weight: 600;
-            font-size: 14px;
-            border: 1px solid #D1D5DB;
-            border-radius: 8px;
-            transition: background .15s, color .15s;
-          }
-          .sizeguide-tabs button.active {
-            background: #111;
-            color: #fff;
-            border-color: #111;
-          }
-          .sizeguide-content { 
-            display: none; 
-          }
-          .sizeguide-content.active { 
-            display: block; 
-          }
-          .sizeguide-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-          }
-          .sizeguide-content th, .sizeguide-content td {
-            border: 1px solid #E5E7EB;
-            padding: 8px;
-            font-size: 14px;
-            text-align: center;
-            color: #111;
-          }
-          .sizeguide-content th {
-            background: #F9FAFB;
-            font-weight: 600;
-          }
-          @media (max-width: 500px) {
-            .sizeguide-tabs button { 
-              font-size: 13px; 
-              padding: 8px; 
-            }
-            .sizeguide-content th, .sizeguide-content td { 
-              font-size: 13px; 
-              padding: 6px; 
-            }
-          }
-        `}</style>
       </div>
     </>
   );
