@@ -112,6 +112,8 @@ const trackingUtils = {
       `${Date.now()}-${Math.random().toString(36).substr(2, 9)}` :
       `static-${eventName.toLowerCase()}-${Math.floor(Math.random() * 1000)}`;
 
+    console.debug(`[FB] trackFacebookEvent called: ${eventName}, eventID: ${clientEventId}`);
+
     // 1. CLIENT-SIDE TRACKING (Pixel)
     if (typeof window !== 'undefined' && window.fbq) {
       try {
@@ -161,7 +163,7 @@ const trackingUtils = {
         const eventTimestamp = Math.max(maxPastTime, now - 10); // Massimo 10 secondi fa
 
         const capiData = {
-          event_name: 'Purchase', // o 'InitiateCheckout'
+          event_name: eventName,
           event_id: clientEventId,
           timestamp: eventTimestamp, // <-- TIMESTAMP CORRETTO
           event_source_url: window.location.href,
@@ -339,6 +341,13 @@ const trackingUtils = {
   }
 };
 
+// Color to Image mapping
+const COLOR_IMAGE_MAP = {
+  'Czarny': '/images/jacket2/1.jpg',
+  'Szary': '/images/jacket2/2.jpg',
+  'Czerwony': '/images/jacket2/3.jpg',
+} as const;
+
 // Countdown Timer Component
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -458,7 +467,7 @@ const ResultsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="/images/Jacket/5.jpg"
+              src="/images/jacket2/3.jpg"
               alt="Zadowalające rezultaty"
               className="w-full h-auto rounded-lg shadow-lg"
             />
@@ -715,18 +724,21 @@ const Footer = () => {
 };
 
 // Componente Carosello per Kurtka Motocyklowa
-const ProductCarousel = () => {
+const ProductCarousel = ({ selectedColor }: { selectedColor: 'Czarny' | 'Szary' | 'Czerwony' }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
   // Le immagini del prodotto RoadShield 4-Seasons Jacket
+  // La prima immagine cambia in base al colore selezionato
   const images = [
-    "/images/Jacket/1.jpg",
-    "/images/Jacket/2.jpg",
-    "/images/Jacket/3.jpg",
-    "/images/Jacket/4.gif",
-    "/images/Jacket/5.jpg"
+    COLOR_IMAGE_MAP[selectedColor], // Immagine principale basata sul colore
+    "/images/jacket2/1.jpg",
+    "/images/jacket2/2.jpg",
+    "/images/jacket2/3.jpg",
+    "/images/jacket2/4.jpg",
+    "/images/jacket2/5.jpg",
+    "/images/jacket2/6.jpg"
   ];
 
   // Auto-slide ogni 8 secondi
@@ -737,6 +749,11 @@ const ProductCarousel = () => {
 
     return () => clearInterval(timer);
   }, [images.length]);
+
+  // Reset al primo slide quando cambia colore
+  useEffect(() => {
+    setCurrentImage(0);
+  }, [selectedColor]);
 
   // Gestione touch per mobile
   const handleTouchStart = (e: any) => {
@@ -1002,6 +1019,7 @@ export default function JacketLanding() {
 
   const handleOrderClick = () => {
     console.log('🎯 Order button clicked - tracking InitiateCheckout');
+    console.debug('[FB] CTA click - will track InitiateCheckout (NOT Purchase)');
 
     // Track InitiateCheckout event (inizio processo acquisto)
     trackingUtils.trackFacebookEvent('InitiateCheckout', {
@@ -1132,6 +1150,11 @@ export default function JacketLanding() {
         cognome_hash: hashedLastName,
         indirizzo: formData.adres || null,
 
+        // Varianti prodotto
+        color: color,
+        size: size,
+        color_image: COLOR_IMAGE_MAP[color],
+
         traffic_source: trackingUtils.getTrafficSource(),
         user_agent: navigator.userAgent,
         fbp: trackingUtils.getFbBrowserId(),
@@ -1196,6 +1219,7 @@ export default function JacketLanding() {
         currency: 'PLN',
         colorlo: color,
         taglia: size,
+        color_image: COLOR_IMAGE_MAP[color],
 
         // Dati di tracking
         page_url: window.location.href,
@@ -1301,7 +1325,7 @@ export default function JacketLanding() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
               <div className="order-1">
-                <ProductCarousel />
+                <ProductCarousel selectedColor={color} />
               </div>
 
               <div className="order-2 space-y-6">
@@ -1736,7 +1760,7 @@ export default function JacketLanding() {
               </div>
               <div>
                 <img
-                  src="/images/Jacket/4.gif"
+                  src="/images/jacket2/4.jpg"
                   alt="Kurtka w użyciu"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
@@ -1750,7 +1774,7 @@ export default function JacketLanding() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div className="order-2 lg:order-1">
                 <img
-                  src="/images/Jacket/3.jpg"
+                  src="/images/jacket2/5.jpg"
                   alt="Cechy kurtki"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
@@ -1810,7 +1834,7 @@ export default function JacketLanding() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
                 <img
-                  src="/images/Jacket/2.jpg"
+                  src="/images/jacket2/6.jpg"
                   alt="Kurtka 4 sezony"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
@@ -2277,8 +2301,8 @@ export default function JacketLanding() {
                 <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">Podsumowanie zamówienia</h4>
                 <div className="flex items-center gap-3">
                   <img
-                    src="/images/Jacket/1.jpg"
-                    alt="Kurtka motocyklowa"
+                    src={COLOR_IMAGE_MAP[color]}
+                    alt={`Wybrany kolor: ${color}`}
                     className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
@@ -2359,6 +2383,7 @@ export default function JacketLanding() {
                 {/* Hidden inputs for external selection sync */}
                 <input type="hidden" name="color" value={color} />
                 <input type="hidden" name="size" value={size} />
+                <input type="hidden" name="color_image" value={COLOR_IMAGE_MAP[color]} />
 
                 {/* Order Summary - Selected Variants */}
                 <div style={{
@@ -2377,10 +2402,27 @@ export default function JacketLanding() {
                     Twój wybór:
                   </div>
                   <div style={{
-                    fontSize: '14px',
-                    color: '#374151'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
                   }}>
-                    <strong>{color}</strong>, <strong>Rozmiar {size}</strong>
+                    <img
+                      src={COLOR_IMAGE_MAP[color]}
+                      alt={`Kurtka - ${color}`}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '6px',
+                        objectFit: 'cover',
+                        border: '1px solid #E5E7EB'
+                      }}
+                    />
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#374151'
+                    }}>
+                      <strong>{color}</strong>, <strong>Rozmiar {size}</strong>
+                    </div>
                   </div>
                 </div>
               </div>
