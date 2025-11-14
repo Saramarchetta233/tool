@@ -839,8 +839,8 @@ export default function AntennaLanding() {
         // Campi esistenti - preservati
         uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
         key: 'ad79469b31b0058f6ea72c',
-        offer: '463',
-        lp: '463',
+        offer: '25',
+        lp: '25',
         name: formData.imie.trim(),
         tel: formData.telefon.trim(),
         'street-address': formData.adres.trim(),
