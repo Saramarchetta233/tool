@@ -959,7 +959,7 @@ export default function AntennaLanding() {
                 </div>
 
                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                  AeroTV Pro — Antena DVB-T2/HEVC z wbudowanym wzmacniaczem
+                  AeroTV Pro™ — Telewizja Bez Granic
                 </h1>
 
                 <p className="text-lg text-gray-700 font-medium">
@@ -1854,7 +1854,7 @@ export default function AntennaLanding() {
                     className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm md:text-base">🔥 AeroTV Pro — Antena DVB-T2/HEVC z wzmacniaczem (wewn./zewn.)</div>
+                    <div className="font-medium text-gray-900 text-sm md:text-base">🔥 AeroTV Pro™ — Telewizja Bez Granic. (Netflix, Filmy, Sport… za 0 zł)</div>
                     <div className="text-xs md:text-sm text-gray-600">DVB-T2/HEVC, wbudowany wzmacniacz, 4K-ready</div>
                     <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                   </div>
