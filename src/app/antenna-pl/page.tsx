@@ -611,8 +611,8 @@ export default function AntennaLanding() {
     adres: '',
     uid: '01980825-ae5a-7aca-8796-640a3c5ee3da',
     key: 'ad79469b31b0058f6ea72c',
-    offer: '463',
-    lp: '463'
+    offer: '25',
+    lp: '25'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -967,6 +967,12 @@ export default function AntennaLanding() {
                 </p>
 
                 <div className="space-y-3">
+
+                  <div className="flex items-start space-x-3">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base"><strong>Oglądaj wszystko w jednym miejscu</strong> – Netflix, Prime, Disney+ i wiele innych topowych platform!</span>
+                  </div>
+
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-base"><strong>DVB-T2/HEVC</strong> – zgodna z najnowszym standardem nadawania</span>
@@ -1734,11 +1740,7 @@ export default function AntennaLanding() {
                       AeroTV Pro to połączenie nowoczesnej technologii DVB-T2 z praktycznym designem.
                       Idealna dla mieszkań, domów i domków letniskowych.
                     </p>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-yellow-800 text-xs">
-                        <strong>Uwaga dot. VOD:</strong> Aplikacje VOD (np. Netflix, Prime Video, Disney+) działają poprzez Internet i wymagają własnych subskrypcji na kompatybilnych urządzeniach.
-                      </p>
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -1764,7 +1766,7 @@ export default function AntennaLanding() {
               />
               <FAQ
                 question="Czy antena zapewnia dostęp do platform VOD?"
-                answer="Anteny odbierają bezpłatne kanały naziemne. Serwisy VOD wymagają Internetu i oddzielnej subskrypcji na kompatybilnych urządzeniach."
+                answer="Tak — w ramach naszej usługi otrzymujesz dostęp do wszystkich najpopularniejszych platform VOD, takich jak Netflix, Prime Video, Disney+ i wiele innych."
               />
               <FAQ
                 question="Czy montaż jest skomplikowany?"

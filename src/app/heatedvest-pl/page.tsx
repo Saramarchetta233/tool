@@ -1257,7 +1257,7 @@ export default function HeatedVestLanding() {
                 </div>
 
                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                  ThermoVest Pro – Unisex kamizelka grzewcza z zasilaniem USB
+                  ThermoVest Pro – Unisex kamizelka grzewcza z zasilaniem USB + Powerbank w cenie!
                 </h1>
 
                 <p className="text-lg text-gray-700 font-medium">
@@ -1265,6 +1265,11 @@ export default function HeatedVestLanding() {
                 </p>
 
                 <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base"><strong>Zasilanie USB 5V/2A</strong> – powerbank w zestawie!</span>
+                  </div>
+
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-base"><strong>5 stref grzewczych</strong> (plecy/kark/przód/lędźwia)</span>
@@ -1277,10 +1282,7 @@ export default function HeatedVestLanding() {
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-base"><strong>Start w &lt;10 s</strong> – szybkie nagrzewanie</span>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-base"><strong>Zasilanie USB 5V/2A</strong> – działa z każdą powerbanką</span>
-                  </div>
+
                   <div className="flex items-start space-x-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-base"><strong>Lekka, oddychająca</strong> i wodoodporna tkanina</span>
@@ -2104,7 +2106,7 @@ export default function HeatedVestLanding() {
                     </li>
                     <li className="flex items-center space-x-3">
                       <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <span><strong>Zasilanie:</strong> USB 5V/2A (powerbank nie w zestawie)</span>
+                      <span><strong>Zasilanie:</strong> USB 5V/2A (powerbank w zestawie)</span>
                     </li>
                     <li className="flex items-center space-x-3">
                       <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -2151,7 +2153,7 @@ export default function HeatedVestLanding() {
             <div className="space-y-4">
               <FAQ
                 question="Czy powerbank jest w zestawie?"
-                answer="Nie. Pasuje każdy standardowy powerbank USB 5V/2A."
+                answer="Tak! W komplecie znajduje się powerbank 10 000 mAh, gotowy do użycia od razu po wyjęciu z pudełka."
               />
               <FAQ
                 question="Jak długo działa?"
@@ -2238,7 +2240,7 @@ export default function HeatedVestLanding() {
                     className="w-12 h-12 md:w-16 md:h-16 rounded-lg border border-gray-200 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm md:text-base">🔥 ThermoVest Pro — Unisex kamizelka grzewcza USB (5 stref, 3 poziomy)</div>
+                    <div className="font-medium text-gray-900 text-sm md:text-base">🔥 ThermoVest Pro — Unisex kamizelka grzewcza USB + powerbank w zestawie</div>
                     <div className="text-xs md:text-sm text-gray-600">{color} • Rozmiar {size}</div>
                     <div className="text-xs md:text-sm text-green-600">✅ Darmowa dostawa</div>
                   </div>
