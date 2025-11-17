@@ -538,7 +538,7 @@ const ThankYouPage = () => {
             🎉 Zamówienie Potwierdzone!
           </h1>
           <p className="text-xl md:text-2xl opacity-90">
-            Dziękujemy za zamówienie kamizelki ThermoVest Pro
+            Dziękujemy za zamówienie kurtki ThermoVest Pro
           </p>
           {orderData?.orderId && (
             <p className="text-lg mt-2 opacity-80">
@@ -719,7 +719,7 @@ const ThankYouPage = () => {
             </h3>
 
             <p className="text-gray-600 text-lg mb-6">
-              Dokonałeś właściwego wyboru jakości i funkcjonalności kamizelki ThermoVest Pro.
+              Dokonałeś właściwego wyboru jakości i funkcjonalności kurtki ThermoVest Pro.
             </p>
 
             <div className="grid md:grid-cols-3 gap-4">
