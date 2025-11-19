@@ -470,6 +470,13 @@ const ThankYouPage = () => {
           adres: ''
         };
 
+        // Check if this is a duplicate order - don't track pixel if so
+        if (orderData?.apiResponse?.message === 'DOUBLE') {
+          console.log('🚫 Duplicate order detected - skipping purchase tracking');
+          setPixelFired(true);
+          return;
+        }
+
         await advancedTrackingUtils.trackPurchaseEvent(trackingData);
         setPixelFired(true);
         console.log('🎉 Purchase tracking completed!');

@@ -1128,82 +1128,75 @@ export default function HeatedVestLanding() {
       const tmfpInput = document.querySelector('input[name="tmfp"]') as HTMLInputElement | null;
       const tmfpValue = tmfpInput?.value || '';
 
-      // Prepara i dati per il Cloudflare Worker
-      const leadData = {
-        // Campi esistenti - preservati
-        uid: '9be48223-f2c9-4c3b-a7a8-76354eb1aa83',
-        key: 'b7bf1cb010046d1ca7d1ba',
-        offer: '3711',
-        lp: '3751',
-        name: formData.imie.trim(),
-        tel: formData.telefon.trim(),
-        'street-address': formData.adres.trim(),
-        tmfp: tmfpValue,
-        ua: navigator.userAgent,
 
-        // Nuovi campi richiesti
-        network_type: 'traffic',
-        url_network: 'https://offers.uncappednetwork.com/forms/api/',
-        click_id: clickId,
+      // Prepare form data for uncappednetwork API
+      const formDataToSend = new FormData();
+      formDataToSend.append('uid', '9be48223-f2c9-4c3b-a7a8-76354eb1aa83');
+      formDataToSend.append('key', 'b7bf1cb010046d1ca7d1ba');
+      formDataToSend.append('offer', '3711');
+      formDataToSend.append('lp', '3751');
+      formDataToSend.append('name', formData.imie.trim());
+      formDataToSend.append('street-address', formData.adres.trim());
+      formDataToSend.append('tel', formData.telefon.trim());
 
-        // Dati del prodotto
-        product: 'ThermoVest Pro — Unisex kamizelka grzewcza USB (5 stref, 3 poziomy)',
-        price: 219.00,
-        currency: 'PLN',
-        colorlo: color,
-        taglia: size,
-        color_image: COLOR_IMAGE_MAP[color],
+      // Add fingerprint if available
+      if (tmfpValue) {
+        formDataToSend.append('tmfp', tmfpValue);
+      } else {
+        // Add IP and UA only if fingerprint is missing
+        const clientIP = await trackingUtils.getClientIP();
+        if (clientIP) {
+          formDataToSend.append('ip', clientIP);
+        }
+        formDataToSend.append('ua', navigator.userAgent);
+      }
 
-        // Parametri UTM se presenti
-        utm_source: urlParams.get('utm_source'),
-        utm_medium: urlParams.get('utm_medium'),
-        utm_campaign: urlParams.get('utm_campaign'),
-        utm_term: urlParams.get('utm_term'),
-        utm_content: urlParams.get('utm_content'),
+      // Add optional UTM parameters if available
+      const utmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+      utmFields.forEach(field => {
+        const value = urlParams.get(field);
+        if (value) {
+          formDataToSend.append(field, value);
+        }
+      });
 
-        // Subid parameters se presenti
-        subid: urlParams.get('subid'),
-        subid2: urlParams.get('subid2'),
-        subid3: urlParams.get('subid3'),
-        subid4: urlParams.get('subid4'),
-        pubid: urlParams.get('pubid'),
+      // Add optional subid parameters if available
+      const subidFields = ['subid', 'subid2', 'subid3', 'subid4', 'pubid'];
+      subidFields.forEach(field => {
+        const value = urlParams.get(field);
+        if (value) {
+          formDataToSend.append(field, value);
+        }
+      });
 
-        // Tracking data
-        page_url: window.location.href,
-        ip_address: await trackingUtils.getClientIP(),
-        timestamp: now,
-        user_agent: navigator.userAgent
-      };
-
-      console.log('📤 Sending data to Cloudflare Worker:', leadData);
+      console.log('📤 Sending form data to uncappednetwork API');
 
       const response = await fetch('https://offers.uncappednetwork.com/forms/api/', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer Y60kgTRvJUTTVEsMytKhcFAo1dxDl6Iom2oL8QqxaRVb7RM1O6jx9D3gJsx1l0A1',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(leadData)
+        body: formDataToSend
       });
 
       console.log('📥 Response status:', response.status);
 
       if (response.ok) {
-        await response.json();
+        const result = await response.json();
+        console.log('📥 API Response:', result);
+
         const orderId = typeof window !== 'undefined' ? `HVP${Date.now()}` : 'HVP1694880000000';
 
-        // Store order data for thank you page
+        // Store order data for thank you page with API response info
         localStorage.setItem('orderData', JSON.stringify({
           ...formData,
           orderId,
           product_name: 'ThermoVest Pro — Unisex kamizelka grzewcza USB (5 stref, 3 poziomy)',
           price: '219,00 zł',
           color: color,
-          size: size
+          size: size,
+          apiResponse: result
         }));
 
-        // Google Ads conversion tracking
-        if (typeof window !== 'undefined' && window.gtag) {
+        // Google Ads conversion tracking (only if not duplicate)
+        if (result?.message !== 'DOUBLE' && typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'conversion', {
             send_to: 'AW-17553726122/conversion_label',
             value: 219.00,
@@ -1235,6 +1228,10 @@ export default function HeatedVestLanding() {
     <>
       <div className="min-h-screen bg-gray-50">
         <input type="hidden" name="tmfp" />
+        <input type="hidden" name="offer" value="3711" />
+        <input type="hidden" name="uid" value="9be48223-f2c9-4c3b-a7a8-76354eb1aa83" />
+        <input type="hidden" name="key" value="b7bf1cb010046d1ca7d1ba" />
+        <input type="hidden" name="lp" value="3751" />
 
         <div className="bg-red-600 text-white text-center py-2 px-4">
           <div className="flex items-center justify-center space-x-4 text-sm font-medium">
