@@ -200,7 +200,7 @@ const advancedTrackingUtils = {
           content_category: 'Heated Vest',
           content_ids: 'thermovest-pro-heated-vest',
           content_type: 'product',
-          value: 299.00,
+          value: 219.00,
           currency: 'PLN', // Currency dinamica
           quantity: 1
         };
@@ -235,7 +235,7 @@ const advancedTrackingUtils = {
         // Track Google Ads conversion
         window.gtag('event', 'conversion', {
           send_to: 'AW-17086993346/DJt3CMrUrPsaEMKn29M_',
-          value: 299.00,
+          value: 219.00,
           currency: 'PLN',
           transaction_id: transactionId
         });
@@ -243,14 +243,14 @@ const advancedTrackingUtils = {
         // Track Google Analytics purchase
         window.gtag('event', 'purchase', {
           transaction_id: transactionId,
-          value: 299.00,
+          value: 219.00,
           currency: 'PLN',
           items: [{
             item_id: 'thermovest-pro-heated-vest',
             item_name: 'ThermoVest Pro — Kamizelka grzewcza USB 5-strefowa',
             category: 'Heated Vest',
             quantity: 1,
-            price: 299.00
+            price: 219.00
           }]
         });
 
