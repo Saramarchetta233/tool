@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Un piccolo quiz per te...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particle effect background */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) translateX(0);
+            }
+            to {
+                transform: translateY(-100px) translateX(100px);
+            }
+        }
+
+        /* Glitch effect */
+        @keyframes glitch {
+            0%, 100% {
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+                filter: hue-rotate(90deg);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+                filter: hue-rotate(180deg);
+            }
+            60% {
+                transform: translate(2px, 2px);
+                filter: hue-rotate(270deg);
+            }
+            80% {
+                transform: translate(2px, -2px);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Title styles */
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #ff0000;
+            text-shadow: 2px 2px 0px #8B0000, 4px 4px 20px #ff0000;
+            line-height: 1.5;
+        }
+
+        h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(0.9rem, 3vw, 1.5rem);
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 0px #333333, 3px 3px 10px #ff0000;
+            line-height: 1.5;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #333333;
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6666);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        /* Quiz sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Welcome screen */
+        .welcome {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .welcome p {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Questions */
+        .question {
+            margin-bottom: 2rem;
+        }
+
+        .question h3 {
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Answer buttons */
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .answer-btn {
+            background: #1a1a1a;
+            border: 2px solid #ff0000;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .answer-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            transition: left 0.5s ease;
+        }
+
+        .answer-btn:hover {
+            background: #ff0000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        .answer-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Back button */
+        .back-btn {
+            background: transparent;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 0.5rem 1rem;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .back-btn:hover {
+            background: #ff0000;
+            color: #ffffff;
+        }
+
+        /* Start button */
+        .start-btn {
+            background: #ff0000;
+            border: none;
+            color: #ffffff;
+            padding: 1rem 2rem;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-family: 'Press Start 2P', cursive;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 0, 0, 0.7);
+        }
+
+        /* Transition message */
+        .transition {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .transition h2 {
+            color: #ff0000;
+            margin-bottom: 2rem;
+        }
+
+        .transition p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            opacity: 0;
+            animation: fadeInText 2s forwards 1s;
+        }
+
+        @keyframes fadeInText {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Reveal section */
+        .reveal {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .reveal h1 {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            margin-bottom: 3rem;
+            animation: glitchTitle 1s ease-in-out;
+        }
+
+        @keyframes glitchTitle {
+            0% {
+                transform: scaleY(1) translateX(0);
+                color: #ff0000;
+            }
+            20% {
+                transform: scaleY(0.8) translateX(-5px);
+                color: #00ff00;
+            }
+            40% {
+                transform: scaleY(1.2) translateX(5px);
+                color: #0000ff;
+            }
+            60% {
+                transform: scaleY(0.9) translateX(-3px);
+                color: #ffff00;
+            }
+            80% {
+                transform: scaleY(1.1) translateX(3px);
+                color: #ff00ff;
+            }
+            100% {
+                transform: scaleY(1) translateX(0);
+                color: #ff0000;
+            }
+        }
+
+        /* Ticket card */
+        .ticket {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a0a0a 100%);
+            border: 3px solid #ff0000;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.5);
+            animation: ticketReveal 1s ease-out;
+        }
+
+        @keyframes ticketReveal {
+            from {
+                transform: scale(0) rotate(720deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        .ticket::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, #ff0000, transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .ticket-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ticket h3 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #ff0000;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 0px #8B0000;
+        }
+
+        .ticket-details {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            line-height: 2;
+            margin-bottom: 1.5rem;
+        }
+
+        .ticket-details p {
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-emoji {
+            font-size: 2rem;
+            margin: 0 0.5rem;
+        }
+
+        .from-message {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed #ff0000;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(255, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        /* Portal effect */
+        .portal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, #ff0000, transparent);
+            border-radius: 50%;
+            transition: all 1s ease-out;
+            z-index: 1000;
+        }
+
+        .portal.active {
+            width: 200vw;
+            height: 200vw;
+        }
+
+        /* Music button */
+        .music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff0000;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        /* Mobile responsive */
+        @media (min-width: 768px) {
+            .answers {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="portal" class="portal"></div>
+    
+    <div class="container">
+        <!-- Progress bar -->
+        <div class="progress-container" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Welcome Section -->
+        <section id="welcome" class="section active">
+            <div class="welcome">
+                <h1>Ciao Anna!</h1>
+                <p>Abbiamo un piccolo quiz per te... 🎲</p>
+                <button class="start-btn" onclick="startQuiz()">INIZIA</button>
+            </div>
+        </section>
+
+        <!-- Generic Quiz Phase 1 -->
+        <section id="phase1" class="section">
+            <div id="question1" class="question active">
+                <h3>Quanti anni hai?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(1, '25-30')">25-30</button>
+                    <button class="answer-btn" onclick="selectAnswer(1, '31-35')">31-35</button>
+                    <button class="answer-btn" onclick="selectAnswer(1, '36-40')">36-40</button>
+                    <button class="answer-btn" onclick="selectAnswer(1, '41+')">41+</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()" style="display: none;">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question2" class="question" style="display: none;">
+                <h3>Qual è la tua stagione preferita?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(2, 'primavera')">Primavera</button>
+                    <button class="answer-btn" onclick="selectAnswer(2, 'estate')">Estate</button>
+                    <button class="answer-btn" onclick="selectAnswer(2, 'autunno')">Autunno</button>
+                    <button class="answer-btn" onclick="selectAnswer(2, 'inverno')">Inverno</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question3" class="question" style="display: none;">
+                <h3>Preferisci dolce o salato?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(3, 'dolce')">Decisamente dolce</button>
+                    <button class="answer-btn" onclick="selectAnswer(3, 'salato')">Assolutamente salato</button>
+                    <button class="answer-btn" onclick="selectAnswer(3, 'entrambi')">Dipende dal momento</button>
+                    <button class="answer-btn" onclick="selectAnswer(3, 'nessuno')">Non sono golosa</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question4" class="question" style="display: none;">
+                <h3>Qual è il tuo telefilm preferito?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(4, 'stranger_things')">Stranger Things</button>
+                    <button class="answer-btn" onclick="selectAnswer(4, 'breaking_bad')">Breaking Bad</button>
+                    <button class="answer-btn" onclick="selectAnswer(4, 'friends')">Friends</button>
+                    <button class="answer-btn" onclick="selectAnswer(4, 'the_office')">The Office</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question5" class="question" style="display: none;">
+                <h3>Quale città europea ti piacerebbe visitare?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(5, 'londra')">Londra</button>
+                    <button class="answer-btn" onclick="selectAnswer(5, 'parigi')">Parigi</button>
+                    <button class="answer-btn" onclick="selectAnswer(5, 'barcellona')">Barcellona</button>
+                    <button class="answer-btn" onclick="selectAnswer(5, 'amsterdam')">Amsterdam</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question6" class="question" style="display: none;">
+                <h3>Il tuo weekend ideale?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(6, 'maratona_tv')">Maratona serie TV</button>
+                    <button class="answer-btn" onclick="selectAnswer(6, 'aperitivo')">Aperitivo con amici</button>
+                    <button class="answer-btn" onclick="selectAnswer(6, 'shopping')">Shopping</button>
+                    <button class="answer-btn" onclick="selectAnswer(6, 'natura')">Natura</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="question7" class="question" style="display: none;">
+                <h3>Che tipo di spettacolo ti attira di più?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectAnswer(7, 'musical')">Musical</button>
+                    <button class="answer-btn" onclick="selectAnswer(7, 'teatro')">Teatro</button>
+                    <button class="answer-btn" onclick="selectAnswer(7, 'concerto')">Concerto</button>
+                    <button class="answer-btn" onclick="selectAnswer(7, 'cinema')">Cinema</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transition -->
+        <section id="transition" class="section">
+            <div class="transition">
+                <h2>Interessante...</h2>
+                <p>Il Sottosopra vuole sapere di più...</p>
+            </div>
+        </section>
+
+        <!-- Stranger Things Quiz Phase 2 -->
+        <section id="phase2" class="section">
+            <div id="stQuestion1" class="question active">
+                <h3>Chi è il tuo personaggio preferito di Stranger Things?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(1)">Eleven</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(1)">Mike</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(1)">Dustin</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(1)">Steve</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="stQuestion2" class="question" style="display: none;">
+                <h3>Qual è la tua stagione preferita?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(2)">Stagione 1</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(2)">Stagione 2</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(2)">Stagione 3</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(2)">Stagione 4</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="stQuestion3" class="question" style="display: none;">
+                <h3>Quale creatura del Sottosopra ti fa più paura?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(3)">Demogorgone</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(3)">Mind Flayer</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(3)">Vecna</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(3)">Demodog</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="stQuestion4" class="question" style="display: none;">
+                <h3>Qual è la tua citazione preferita?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(4)">"Gli amici non mentono"</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(4)">"Le mattine sono per il caffè e la contemplazione"</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(4)">"È nostra amica ed è pazza!"</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(4)">"Se siamo entrambi pazzi, allora staremo benissimo insieme"</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="stQuestion5" class="question" style="display: none;">
+                <h3>Qual è il tuo momento preferito della serie?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(5)">Eleven che chiude il portale</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(5)">La battaglia di Starcourt</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(5)">Max che sfugge a Vecna</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(5)">Il ballo della scuola</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+
+            <div id="stQuestion6" class="question" style="display: none;">
+                <h3>Dove vorresti vivere a Hawkins?</h3>
+                <div class="answers">
+                    <button class="answer-btn" onclick="selectSTAnswer(6)">Casa dei Wheeler</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(6)">Casa di Hopper</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(6)">Casa dei Byers</button>
+                    <button class="answer-btn" onclick="selectSTAnswer(6)">Il laboratorio (perché no?)</button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="back-btn" onclick="goBack()">← Indietro</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reveal -->
+        <section id="reveal" class="section">
+            <div class="reveal">
+                <h1 id="revealTitle">ANNA, HAI VINTO!</h1>
+                <div class="ticket">
+                    <div class="ticket-content">
+                        <h3>2 BIGLIETTI PER</h3>
+                        <h2 style="color: #ffffff; margin: 1rem 0;">Stranger Things:<br>The First Shadow</h2>
+                        <div class="ticket-details">
+                            <p><span class="ticket-emoji">📅</span> Giovedì 4 Dicembre 2025, ore 19:00</p>
+                            <p><span class="ticket-emoji">📍</span> Phoenix Theatre, Londra</p>
+                            <p><span class="ticket-emoji">🎭</span> Grand Circle, Row E, Seats 13-14</p>
+                        </div>
+                        <div class="from-message">
+                            Con amore da:<br>
+                            Alberto, Grazia, Christian, Noha, Marianna e Simone ❤️
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <script>
+        let currentPhase = 1;
+        let currentQuestion = 1;
+        let answers = {
+            show: '',
+            city: '',
+            strangerThings: false,
+            london: false
+        };
+        let audio = null;
+        let questionHistory = [];
+
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize
+        createParticles();
+
+        // Start quiz
+        function startQuiz() {
+            document.getElementById('welcome').classList.remove('active');
+            document.getElementById('phase1').classList.add('active');
+            document.querySelector('.progress-container').style.display = 'block';
+            updateProgress();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const totalQuestions = 13; // 7 phase1 + 6 phase2
+            const currentTotal = currentPhase === 1 ? currentQuestion : 7 + currentQuestion;
+            const progress = (currentTotal / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Go back function
+        function goBack() {
+            if (questionHistory.length > 0) {
+                const prevQuestion = questionHistory.pop();
+                
+                // Hide current question
+                if (currentPhase === 1) {
+                    document.getElementById(`question${currentQuestion}`).style.display = 'none';
+                } else {
+                    document.getElementById(`stQuestion${currentQuestion}`).style.display = 'none';
+                }
+                
+                // Show previous question
+                currentPhase = prevQuestion.phase;
+                currentQuestion = prevQuestion.question;
+                
+                if (currentPhase === 1) {
+                    document.getElementById(`question${currentQuestion}`).style.display = 'block';
+                    document.getElementById('phase1').classList.add('active');
+                    document.getElementById('phase2').classList.remove('active');
+                } else {
+                    document.getElementById(`stQuestion${currentQuestion}`).style.display = 'block';
+                    document.getElementById('phase2').classList.add('active');
+                    document.getElementById('phase1').classList.remove('active');
+                }
+                
+                updateProgress();
+            }
+        }
+
+        // Handle phase 1 answers
+        function selectAnswer(questionNum, answer) {
+            // Store navigation history
+            questionHistory.push({phase: 1, question: questionNum});
+            
+            if (questionNum === 4 && answer === 'stranger_things') {
+                answers.strangerThings = true;
+            }
+            if (questionNum === 5 && answer === 'londra') {
+                answers.london = true;
+            }
+
+            // Hide current question
+            document.getElementById(`question${questionNum}`).style.display = 'none';
+
+            if (questionNum < 7) {
+                // Show next question
+                currentQuestion = questionNum + 1;
+                document.getElementById(`question${currentQuestion}`).style.display = 'block';
+                updateProgress();
+            } else {
+                // Transition to phase 2
+                showTransition();
+            }
+        }
+
+        // Show transition
+        function showTransition() {
+            document.getElementById('phase1').classList.remove('active');
+            document.getElementById('transition').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('transition').classList.remove('active');
+                document.getElementById('phase2').classList.add('active');
+                currentPhase = 2;
+                currentQuestion = 1;
+                updateProgress();
+            }, 3000);
+        }
+
+        // Handle Stranger Things answers
+        function selectSTAnswer(questionNum) {
+            // Store navigation history
+            questionHistory.push({phase: 2, question: questionNum});
+            
+            // Hide current question
+            document.getElementById(`stQuestion${questionNum}`).style.display = 'none';
+
+            if (questionNum < 6) {
+                // Show next question
+                currentQuestion = questionNum + 1;
+                document.getElementById(`stQuestion${currentQuestion}`).style.display = 'block';
+                updateProgress();
+            } else {
+                // Show reveal
+                showReveal();
+            }
+        }
+
+        // Show reveal
+        function showReveal() {
+            // Portal effect
+            const portal = document.getElementById('portal');
+            portal.classList.add('active');
+
+            setTimeout(() => {
+                portal.style.display = 'none';
+                document.getElementById('phase2').classList.remove('active');
+                document.getElementById('reveal').classList.add('active');
+                document.querySelector('.progress-container').style.display = 'none';
+
+                // Customize message based on answers
+                const revealTitle = document.getElementById('revealTitle');
+                if (answers.strangerThings && answers.london) {
+                    revealTitle.textContent = 'Anna, il destino ha parlato chiaramente...';
+                } else {
+                    revealTitle.textContent = 'Anna, le tue risposte dicevano altro... ma il Sottosopra ha deciso diversamente!';
+                }
+
+                setTimeout(() => {
+                    revealTitle.textContent = 'ANNA, HAI VINTO!';
+                    revealTitle.classList.add('glitch');
+                }, 2500);
+            }, 1000);
+        }
+
+        // Toggle music
+        function toggleMusic() {
+            if (!audio) {
+                // Simple beep sound as placeholder for Stranger Things theme
+                audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.loop = true;
+            }
+            
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        }
+    </script>
+</body>
+</html>
