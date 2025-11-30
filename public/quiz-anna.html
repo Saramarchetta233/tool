@@ -2,7 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Un piccolo quiz per te...</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,11 @@
             color: #ffffff;
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         /* Particle effect background */
@@ -86,10 +91,13 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Title styles */
@@ -423,35 +431,66 @@
             height: 200vw;
         }
 
-        /* Music button */
-        .music-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff0000;
-            border: 2px solid #ffffff;
-            color: #ffffff;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .music-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px #ff0000;
-        }
 
         /* Mobile responsive */
         @media (min-width: 768px) {
             .answers {
                 grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 767px) {
+            body {
+                touch-action: pan-y;
+            }
+            
+            .container {
+                padding: 15px;
+                justify-content: flex-start;
+                padding-top: 10vh;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.1rem;
+            }
+            
+            .question h3 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+            
+            .answer-btn {
+                padding: 0.9rem 1.2rem;
+                font-size: 1rem;
+            }
+            
+            .ticket {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+            
+            .ticket h3 {
+                font-size: 1.1rem;
+            }
+            
+            .ticket-details {
+                font-size: 0.95rem;
+            }
+            
+            .from-message {
+                font-size: 1rem;
+            }
+            
+            /* Prevent bounce scroll on iOS */
+            .section {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
             }
         }
     </style>
