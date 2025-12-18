@@ -33,40 +33,43 @@ export default function HomePage() {
 
   const pricing = [
     {
-      name: "Starter",
-      credits: 25,
-      price: "€4.99",
-      perCredit: "€0.20/credito",
-      features: [
-        "25 crediti",
-        "Analisi complete partite",
-        "Report AI",
-        "Supporto email"
-      ]
-    },
-    {
-      name: "Pro",
-      credits: 60,
-      price: "€9.99",
-      perCredit: "€0.17/credito",
+      name: "Accesso Base",
+      type: "one-time",
+      price: "€27",
+      originalPrice: "€49",
+      duration: "30 giorni",
       popular: true,
       features: [
-        "60 crediti",
-        "Tutto di Starter",
-        "FantaCoach formazioni",
-        "Priorità supporto"
+        "100 analisi complete",
+        "Tutte le funzionalità",
+        "Report AI personalizzati",
+        "FantaCoach incluso",
+        "Supporto dedicato"
       ]
     },
     {
-      name: "Ultra",
-      credits: 150,
-      price: "€19.99",
-      perCredit: "€0.13/credito",
+      name: "Ricarica Extra",
+      type: "addon",
+      price: "€19",
+      duration: "50 analisi",
       features: [
-        "150 crediti",
-        "Tutto di Pro",
-        "Accesso beta features",
-        "Supporto dedicato"
+        "50 analisi aggiuntive",
+        "Valido per sempre",
+        "Stesso account",
+        "Zero limitazioni"
+      ]
+    },
+    {
+      name: "Abbonamento Pro",
+      type: "subscription",
+      price: "€39",
+      duration: "/mese",
+      features: [
+        "Analisi illimitate",
+        "Accesso prioritario",
+        "Report esclusivi",
+        "API avanzate",
+        "Cancellabile sempre"
       ]
     }
   ]
@@ -119,7 +122,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link href="/signup">
                 <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8">
-                  Inizia Gratis (5 crediti)
+                  Accedi Ora - Solo €27
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -224,11 +227,16 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Scegli il tuo piano
+              Inizia Ora - Monetizza Subito
             </h2>
             <p className="text-xl text-slate-400">
-              Sistema a crediti prepagati. Paga solo quello che usi.
+              Accesso completo da €27. Niente freemium, niente attesa.
             </p>
+            <div className="mt-4">
+              <Badge className="bg-red-500/10 text-red-400 border-red-500/20">
+                🔥 Offerta Lancio: -45% sul primo accesso
+              </Badge>
+            </div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -236,14 +244,22 @@ export default function HomePage() {
               <Card key={plan.name} className={`bg-slate-800/50 border-slate-700 relative ${plan.popular ? 'border-emerald-500 scale-105' : ''}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-emerald-500 text-white">Più Popolare</Badge>
+                    <Badge className="bg-emerald-500 text-white">Più Richiesto</Badge>
+                  </div>
+                )}
+                {plan.type === 'one-time' && (
+                  <div className="absolute -top-3 right-4">
+                    <Badge className="bg-red-500 text-white">-45%</Badge>
                   </div>
                 )}
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
                   <div className="mt-4">
+                    {plan.originalPrice && (
+                      <div className="text-slate-400 line-through text-lg">{plan.originalPrice}</div>
+                    )}
                     <span className="text-4xl font-bold text-emerald-400">{plan.price}</span>
-                    <div className="text-slate-400 text-sm mt-1">{plan.perCredit}</div>
+                    <div className="text-slate-400 text-sm mt-1">{plan.duration}</div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -256,8 +272,10 @@ export default function HomePage() {
                     ))}
                   </div>
                   <Link href="/signup">
-                    <Button className={`w-full ${plan.popular ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-slate-700 hover:bg-slate-600'}`}>
-                      Inizia con {plan.name}
+                    <Button className={`w-full ${plan.popular ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : plan.type === 'subscription' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                      {plan.type === 'one-time' ? 'Accesso Immediato' : 
+                       plan.type === 'addon' ? 'Ricarica Account' : 
+                       'Abbonati Ora'}
                     </Button>
                   </Link>
                 </CardContent>
@@ -282,7 +300,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/signup">
                 <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8">
-                  Inizia Gratis
+                  Accedi Ora - €27
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

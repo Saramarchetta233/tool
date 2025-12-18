@@ -13,16 +13,16 @@ export default function SignupPage() {
             <BarChart3 className="h-8 w-8 text-emerald-500" />
             <span className="text-2xl font-bold gradient-text">CalcioAI</span>
           </div>
-          <CardTitle className="text-white">Inizia Gratis</CardTitle>
+          <CardTitle className="text-white">Accesso Immediato</CardTitle>
           <CardDescription className="text-slate-400">
-            Crea il tuo account e ricevi 5 crediti omaggio
+            Sblocca CalcioAI con 100 analisi e tutte le funzionalità
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center">
-            <Badge className="mb-4 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+            <Badge className="mb-4 bg-red-500/10 text-red-400 border-red-500/20">
               <Gift className="h-3 w-3 mr-1" />
-              5 Crediti Gratuiti
+              Solo €27 - Offerta Lancio
             </Badge>
             
             <p className="text-slate-400 text-sm mb-4">
