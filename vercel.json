@@ -1,4 +1,7 @@
 {
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
   "headers": [
     {
       "source": "/fonts/inter-var-latin.woff2",
