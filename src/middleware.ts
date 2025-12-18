@@ -1,8 +1,18 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  // Skip middleware if Supabase is not configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next()
+  }
+
+  try {
+    const { updateSession } = await import('@/lib/supabase/middleware')
+    return await updateSession(request)
+  } catch (error) {
+    console.warn('Supabase middleware failed:', error)
+    return NextResponse.next()
+  }
 }
 
 export const config = {
