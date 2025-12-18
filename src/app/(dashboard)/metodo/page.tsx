@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calculator, TrendingUp, BookOpen, Target, DollarSign, BarChart3, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Calculator, TrendingUp, BookOpen, Target, DollarSign, BarChart3, AlertTriangle, CheckCircle, ArrowLeft, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
 export default function MetodoPage() {
@@ -206,7 +206,7 @@ export default function MetodoPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Value:</span>
                   <span className={`font-bold text-lg ${valueResult.isValue ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {valueResult.value > 0 ? '+' : ''}{valueResult.value}%
+                    {parseFloat(valueResult.value) > 0 ? '+' : ''}{valueResult.value}%
                   </span>
                 </div>
                 

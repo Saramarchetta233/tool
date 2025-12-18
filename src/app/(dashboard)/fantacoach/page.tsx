@@ -448,7 +448,7 @@ export default function FantaCoachPage() {
                       { name: 'Zaniolo', role: 'C', priority: '3°' }
                     ].map((player, i) => (
                       <div key={i} className="bg-slate-800 rounded p-3 text-center">
-                        <Badge className={getRoleColor(player.role)} size="sm">
+                        <Badge className={getRoleColor(player.role)}>
                           {player.role}
                         </Badge>
                         <div className="text-white font-medium mt-1">{player.name}</div>
