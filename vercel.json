@@ -26,6 +26,14 @@
     {
       "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
       "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/generate-tips?secret=${CRON_SECRET}",
+      "schedule": "15 7 * * *"
+    },
+    {
+      "path": "/api/cron/generate-tips?secret=${CRON_SECRET}",
+      "schedule": "15 15 * * *"
     }
   ],
   "headers": [
