@@ -12,16 +12,20 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/generate-analyses?secret=${CRON_SECRET}",
+      "schedule": "30 7 * * *"
+    },
+    {
+      "path": "/api/cron/generate-analyses?secret=${CRON_SECRET}",
+      "schedule": "30 14 * * *"
+    },
+    {
       "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
       "schedule": "5 23 * * *"
     },
     {
       "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
       "schedule": "5 11 * * *"
-    },
-    {
-      "path": "/api/cron/update-results?secret=${CRON_SECRET}",
-      "schedule": "0 */2 * * *"
     }
   ],
   "headers": [

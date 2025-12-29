@@ -1,54 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ApiFootballService, formatMatchForFrontend, LEAGUES } from '@/lib/api-football'
+import { createClient } from '@supabase/supabase-js'
+import { FOOTBALL_LEAGUES } from '@/lib/football-data-sync'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(request: NextRequest) {
   try {
-    // Get league from search params, default to Serie A
+    // Get league from search params, default to all leagues
     const searchParams = request.nextUrl.searchParams
-    const leagueParam = searchParams.get('league') || 'serie-a'
+    const leagueParam = searchParams.get('league') || 'all'
+    const today = new Date().toISOString().split('T')[0]
+    const currentTime = new Date().toTimeString().slice(0, 5)
     
-    // Validate league
-    if (!Object.keys(LEAGUES).includes(leagueParam)) {
-      return NextResponse.json(
-        { error: 'Invalid league parameter' },
-        { status: 400 }
-      )
+    console.log(`🔍 Fetching matches for ${leagueParam} on ${today}`)
+    
+    // Build query
+    let query = supabase
+      .from('matches')
+      .select('*')
+      .eq('match_date', today)
+      .gte('match_time', currentTime) // Only future matches
+      .order('match_time', { ascending: true })
+    
+    // Filter by specific league if requested
+    if (leagueParam !== 'all' && FOOTBALL_LEAGUES[leagueParam as keyof typeof FOOTBALL_LEAGUES]) {
+      const leagueId = FOOTBALL_LEAGUES[leagueParam as keyof typeof FOOTBALL_LEAGUES]
+      query = query.eq('league_id', leagueId)
     }
-
-    // Check if API key is configured
-    if (!process.env.API_FOOTBALL_KEY) {
+    
+    const { data: matches, error } = await query
+    
+    if (error) {
+      console.error('❌ Supabase error:', error)
       return NextResponse.json(
         { 
-          error: 'API Football not configured',
-          message: 'Configura API_FOOTBALL_KEY nelle variabili d\'ambiente',
-          mockData: true,
+          error: 'Database error',
+          message: error.message,
           matches: getMockMatches()
         },
-        { status: 200 }
+        { status: 500 }
       )
     }
-
-    const league = leagueParam as keyof typeof LEAGUES
-    const fixtures = await ApiFootballService.getTodayFixtures(league)
+    
+    if (!matches || matches.length === 0) {
+      console.log('⚠️ No matches found in database')
+      return NextResponse.json({
+        success: true,
+        league: leagueParam,
+        date: today,
+        count: 0,
+        matches: [],
+        message: 'Nessuna partita trovata. Esegui la sincronizzazione dei dati.'
+      })
+    }
     
     // Format matches for frontend
-    const matches = fixtures.map(formatMatchForFrontend)
+    const formattedMatches = matches.map(match => ({
+      id: match.fixture_id.toString(),
+      league: match.league_name,
+      leagueName: match.league_name,
+      date: match.match_date,
+      time: match.match_time,
+      venue: match.venue ? `${match.venue.name}, ${match.venue.city}` : 'TBD',
+      homeTeam: {
+        id: match.home_team?.id || 0,
+        name: match.home_team?.name || 'Home',
+        logo: match.home_team?.logo || ''
+      },
+      awayTeam: {
+        id: match.away_team?.id || 0,
+        name: match.away_team?.name || 'Away', 
+        logo: match.away_team?.logo || ''
+      },
+      status: 'scheduled',
+      predictions: match.predictions ? {
+        home: parseInt(match.predictions.home) || 33,
+        draw: parseInt(match.predictions.draw) || 33,
+        away: parseInt(match.predictions.away) || 34,
+        confidence: match.predictions.confidence === 'high' ? 'ALTA' : 
+                   match.predictions.confidence === 'medium' ? 'MEDIA' : 'BASSA'
+      } : undefined,
+      odds: match.odds || null
+    }))
+    
+    console.log(`✅ Found ${formattedMatches.length} matches`)
     
     return NextResponse.json({
       success: true,
       league: leagueParam,
-      date: new Date().toISOString().split('T')[0],
-      count: matches.length,
-      matches,
+      date: today,
+      count: formattedMatches.length,
+      matches: formattedMatches,
     })
     
   } catch (error) {
-    console.error('Error in /api/matches/today:', error)
+    console.error('❌ Error in /api/matches/today:', error)
     
     return NextResponse.json(
       { 
         error: 'Failed to fetch matches',
-        mockData: true,
+        message: error instanceof Error ? error.message : 'Unknown error',
         matches: getMockMatches()
       },
       { status: 500 }

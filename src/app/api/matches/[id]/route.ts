@@ -1,85 +1,100 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ApiFootballService } from '@/lib/api-football'
+import { createClient } from '@supabase/supabase-js'
+import { getMatchAnalysis } from '@/lib/match-analysis'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const matchId = params.id
+    const { id } = await params
+    const fixtureId = parseInt(id)
     
-    // Check if API key is configured
-    if (!process.env.API_FOOTBALL_KEY) {
+    if (!fixtureId || isNaN(fixtureId)) {
       return NextResponse.json(
-        getMockMatchAnalysis(matchId),
-        { status: 200 }
-      )
-    }
-
-    const fixtureId = parseInt(matchId)
-    if (isNaN(fixtureId)) {
-      return NextResponse.json(
-        { error: 'Invalid match ID' },
+        { error: 'Invalid fixture ID' },
         { status: 400 }
       )
     }
-
-    // Get predictions and other data in parallel
-    const [predictions, injuries] = await Promise.allSettled([
-      ApiFootballService.getPredictions(fixtureId),
-      ApiFootballService.getInjuries(fixtureId),
-    ])
-
-    const predictionData = predictions.status === 'fulfilled' ? predictions.value : null
-    const injuryData = injuries.status === 'fulfilled' ? injuries.value : []
-
-    if (!predictionData) {
+    
+    console.log(`🔍 Fetching match data for fixture ${fixtureId}`)
+    
+    // Get match basic data
+    const { data: match, error: matchError } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('fixture_id', fixtureId)
+      .single()
+    
+    if (matchError || !match) {
+      console.log(`❌ Match not found: ${fixtureId}`)
       return NextResponse.json(
-        { error: 'Match not found or no predictions available' },
-        { status: 404 }
+        getMockMatchAnalysis(id),
+        { status: 200 }
       )
     }
-
-    // Get H2H data
-    const h2h = await ApiFootballService.getHeadToHead(
-      predictionData.teams.home.id,
-      predictionData.teams.away.id
-    )
-
-    // Format response
-    const analysis = {
-      match: {
-        id: matchId,
-        homeTeam: predictionData.teams.home,
-        awayTeam: predictionData.teams.away,
-      },
-      predictions: {
-        winner: {
-          home: parseInt(predictionData.predictions.percent.home),
-          draw: parseInt(predictionData.predictions.percent.draw),
-          away: parseInt(predictionData.predictions.percent.away),
+    
+    // Get analysis
+    const analysis = await getMatchAnalysis(fixtureId)
+    
+    // Format response with rich analysis if available
+    if (analysis) {
+      const response = {
+        success: true,
+        match: {
+          id: match.fixture_id.toString(),
+          date: match.match_date,
+          time: match.match_time,
+          league: match.league_name,
+          homeTeam: match.home_team,
+          awayTeam: match.away_team,
+          venue: match.venue,
+          odds: match.odds,
+          predictions: match.predictions,
+          status: match.status || 'scheduled'
         },
-        advice: predictionData.predictions.advice,
-        confidence: getConfidenceLevel(
-          Math.max(
-            parseInt(predictionData.predictions.percent.home),
-            parseInt(predictionData.predictions.percent.draw),
-            parseInt(predictionData.predictions.percent.away)
-          )
-        ),
-      },
-      headToHead: formatH2H(h2h),
-      injuries: formatInjuries(injuryData),
-      strategy: generateStrategy(predictionData),
+        analysis: analysis.analysis,
+        confidence: analysis.confidence_score,
+        hasAnalysis: true,
+        credits: 2 // Cost for this analysis
+      }
+      
+      return NextResponse.json(response)
+    } else {
+      // Return basic match data with indication that analysis is not ready
+      const response = {
+        success: true,
+        match: {
+          id: match.fixture_id.toString(),
+          date: match.match_date,
+          time: match.match_time,
+          league: match.league_name,
+          homeTeam: match.home_team,
+          awayTeam: match.away_team,
+          venue: match.venue,
+          odds: match.odds,
+          predictions: match.predictions,
+          status: match.status || 'scheduled'
+        },
+        analysis: null,
+        confidence: null,
+        hasAnalysis: false,
+        message: 'Analisi in corso... Riprova tra qualche minuto.'
+      }
+      
+      return NextResponse.json(response)
     }
-
-    return NextResponse.json(analysis)
     
   } catch (error) {
-    console.error('Error in /api/matches/[id]:', error)
+    console.error('❌ Error fetching match:', error)
     
     return NextResponse.json(
-      getMockMatchAnalysis(params.id),
+      getMockMatchAnalysis(await params.then(p => p.id)),
       { status: 200 }
     )
   }

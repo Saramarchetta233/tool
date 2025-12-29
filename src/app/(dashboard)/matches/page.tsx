@@ -32,9 +32,10 @@ interface Match {
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedLeague, setSelectedLeague] = useState('serie-a')
+  const [selectedLeague, setSelectedLeague] = useState('all')
 
   const leagues = [
+    { key: 'all', name: 'Tutti i Campionati' },
     { key: 'serie-a', name: 'Serie A' },
     { key: 'premier', name: 'Premier League' },
     { key: 'la-liga', name: 'La Liga' },
@@ -49,7 +50,8 @@ export default function MatchesPage() {
   const fetchMatches = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/matches/today?league=${selectedLeague}`)
+      const leagueParam = selectedLeague === 'all' ? 'all' : selectedLeague
+      const response = await fetch(`/api/matches/today?league=${leagueParam}`)
       const data = await response.json()
       setMatches(data.matches || [])
     } catch (error) {
