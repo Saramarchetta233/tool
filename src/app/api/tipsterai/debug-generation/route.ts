@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateDailyTips } from '@/lib/tipster-ai'
+import { generateDailyTipsV2 } from '@/lib/tipster-ai-v2'
 
 export async function GET() {
   console.log('🔍 DEBUG: Running TipsterAI generation with full logging...')
@@ -25,7 +25,7 @@ export async function GET() {
     }
     
     // Generate tips
-    const result = await generateDailyTips()
+    const result = await generateDailyTipsV2()
     
     // Restore console
     console.log = originalLog

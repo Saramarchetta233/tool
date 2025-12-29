@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateDailyTips } from '@/lib/tipster-ai'
+import { generateDailyTipsV2 } from '@/lib/tipster-ai-v2'
 import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
@@ -27,7 +27,7 @@ export async function GET() {
     
     // 2. Generate real tips with GPT-4o-mini
     console.log('🤖 Generating tips with GPT-4o-mini using real matches...')
-    const result = await generateDailyTips()
+    const result = await generateDailyTipsV2()
     
     if (!result.success) {
       return NextResponse.json({

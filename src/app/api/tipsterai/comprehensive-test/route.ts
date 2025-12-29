@@ -70,7 +70,7 @@ export async function GET() {
     
     // Step 5: Read using the app's supabaseAdmin
     console.log('Step 5: Reading with app supabaseAdmin...')
-    const { supabaseAdmin } = await import('@/lib/supabase')
+    const { supabaseAdmin } = await import('@/lib/supabase/client')
     const { data: tips3, error: error3 } = await supabaseAdmin
       .from('tips')
       .select('*')

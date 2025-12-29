@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { generateDailyTips } from '@/lib/tipster-ai'
+import { generateDailyTipsV2 } from '@/lib/tipster-ai-v2'
 
 export async function GET() {
   console.log('🧪 Testing TipsterAI generation system...')
   
   try {
-    const result = await generateDailyTips()
+    const result = await generateDailyTipsV2()
     
     return NextResponse.json({
       success: true,
