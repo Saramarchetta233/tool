@@ -37,12 +37,11 @@ export async function GET() {
       logs,
       summary: {
         success: result.success,
-        tips: result.tips ? Object.keys(result.tips).map(type => ({
-          type,
-          available: result.tips[type].available,
-          odds: result.tips[type].total_odds || result.tips[type].odds,
-          message: result.tips[type].message
-        })) : []
+        singola: result.singola || false,
+        doppia: result.doppia || false,
+        tripla: result.tripla || false,
+        mista: result.mista || false,
+        bomba: result.bomba || false
       }
     })
     
