@@ -12,7 +12,7 @@ export async function GET() {
       test: 'TipsterAI Generation Test',
       timestamp: new Date().toISOString(),
       result,
-      message: result.success ? 'Tips generati con successo!' : result.message
+      message: result.success ? 'Tips generati con successo!' : ('message' in result ? result.message : 'Errore sconosciuto')
     })
   } catch (error) {
     console.error('❌ Test failed:', error)
