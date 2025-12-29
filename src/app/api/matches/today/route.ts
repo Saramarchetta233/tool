@@ -83,9 +83,7 @@ export async function GET(request: NextRequest) {
       },
       status: 'scheduled',
       predictions: match.predictions ? {
-        home: parseInt(match.predictions.home) || 33,
-        draw: parseInt(match.predictions.draw) || 33,
-        away: parseInt(match.predictions.away) || 34,
+        ...getIntelligentPredictions(match.home_team?.name, match.away_team?.name, match.league_name),
         confidence: getSmartConfidence(match.predictions, match.home_team?.name, match.away_team?.name),
         advice: getSmartAdvice(match.predictions, match.home_team?.name, match.away_team?.name)
       } : undefined,
@@ -120,6 +118,66 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// PREDICTIONS INTELLIGENTI basate su forza reale delle squadre
+function getIntelligentPredictions(homeTeam: string | undefined, awayTeam: string | undefined, league: string | undefined): {home: number, draw: number, away: number} {
+  if (!homeTeam || !awayTeam) return {home: 33, draw: 33, away: 34}
+  
+  // Rating squadre (1-10)
+  const teamRatings: { [key: string]: number } = {
+    // Serie A
+    'Inter': 9, 'Napoli': 9, 'Juventus': 8.5, 'Milan': 8, 'AC Milan': 8, 'Atalanta': 8, 
+    'Roma': 7.5, 'Lazio': 7.5, 'Fiorentina': 7, 'Bologna': 6.5, 'Torino': 6,
+    'Udinese': 5.5, 'Sassuolo': 5.5, 'Verona': 5, 'Genoa': 4.5, 'Empoli': 4.5, 
+    'Lecce': 4, 'Monza': 4, 'Salernitana': 3.5, 'Spezia': 3.5, 'Cremonese': 3,
+    
+    // Premier League  
+    'Manchester City': 9.5, 'Arsenal': 9, 'Liverpool': 9, 'Chelsea': 8, 'Manchester United': 8,
+    'Newcastle': 7.5, 'Tottenham': 7.5, 'Aston Villa': 7, 'Brighton': 6.5, 'West Ham': 6,
+    'Crystal Palace': 5.5, 'Brentford': 5.5, 'Fulham': 5.5, 'Wolves': 5, 'Everton': 5,
+    'Nottingham Forest': 4.5, 'Bournemouth': 4.5, 'Burnley': 4, 'Luton': 3.5, 'Sheffield United': 3,
+    
+    // La Liga
+    'Real Madrid': 9.5, 'Barcelona': 9, 'Atletico Madrid': 8.5, 'Real Sociedad': 7, 'Villarreal': 7,
+    'Athletic Bilbao': 6.5, 'Valencia': 6, 'Sevilla': 6, 'Real Betis': 6, 'Osasuna': 5.5,
+    
+    // Bundesliga
+    'Bayern Munich': 9.5, 'Borussia Dortmund': 8.5, 'RB Leipzig': 8, 'Bayer Leverkusen': 8,
+    'Eintracht Frankfurt': 7, 'VfL Wolfsburg': 6.5, 'Union Berlin': 6, 'Borussia Monchengladbach': 6
+  }
+  
+  const homeRating = teamRatings[homeTeam] || 5
+  const awayRating = teamRatings[awayTeam] || 5
+  
+  // Fattore campo (+0.5 per casa)
+  const adjustedHomeRating = homeRating + 0.5
+  const ratingDiff = adjustedHomeRating - awayRating
+  
+  // Calcola percentuali basate su differenza rating
+  let home: number, draw: number, away: number
+  
+  if (ratingDiff >= 3) {
+    // Casa molto favorita (es: City vs Luton)
+    home = 70; draw = 20; away = 10
+  } else if (ratingDiff >= 2) {
+    // Casa favorita (es: Arsenal vs Aston Villa)  
+    home = 60; draw = 25; away = 15
+  } else if (ratingDiff >= 1) {
+    // Casa leggermente favorita
+    home = 50; draw = 30; away = 20
+  } else if (ratingDiff >= -1) {
+    // Equilibrata
+    home = 40; draw = 30; away = 30
+  } else if (ratingDiff >= -2) {
+    // Ospite leggermente favorito
+    home = 30; draw = 30; away = 40
+  } else {
+    // Ospite favorito
+    home = 20; draw = 25; away = 55
+  }
+  
+  return {home, draw, away}
 }
 
 // Logica INTELLIGENTE per confidence basata su forza squadre
@@ -157,9 +215,9 @@ function getSmartConfidence(predictions: any, homeTeam: string | undefined, away
   return 'BASSA'
 }
 
-// Consigli INTELLIGENTI basati su logica calcistica
+// Consigli INTELLIGENTI basati su logica calcistica con TESTO BELLO
 function getSmartAdvice(predictions: any, homeTeam: string | undefined, awayTeam: string | undefined): string {
-  if (!homeTeam || !awayTeam || !predictions) return '1X'
+  if (!homeTeam || !awayTeam || !predictions) return `${homeTeam} non perde`
   
   const home = parseInt(predictions.home) || 33
   const draw = parseInt(predictions.draw) || 33
@@ -167,32 +225,21 @@ function getSmartAdvice(predictions: any, homeTeam: string | undefined, awayTeam
   
   // Identifica il risultato più probabile
   const maxPercent = Math.max(home, draw, away)
-  let prediction = ''
   
   if (maxPercent === home) {
     // Casa favorita
-    if (home >= 60) prediction = '1'  // Vittoria netta
-    else if (home >= 45) prediction = '1X'  // Casa non perde
-    else prediction = '1X'
+    if (home >= 60) return `${homeTeam} vince`  // Vittoria netta
+    else return `${homeTeam} non perde`  // Casa non perde
   } else if (maxPercent === away) {
     // Ospite favorito  
-    if (away >= 60) prediction = '2'  // Vittoria netta
-    else if (away >= 45) prediction = 'X2'  // Ospite non perde  
-    else prediction = 'X2'
+    if (away >= 60) return `${awayTeam} vince`  // Vittoria netta
+    else return `${awayTeam} non perde`  // Ospite non perde  
   } else {
     // Pareggio più probabile
-    if (draw >= 40) prediction = 'X'
-    else if (home > away) prediction = '1X'
-    else prediction = 'X2'
+    if (draw >= 40) return 'Pareggio'
+    else if (home > away) return `${homeTeam} non perde`
+    else return `${awayTeam} non perde`
   }
-  
-  // Correzioni per squadre famose in casa (fattore campo)
-  const strongAtHome = ['Inter', 'Juventus', 'Liverpool', 'Manchester City', 'Arsenal', 'Chelsea']
-  if (strongAtHome.includes(homeTeam) && prediction.includes('2')) {
-    prediction = prediction.includes('X') ? '1X' : '1'
-  }
-  
-  return prediction
 }
 
 // Mapping stadi per squadre italiane
