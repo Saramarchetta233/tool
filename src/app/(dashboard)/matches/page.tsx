@@ -192,7 +192,9 @@ export default function MatchesPage() {
                     <Clock className="h-4 w-4" />
                     <span>{match.time}</span>
                     <MapPin className="h-4 w-4 ml-2" />
-                    <span className="truncate">{match.venue}</span>
+                    <span className="truncate">
+                      {typeof match.venue === 'object' ? `${match.venue.name}, ${match.venue.city}` : match.venue}
+                    </span>
                   </div>
                 </CardHeader>
                 
