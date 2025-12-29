@@ -32,8 +32,8 @@ export async function GET() {
     if (!result.success) {
       return NextResponse.json({
         success: false,
-        error: result.message,
-        tips: result.tips || null
+        error: 'message' in result ? result.message : 'Failed to generate tips',
+        tips: null
       }, { status: 500 })
     }
     
