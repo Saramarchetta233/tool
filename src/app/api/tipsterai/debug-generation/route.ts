@@ -37,11 +37,12 @@ export async function GET() {
       logs,
       summary: {
         success: result.success,
-        singola: result.singola || false,
-        doppia: result.doppia || false,
-        tripla: result.tripla || false,
-        mista: result.mista || false,
-        bomba: result.bomba || false
+        singola: 'singola' in result ? result.singola : false,
+        doppia: 'doppia' in result ? result.doppia : false,
+        tripla: 'tripla' in result ? result.tripla : false,
+        mista: 'mista' in result ? result.mista : false,
+        bomba: 'bomba' in result ? result.bomba : false,
+        message: 'message' in result ? result.message : undefined
       }
     })
     
