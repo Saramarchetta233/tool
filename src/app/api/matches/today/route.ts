@@ -82,11 +82,14 @@ export async function GET(request: NextRequest) {
         logo: match.away_team?.logo || ''
       },
       status: 'scheduled',
-      predictions: match.predictions ? {
-        ...getIntelligentPredictions(match.home_team?.name, match.away_team?.name, match.league_name),
-        confidence: getSmartConfidence(match.predictions, match.home_team?.name, match.away_team?.name),
-        advice: getSmartAdvice(match.predictions, match.home_team?.name, match.away_team?.name)
-      } : undefined,
+      predictions: match.predictions ? (() => {
+        const intelligentPreds = getIntelligentPredictions(match.home_team?.name, match.away_team?.name, match.league_name)
+        return {
+          ...intelligentPreds,
+          confidence: getSmartConfidence(match.predictions, match.home_team?.name, match.away_team?.name),
+          advice: getDetailedAdvice(intelligentPreds, match.home_team?.name, match.away_team?.name, match.odds)
+        }
+      })() : undefined,
       odds: match.odds || null,
       // Aggiungi info complete
       api_predictions: match.predictions,
@@ -215,9 +218,84 @@ function getSmartConfidence(predictions: any, homeTeam: string | undefined, away
   return 'BASSA'
 }
 
-// Consigli INTELLIGENTI basati su logica calcistica con TESTO BELLO
+// Consigli DETTAGLIATI con analisi quote e statistiche
+function getDetailedAdvice(predictions: any, homeTeam: string | undefined, awayTeam: string | undefined, odds: any): string {
+  if (!homeTeam || !awayTeam || !predictions) return `${homeTeam} vince`
+  
+  const home = parseInt(predictions.home) || 33
+  const draw = parseInt(predictions.draw) || 33
+  const away = parseInt(predictions.away) || 34
+  
+  // Analizza le quote disponibili
+  const over25 = odds?.goals?.over_2_5 || 2.0
+  const under25 = odds?.goals?.under_2_5 || 2.0
+  const btts = odds?.goals?.btts || 2.0
+  const homeOdds = odds?.winner?.home || 2.0
+  const awayOdds = odds?.winner?.away || 3.0
+  
+  // Identifica il risultato più probabile
+  const maxPercent = Math.max(home, draw, away)
+  
+  if (maxPercent === home) {
+    // Casa favorita
+    if (home >= 70) {
+      // Dominio totale - suggerimenti aggressivi
+      if (over25 <= 1.8) {
+        return `${homeTeam} vince e segna 2+ gol`
+      } else {
+        return `${homeTeam} vince + Over 1.5 gol`
+      }
+    } else if (home >= 60) {
+      // Vittoria probabile - suggerimenti medi
+      if (homeOdds <= 1.6) {
+        return `${homeTeam} vince (favorito netto)`
+      } else if (btts <= 1.7) {
+        return `${homeTeam} vince + entrambe segnano`
+      } else {
+        return `${homeTeam} vince`
+      }
+    } else {
+      // Leggero vantaggio - conservative
+      return `${homeTeam} non perde (1X)`
+    }
+  } else if (maxPercent === away) {
+    // Ospite favorito
+    if (away >= 70) {
+      if (over25 <= 1.8) {
+        return `${awayTeam} vince + almeno 3 gol totali`
+      } else {
+        return `${awayTeam} vince in trasferta`
+      }
+    } else if (away >= 60) {
+      if (awayOdds <= 1.8) {
+        return `${awayTeam} vince (trasferta facile)`
+      } else {
+        return `${awayTeam} non perde (X2)`
+      }
+    } else {
+      return `${awayTeam} non perde (X2)`
+    }
+  } else {
+    // Pareggio più probabile
+    if (draw >= 40) {
+      if (under25 <= 1.8) {
+        return 'Pareggio + pochi gol (Under 2.5)'
+      } else if (btts >= 2.2) {
+        return 'Pareggio + almeno una non segna'
+      } else {
+        return 'Pareggio probabile'
+      }
+    } else if (home > away) {
+      return `${homeTeam} non perde (1X)`
+    } else {
+      return 'Partita equilibrata - nessuna proposta sicura'
+    }
+  }
+}
+
+// Consigli INTELLIGENTI e DETTAGLIATI basati su logica calcistica
 function getSmartAdvice(predictions: any, homeTeam: string | undefined, awayTeam: string | undefined): string {
-  if (!homeTeam || !awayTeam || !predictions) return `${homeTeam} non perde`
+  if (!homeTeam || !awayTeam || !predictions) return `${homeTeam} vince`
   
   const home = parseInt(predictions.home) || 33
   const draw = parseInt(predictions.draw) || 33
@@ -228,17 +306,34 @@ function getSmartAdvice(predictions: any, homeTeam: string | undefined, awayTeam
   
   if (maxPercent === home) {
     // Casa favorita
-    if (home >= 60) return `${homeTeam} vince`  // Vittoria netta
-    else return `${homeTeam} non perde`  // Casa non perde
+    if (home >= 70) {
+      // Dominio totale
+      return `${homeTeam} vince + Over 1.5`
+    } else if (home >= 60) {
+      // Vittoria probabile
+      return `${homeTeam} vince`
+    } else {
+      // Leggero vantaggio
+      return `${homeTeam} non perde`
+    }
   } else if (maxPercent === away) {
-    // Ospite favorito  
-    if (away >= 60) return `${awayTeam} vince`  // Vittoria netta
-    else return `${awayTeam} non perde`  // Ospite non perde  
+    // Ospite favorito
+    if (away >= 70) {
+      return `${awayTeam} vince + Under 3.5`
+    } else if (away >= 60) {
+      return `${awayTeam} vince`  
+    } else {
+      return `${awayTeam} non perde`
+    }
   } else {
     // Pareggio più probabile
-    if (draw >= 40) return 'Pareggio'
-    else if (home > away) return `${homeTeam} non perde`
-    else return `${awayTeam} non perde`
+    if (draw >= 40) {
+      return 'Pareggio + Under 2.5'
+    } else if (home > away) {
+      return `${homeTeam} non perde`
+    } else {
+      return `${homeTeam} non perde`  // FIX: era awayTeam sbagliato!
+    }
   }
 }
 
