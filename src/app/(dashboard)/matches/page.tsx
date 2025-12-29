@@ -193,7 +193,7 @@ export default function MatchesPage() {
                     <span>{match.time}</span>
                     <MapPin className="h-4 w-4 ml-2" />
                     <span className="truncate">
-                      {typeof match.venue === 'object' ? `${match.venue.name}, ${match.venue.city}` : match.venue}
+                      {typeof match.venue === 'object' ? `${match.venue?.name || 'Stadio da definire'}, ${match.venue?.city || ''}` : match.venue || 'Stadio da definire'}
                     </span>
                   </div>
                 </CardHeader>
@@ -242,6 +242,29 @@ export default function MatchesPage() {
                         <span>{match.predictions.draw}%</span>
                         <span>{match.predictions.away}%</span>
                       </div>
+                    </div>
+                    
+                    {/* Consiglio rapido */}
+                    <div className="text-center mt-2 text-sm">
+                      {(() => {
+                        const homePercent = match.predictions?.home ? parseInt(match.predictions.home) : 33
+                        const drawPercent = match.predictions?.draw ? parseInt(match.predictions.draw) : 33
+                        const awayPercent = match.predictions?.away ? parseInt(match.predictions.away) : 34
+                        
+                        if (homePercent >= 50) {
+                          return <span className="text-emerald-400">📊 Consigliato: {match.homeTeam?.name || 'Casa'} (1)</span>
+                        } else if (awayPercent >= 50) {
+                          return <span className="text-emerald-400">📊 Consigliato: {match.awayTeam?.name || 'Ospite'} (2)</span>
+                        } else if (homePercent >= 40 && drawPercent >= 30) {
+                          return <span className="text-yellow-400">📊 Doppia Chance: 1X</span>
+                        } else if (awayPercent >= 40 && drawPercent >= 30) {
+                          return <span className="text-yellow-400">📊 Doppia Chance: X2</span>
+                        } else if (Math.abs(homePercent - awayPercent) < 15) {
+                          return <span className="text-slate-400">📊 Partita equilibrata - Analisi consigliata</span>
+                        } else {
+                          return <span className="text-slate-400">📊 Vedi analisi completa</span>
+                        }
+                      })()}
                     </div>
                   )}
 
