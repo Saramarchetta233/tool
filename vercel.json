@@ -2,6 +2,33 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/sync-matches?secret=${CRON_SECRET}",
+      "schedule": "0 7 * * *",
+      "comment": "Sync matches from API-Football every day at 7:00 AM"
+    },
+    {
+      "path": "/api/cron/sync-matches?secret=${CRON_SECRET}", 
+      "schedule": "0 14 * * *",
+      "comment": "Sync matches from API-Football every day at 2:00 PM for fresh odds"
+    },
+    {
+      "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
+      "schedule": "5 23 * * *",
+      "comment": "Generate TipsterAI V2 tips at 11:05 PM with separate tables"
+    },
+    {
+      "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
+      "schedule": "5 11 * * *", 
+      "comment": "Generate TipsterAI V2 tips at 11:05 AM with separate tables"
+    },
+    {
+      "path": "/api/cron/update-results?secret=${CRON_SECRET}",
+      "schedule": "0 */2 * * *",
+      "comment": "Update match results every 2 hours"
+    }
+  ],
   "headers": [
     {
       "source": "/fonts/inter-var-latin.woff2",
