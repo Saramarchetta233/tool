@@ -53,9 +53,9 @@ export async function GET() {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
       serviceKeyEnd: process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-8),
       tables: {
-        rpcResult: tables?.data || null,
+        rpcResult: tables || null,
         rpcError: tablesError?.message || null,
-        systemTables: systemTables?.data || null,
+        systemTables: systemTables || null,
         systemError: systemError?.message || null
       },
       tipsTable: {
