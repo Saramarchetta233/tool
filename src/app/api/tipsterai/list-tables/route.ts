@@ -11,10 +11,15 @@ export async function GET() {
   
   try {
     // Try to query the information schema to see all tables
-    const { data: tables, error: tablesError } = await supabase
-      .rpc('get_schema_tables') // This might not work, but let's try
-      .then(result => result)
-      .catch(() => ({ data: null, error: { message: 'RPC not available' } }))
+    let tables = null
+    let tablesError = null
+    try {
+      const result = await supabase.rpc('get_schema_tables')
+      tables = result.data
+      tablesError = result.error
+    } catch (error) {
+      tablesError = { message: 'RPC not available' }
+    }
     
     // Check tips table structure
     const { data: tipsStructure, error: structureError } = await supabase
@@ -23,12 +28,18 @@ export async function GET() {
       .limit(1)
     
     // Try to get all table names by querying a known system view
-    const { data: systemTables, error: systemError } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .then(result => result)
-      .catch(() => ({ data: null, error: { message: 'Cannot access information_schema' } }))
+    let systemTables = null
+    let systemError = null
+    try {
+      const result = await supabase
+        .from('information_schema.tables')
+        .select('table_name')
+        .eq('table_schema', 'public')
+      systemTables = result.data
+      systemError = result.error
+    } catch (error) {
+      systemError = { message: 'Cannot access information_schema' }
+    }
     
     // Get current tips count and sample data
     const { data: currentTips, error: tipsError } = await supabase
