@@ -224,48 +224,50 @@ export default function MatchesPage() {
 
                   {/* Predictions */}
                   {match.predictions && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">1</span>
-                        <span className="text-xs text-slate-400">X</span>
-                        <span className="text-xs text-slate-400">2</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-1">
-                        <div className="bg-emerald-500 h-2 rounded" style={{opacity: match.predictions.home / 100}}></div>
-                        <div className="bg-yellow-500 h-2 rounded" style={{opacity: match.predictions.draw / 100}}></div>
-                        <div className="bg-red-500 h-2 rounded" style={{opacity: match.predictions.away / 100}}></div>
-                      </div>
-                      
-                      <div className="flex justify-between text-xs text-slate-300">
-                        <span>{match.predictions.home}%</span>
-                        <span>{match.predictions.draw}%</span>
-                        <span>{match.predictions.away}%</span>
-                      </div>
-                    </div>
-                    
-                    {/* Consiglio rapido */}
-                    <div className="text-center mt-2 text-sm">
-                      {(() => {
-                        const homePercent = match.predictions?.home ? parseInt(match.predictions.home) : 33
-                        const drawPercent = match.predictions?.draw ? parseInt(match.predictions.draw) : 33
-                        const awayPercent = match.predictions?.away ? parseInt(match.predictions.away) : 34
+                    <>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-slate-400">1</span>
+                          <span className="text-xs text-slate-400">X</span>
+                          <span className="text-xs text-slate-400">2</span>
+                        </div>
                         
-                        if (homePercent >= 50) {
-                          return <span className="text-emerald-400">📊 Consigliato: {match.homeTeam?.name || 'Casa'} (1)</span>
-                        } else if (awayPercent >= 50) {
-                          return <span className="text-emerald-400">📊 Consigliato: {match.awayTeam?.name || 'Ospite'} (2)</span>
-                        } else if (homePercent >= 40 && drawPercent >= 30) {
-                          return <span className="text-yellow-400">📊 Doppia Chance: 1X</span>
-                        } else if (awayPercent >= 40 && drawPercent >= 30) {
-                          return <span className="text-yellow-400">📊 Doppia Chance: X2</span>
-                        } else if (Math.abs(homePercent - awayPercent) < 15) {
-                          return <span className="text-slate-400">📊 Partita equilibrata - Analisi consigliata</span>
-                        } else {
-                          return <span className="text-slate-400">📊 Vedi analisi completa</span>
-                        }
-                      })()}
-                    </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <div className="bg-emerald-500 h-2 rounded" style={{opacity: match.predictions.home / 100}}></div>
+                          <div className="bg-yellow-500 h-2 rounded" style={{opacity: match.predictions.draw / 100}}></div>
+                          <div className="bg-red-500 h-2 rounded" style={{opacity: match.predictions.away / 100}}></div>
+                        </div>
+                        
+                        <div className="flex justify-between text-xs text-slate-300">
+                          <span>{match.predictions.home}%</span>
+                          <span>{match.predictions.draw}%</span>
+                          <span>{match.predictions.away}%</span>
+                        </div>
+                      </div>
+                      
+                      {/* Consiglio rapido */}
+                      <div className="text-center mt-2 text-sm">
+                        {(() => {
+                          const homePercent = match.predictions?.home ? parseInt(match.predictions.home) : 33
+                          const drawPercent = match.predictions?.draw ? parseInt(match.predictions.draw) : 33
+                          const awayPercent = match.predictions?.away ? parseInt(match.predictions.away) : 34
+                          
+                          if (homePercent >= 50) {
+                            return <span className="text-emerald-400">📊 Consigliato: {match.homeTeam?.name || 'Casa'} (1)</span>
+                          } else if (awayPercent >= 50) {
+                            return <span className="text-emerald-400">📊 Consigliato: {match.awayTeam?.name || 'Ospite'} (2)</span>
+                          } else if (homePercent >= 40 && drawPercent >= 30) {
+                            return <span className="text-yellow-400">📊 Doppia Chance: 1X</span>
+                          } else if (awayPercent >= 40 && drawPercent >= 30) {
+                            return <span className="text-yellow-400">📊 Doppia Chance: X2</span>
+                          } else if (Math.abs(homePercent - awayPercent) < 15) {
+                            return <span className="text-slate-400">📊 Partita equilibrata - Analisi consigliata</span>
+                          } else {
+                            return <span className="text-slate-400">📊 Vedi analisi completa</span>
+                          }
+                        })()}
+                      </div>
+                    </>
                   )}
 
                   {/* CTA */}
