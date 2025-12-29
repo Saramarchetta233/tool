@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 // Inizializza OpenAI solo se la chiave è disponibile
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
