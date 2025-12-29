@@ -38,29 +38,13 @@ export async function GET() {
       }, { status: 500 })
     }
     
-    console.log('✅ GPT-4 tips generated:', Object.keys(result.tips || {}))
+    console.log('✅ GPT-4 tips generated')
     console.log('📊 Full result:', result)
-    
-    // 3. Verify what was generated
-    const { data: newTips, error: verifyError } = await supabase
-      .from('tips')
-      .select('tip_type, odds, matches')
-      .eq('valid_until', today)
-      .order('created_at', { ascending: false })
     
     return NextResponse.json({
       success: true,
       message: 'Real tips generated successfully with GPT-4o-mini',
-      generatedCount: result.tips ? Object.keys(result.tips).length : 0,
-      totalTips: newTips?.length || 0,
-      tips: newTips?.map(tip => ({
-        type: tip.tip_type,
-        odds: tip.odds,
-        matches: tip.matches?.length || 0,
-        firstMatch: tip.matches?.[0]?.match || 'No matches',
-        prediction: tip.matches?.[0]?.prediction,
-        realOdds: tip.matches?.[0]?.odds
-      })) || []
+      result: result
     })
     
   } catch (error: any) {

@@ -275,7 +275,7 @@ OUTPUT JSON:
     const gptSelection = JSON.parse(response.choices[0].message.content || '{}')
     
     // Trova il match corrispondente per le quote reali
-    const selectedMatch = matchesData.find(m => m.fixture_id === gptSelection.fixture_id)
+    const selectedMatch = matches.find(m => m.fixture_id === gptSelection.fixture_id)
     if (!selectedMatch) {
       console.error('❌ Match non trovato per fixture_id:', gptSelection.fixture_id)
       return false

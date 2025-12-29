@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { ApiFootballService, formatOddsForFrontend, calculateProbabilitiesFromOdds, getDefaultOdds } from '@/lib/api-football'
-import { generateMatchNarrative, generateBettingTips } from '@/lib/openai-helper'
+// import { generateMatchNarrative, generateBettingTips } from '@/lib/openai-helper'
 import { generateMatchAnalysis, AIAnalysisResult } from '@/lib/match-analysis-ai'
 import { getH2H, getTeamForm, getStandings, getTeamStats, calculateH2HStats, formatTeamForm, getCurrentSeason } from '@/lib/football-api'
 

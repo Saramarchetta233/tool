@@ -21,6 +21,7 @@ interface Prediction {
     odds: number
     confidence: number
     reasoning: string
+    time?: string
   }>
   total_odds: number
   potential_multiplier: string
@@ -207,6 +208,7 @@ interface HistoryTip {
     odds: number
     confidence: number
     reasoning: string
+    time?: string
   }>
   total_odds: number
   result: 'won' | 'lost' | 'pending'
@@ -539,7 +541,7 @@ export default function TipsterAI() {
               </Button>
             </Link>
             <Button 
-              onClick={fetchDailyPredictions} 
+              onClick={() => fetchDailyPredictions()} 
               variant="outline"
               className="gap-2"
             >
@@ -552,7 +554,7 @@ export default function TipsterAI() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Nessuna predizione disponibile al momento.</p>
               <Button 
-                onClick={fetchDailyPredictions} 
+                onClick={() => fetchDailyPredictions()} 
                 className="mt-4 gap-2"
               >
                 <RefreshCw className="w-4 h-4" />

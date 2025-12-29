@@ -550,7 +550,7 @@ function getSelectionOddsForType(match: MatchAnalysis, prediction: string, type:
   return 1.75
 }
 
-function getSmartPrediction(match: MatchAnalysis): string {
+function getSmartPrediction(match: MatchAnalysis, type?: string): string {
   // Se quota è bassa, usa doppia chance
   const esitoQuota = match.esito === '1' ? (match.odds?.home || 2.00) :
                      match.esito === '2' ? (match.odds?.away || 3.50) : (match.odds?.draw || 3.20)

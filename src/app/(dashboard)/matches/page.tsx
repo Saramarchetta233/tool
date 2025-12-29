@@ -236,8 +236,8 @@ export default function MatchesPage() {
                         <span>•</span>
                         <MapPin className="h-4 w-4" />
                         <span className="truncate">
-                          {typeof match.venue === 'object' 
-                            ? `${match.venue.name}${match.venue.city ? `, ${match.venue.city}` : ''}` 
+                          {typeof match.venue === 'object' && match.venue
+                            ? `${(match.venue as any).name}${(match.venue as any).city ? `, ${(match.venue as any).city}` : ''}` 
                             : match.venue}
                         </span>
                       </>
