@@ -92,7 +92,7 @@ function TipCard({ tip, type }: { tip: any, type: string }) {
                 <h4 className="text-lg font-bold text-white mb-1">
                   {match.home_team && match.away_team 
                     ? `${match.home_team} vs ${match.away_team}` 
-                    : match.match}
+                    : match.match || `${tip.home_team} vs ${tip.away_team}`}
                 </h4>
                 <div className="flex items-center gap-3 text-sm text-slate-400 mb-2">
                   <span className="flex items-center gap-1">
