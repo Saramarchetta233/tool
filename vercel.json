@@ -5,28 +5,23 @@
   "crons": [
     {
       "path": "/api/cron/sync-matches?secret=${CRON_SECRET}",
-      "schedule": "0 7 * * *",
-      "comment": "Sync matches from API-Football every day at 7:00 AM"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/cron/sync-matches?secret=${CRON_SECRET}", 
-      "schedule": "0 14 * * *",
-      "comment": "Sync matches from API-Football every day at 2:00 PM for fresh odds"
+      "schedule": "0 14 * * *"
     },
     {
       "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
-      "schedule": "5 23 * * *",
-      "comment": "Generate TipsterAI V2 tips at 11:05 PM with separate tables"
+      "schedule": "5 23 * * *"
     },
     {
       "path": "/api/cron/generate-tips-v2?secret=${CRON_SECRET}",
-      "schedule": "5 11 * * *", 
-      "comment": "Generate TipsterAI V2 tips at 11:05 AM with separate tables"
+      "schedule": "5 11 * * *"
     },
     {
       "path": "/api/cron/update-results?secret=${CRON_SECRET}",
-      "schedule": "0 */2 * * *",
-      "comment": "Update match results every 2 hours"
+      "schedule": "0 */2 * * *"
     }
   ],
   "headers": [
