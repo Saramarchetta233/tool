@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const today = new Date().toISOString().split('T')[0]
   const currentTime = new Date().toTimeString().slice(0, 5)
@@ -24,6 +26,13 @@ export async function GET() {
     supabase.from('tips_mista').select('*').eq('valid_until', today).single(),
     supabase.from('tips_bomba').select('*').eq('valid_until', today).single()
   ])
+  
+  console.log('🔍 DEBUG: Risultati query database:')
+  console.log('  Singola:', singola.error ? `ERROR: ${singola.error.message}` : 'OK')
+  console.log('  Doppia:', doppia.error ? `ERROR: ${doppia.error.message}` : 'OK')
+  console.log('  Tripla:', tripla.error ? `ERROR: ${tripla.error.message}` : 'OK')
+  console.log('  Mista:', mista.error ? `ERROR: ${mista.error.message}` : 'OK')
+  console.log('  Bomba:', bomba.error ? `ERROR: ${bomba.error.message}` : 'OK')
   
   // Costruisci array di tips disponibili
   const tips = []
@@ -156,7 +165,7 @@ export async function GET() {
   
   // Se non ci sono tips
   if (tips.length === 0) {
-    return NextResponse.json({
+    const errorResponse = NextResponse.json({
       predictions: [],
       tips: [],
       noMatchesMessage: true,
@@ -171,6 +180,14 @@ export async function GET() {
         bomba: bomba.data ? 'found' : 'missing'
       }
     })
+
+    // Cache-busting headers
+    errorResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    errorResponse.headers.set('Pragma', 'no-cache')
+    errorResponse.headers.set('Expires', '0')
+    errorResponse.headers.set('Surrogate-Control', 'no-store')
+
+    return errorResponse
   }
   
   // Ordina: Singola, Doppia, Tripla, Mista, Bomba
@@ -181,7 +198,7 @@ export async function GET() {
     return indexA - indexB
   })
   
-  return NextResponse.json({
+  const response = NextResponse.json({
     tips: sortedTips,
     predictions: sortedTips, // Legacy compatibility
     date: today,
@@ -196,4 +213,12 @@ export async function GET() {
       hasBomba: !!bomba.data
     }
   })
+
+  // Cache-busting headers to prevent stale data
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+  response.headers.set('Surrogate-Control', 'no-store')
+
+  return response
 }

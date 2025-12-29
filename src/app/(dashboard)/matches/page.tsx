@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, BarChart3, TrendingUp, Users } from 'lucide-react'
@@ -26,7 +26,47 @@ interface Match {
     draw: number
     away: number
     confidence: 'ALTA' | 'MEDIA' | 'BASSA'
+    advice?: string
   }
+}
+
+// Traduzione pronostici in italiano
+function translateAdvice(advice: string): string {
+  if (!advice) return 'Nessun consiglio disponibile'
+  
+  let translated = advice
+    // Base translations
+    .replace(/Double chance/gi, 'Doppia chance')
+    .replace(/Combo/gi, 'Combo')
+    .replace(/Under/gi, 'Under')
+    .replace(/Over/gi, 'Over')
+    .replace(/goals?/gi, 'gol')
+    .replace(/goal/gi, 'gol')
+    .replace(/and/gi, 'e')
+    .replace(/or/gi, 'o')
+    .replace(/draw/gi, 'pareggio')
+    .replace(/win/gi, 'vittoria')
+    .replace(/winner/gi, 'vincente')
+    .replace(/to win/gi, 'vincente')
+    .replace(/match winner/gi, 'vincente partita')
+    .replace(/both teams to score/gi, 'entrambe segnano')
+    .replace(/clean sheet/gi, 'porta inviolata')
+    .replace(/first half/gi, 'primo tempo')
+    .replace(/second half/gi, 'secondo tempo')
+    .replace(/corners/gi, 'calci d\'angolo')
+    .replace(/yellow cards/gi, 'cartellini gialli')
+    .replace(/red cards/gi, 'cartellini rossi')
+    .replace(/penalties/gi, 'rigori')
+    .replace(/no bet/gi, 'nessuna giocata')
+    .replace(/avoid/gi, 'evita')
+    .replace(/recommended/gi, 'consigliato')
+    .replace(/handicap/gi, 'handicap')
+    .replace(/\bX\b/g, 'X')  // Mantiene X per pareggio
+    .replace(/1X/gi, '1X')   // Mantiene simboli scommesse
+    .replace(/X2/gi, 'X2')
+    .replace(/12/gi, '12')
+    
+  return translated
 }
 
 export default function MatchesPage() {
@@ -190,13 +230,15 @@ export default function MatchesPage() {
                   
                   <div className="flex items-center space-x-2 text-slate-400 text-sm">
                     <Clock className="h-4 w-4" />
-                    <span>{match.time}</span>
-                    {/* Mostra stadio SOLO se disponibile */}
-                    {(match.venue?.name || (typeof match.venue === 'string' && match.venue)) && (
+                    <span>🕐 {match.time}</span>
+                    {match.venue && (
                       <>
-                        <MapPin className="h-4 w-4 ml-2" />
+                        <span>•</span>
+                        <MapPin className="h-4 w-4" />
                         <span className="truncate">
-                          📍 {typeof match.venue === 'object' ? `${match.venue.name}${match.venue.city ? `, ${match.venue.city}` : ''}` : match.venue}
+                          {typeof match.venue === 'object' 
+                            ? `${match.venue.name}${match.venue.city ? `, ${match.venue.city}` : ''}` 
+                            : match.venue}
                         </span>
                       </>
                     )}
@@ -250,15 +292,10 @@ export default function MatchesPage() {
                         </div>
                       </div>
                       
-                      {/* Consiglio rapido - usa advice da API-Football */}
-                      {match.predictions?.predictions?.advice && (
+                      {/* Consiglio rapido */}
+                      {match.predictions.advice && (
                         <div className="text-center mt-2 text-sm text-emerald-400">
-                          📊 {match.predictions.predictions.advice
-                            .replace('or draw', 'o pareggio')
-                            .replace('Double chance', 'Doppia chance')
-                            .replace('Combo', 'Combo')
-                            .replace('and target', '+')
-                          }
+                          📊 {translateAdvice(match.predictions.advice)}
                         </div>
                       )}
                     </>

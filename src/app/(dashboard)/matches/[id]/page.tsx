@@ -257,7 +257,11 @@ export default function MatchAnalysisPage() {
               
               <div className="text-sm text-slate-400">
                 <MapPin className="inline h-4 w-4 mr-1" />
-                {typeof analysis.match.venue === 'string' ? analysis.match.venue : `${analysis.match.venue?.name || ''}${analysis.match.venue?.city ? `, ${analysis.match.venue.city}` : ''}`} • {analysis.match.league}
+                {typeof analysis.match.venue === 'string' 
+                  ? analysis.match.venue 
+                  : analysis.match.venue?.name 
+                    ? `${analysis.match.venue.name}, ${analysis.match.venue.city}` 
+                    : 'Stadio TBD'} • {analysis.match.league}
               </div>
             </div>
           </CardContent>

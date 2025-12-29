@@ -33,9 +33,13 @@ export async function GET() {
       return NextResponse.json({
         success: false,
         error: 'message' in result ? result.message : 'Failed to generate tips',
-        tips: null
+        tips: null,
+        debug: result
       }, { status: 500 })
     }
+    
+    console.log('✅ GPT-4 tips generated:', Object.keys(result.tips || {}))
+    console.log('📊 Full result:', result)
     
     // 3. Verify what was generated
     const { data: newTips, error: verifyError } = await supabase
@@ -47,7 +51,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Real tips generated successfully with GPT-4o-mini',
-      generatedCount: 'singola' in result ? [result.singola, result.doppia, result.tripla, result.mista, result.bomba].filter(Boolean).length : 0,
+      generatedCount: result.tips ? Object.keys(result.tips).length : 0,
       totalTips: newTips?.length || 0,
       tips: newTips?.map(tip => ({
         type: tip.tip_type,

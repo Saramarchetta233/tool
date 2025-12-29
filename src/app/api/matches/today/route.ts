@@ -22,8 +22,12 @@ export async function GET(request: NextRequest) {
       .from('matches')
       .select('*')
       .eq('match_date', dateParam)
-      .gte('match_time', currentTime) // Solo partite future
       .order('match_time', { ascending: true })
+    
+    // Solo per oggi filtra per orari futuri, per altre date mostra tutto
+    if (dateParam === new Date().toISOString().split('T')[0]) {
+      query = query.gte('match_time', currentTime)
+    }
     
     // Filter by specific league se richiesto
     if (leagueParam !== 'all' && COMPLETE_LEAGUES[leagueParam as keyof typeof COMPLETE_LEAGUES]) {
@@ -64,7 +68,9 @@ export async function GET(request: NextRequest) {
       leagueName: match.league_name,
       date: match.match_date,
       time: match.match_time,
-      venue: match.venue ? `${match.venue.name}, ${match.venue.city}` : 'TBD',
+      venue: match.venue?.name 
+        ? `${match.venue.name}, ${match.venue.city || ''}`.replace(', ,', ',').replace(/,$/, '') 
+        : getVenueByTeam(match.home_team?.name) || `Stadio ${match.home_team?.name || 'TBD'}`,
       homeTeam: {
         id: match.home_team?.id || 0,
         name: match.home_team?.name || 'Home',
@@ -81,7 +87,8 @@ export async function GET(request: NextRequest) {
         draw: parseInt(match.predictions.draw) || 33,
         away: parseInt(match.predictions.away) || 34,
         confidence: match.predictions.confidence === 'high' ? 'ALTA' : 
-                   match.predictions.confidence === 'medium' ? 'MEDIA' : 'BASSA'
+                   match.predictions.confidence === 'medium' ? 'MEDIA' : 'BASSA',
+        advice: match.predictions.advice || 'Nessun consiglio disponibile'
       } : undefined,
       odds: match.odds || null,
       // Aggiungi info complete
@@ -114,6 +121,41 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// Mapping stadi per squadre italiane
+function getVenueByTeam(teamName: string | undefined): string | null {
+  if (!teamName) return null
+  
+  const venues: { [key: string]: string } = {
+    'Juventus': 'Allianz Stadium, Torino',
+    'Inter': 'San Siro, Milano', 
+    'AC Milan': 'San Siro, Milano',
+    'Milan': 'San Siro, Milano',
+    'Roma': 'Stadio Olimpico, Roma',
+    'Lazio': 'Stadio Olimpico, Roma',
+    'Napoli': 'Stadio Diego Armando Maradona, Napoli',
+    'Atalanta': 'Gewiss Stadium, Bergamo',
+    'Fiorentina': 'Stadio Artemio Franchi, Firenze',
+    'Bologna': 'Stadio Renato Dall\'Ara, Bologna',
+    'Torino': 'Stadio Olimpico Grande Torino, Torino',
+    'Genoa': 'Stadio Luigi Ferraris, Genova',
+    'Sampdoria': 'Stadio Luigi Ferraris, Genova',
+    'Udinese': 'Dacia Arena, Udine',
+    'Sassuolo': 'Mapei Stadium, Reggio Emilia',
+    'Verona': 'Stadio Marcantonio Bentegodi, Verona',
+    'Spezia': 'Stadio Alberto Picco, La Spezia',
+    'Salernitana': 'Stadio Arechi, Salerno',
+    'Cagliari': 'Unipol Domus, Cagliari',
+    'Venezia': 'Stadio Pier Luigi Penzo, Venezia',
+    'Empoli': 'Stadio Carlo Castellani, Empoli',
+    'Lecce': 'Stadio Via del Mare, Lecce',
+    'Monza': 'U-Power Stadium, Monza',
+    'Cremonese': 'Stadio Giovanni Zini, Cremona',
+    'Frosinone': 'Stadio Benito Stirpe, Frosinone'
+  }
+  
+  return venues[teamName] || null
 }
 
 // Mock data for when API is not configured

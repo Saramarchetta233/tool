@@ -2,174 +2,187 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { supabaseAdmin } from '@/lib/supabase/client'
 
-// Inizializza OpenAI solo se la chiave è disponibile
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-}) : null
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-// Carica tips direttamente da Supabase
-async function loadTodayTips() {
-  try {
-    const today = new Date().toISOString().split('T')[0]
-    
-    const { data: tips, error } = await supabaseAdmin
-      .from('tips')
-      .select('*')
-      .eq('valid_until', today)
-      .order('created_at', { ascending: false })
+export const dynamic = 'force-dynamic'
 
-    if (error) {
-      console.error('Error loading tips:', error)
-      return []
-    }
-
-    return tips || []
-  } catch (error) {
-    console.error('Error in loadTodayTips:', error)
-    return []
-  }
-}
-
-// Formatta le predizioni per il contesto AI con NUOVO FORMATO
-const formatPredictionsForContext = (tips: any[]) => {
-  if (!tips || tips.length === 0) {
-    return "Non ci sono proposte per oggi perché non ci sono partite dei campionati principali."
-  }
-
-  let context = "🎯 Le proposte TipsterAI di oggi sono:\n\n"
+export async function POST(request: Request) {
+  const { message, conversationHistory } = await request.json()
   
-  tips.forEach((tip: any) => {
-    const typeLabel = tip.tip_type.toUpperCase()
-    context += `📋 ${typeLabel} (${tip.potential_multiplier || tip.total_odds + 'x'}):\n`
-    
-    if (tip.matches && Array.isArray(tip.matches)) {
-      tip.matches.forEach((match: any) => {
-        context += `• ${match.match}`
-        if (match.league) context += ` (${match.league})`
-        context += `: ${match.prediction} @${match.odds}`
-        if (match.confidence) context += ` | Confidenza: ${match.confidence}%`
-        context += '\n'
-        
-        if (match.reasoning) {
-          context += `  💡 Analisi: ${match.reasoning}\n`
-        }
-      })
-    }
-    
-    context += `📊 Quota totale: ${tip.total_odds || 'N/A'}\n`
-    
-    if (tip.description) {
-      context += `📝 Descrizione: ${tip.description}\n`
-    }
-    
-    if (tip.strategy_reasoning) {
-      context += `🎯 Strategia: ${tip.strategy_reasoning}\n`
-    }
-    
-    context += '\n'
-  })
+  // 1. Carica i tips di oggi dalle tabelle separate
+  const today = new Date().toISOString().split('T')[0]
   
-  return context
-}
+  const [singola, doppia, tripla, mista, bomba] = await Promise.all([
+    supabaseAdmin.from('tips_singola').select('*').eq('valid_until', today).single(),
+    supabaseAdmin.from('tips_doppia').select('*').eq('valid_until', today).single(),
+    supabaseAdmin.from('tips_tripla').select('*').eq('valid_until', today).single(),
+    supabaseAdmin.from('tips_mista').select('*').eq('valid_until', today).single(),
+    supabaseAdmin.from('tips_bomba').select('*').eq('valid_until', today).single()
+  ])
+  
+  // 2. Carica le partite per contesto aggiuntivo
+  const { data: matches } = await supabaseAdmin
+    .from('matches')
+    .select('*')
+    .eq('match_date', today)
+    .order('match_time', { ascending: true })
 
-export async function POST(request: NextRequest) {
-  try {
-    const { message, conversationHistory = [] } = await request.json()
-
-    if (!message) {
-      return NextResponse.json(
-        { error: 'Messaggio richiesto' },
-        { status: 400 }
-      )
-    }
-
-    // CARICA TIPS DIRETTAMENTE DA SUPABASE (non dipende più dal frontend)
-    console.log('🔍 Loading tips from Supabase for chat...')
-    const todayTips = await loadTodayTips()
-    console.log(`📋 Loaded ${todayTips.length} tips for chat context`)
-
-    // Se OpenAI non è configurato, usa risposte di fallback migliorate
-    if (!openai) {
-      let response = ''
-      const msg = message.toLowerCase()
-      
-      const predictionsContext = formatPredictionsForContext(todayTips)
-      
-      if (msg.includes('perché') || msg.includes('perche')) {
-        response = `Basandomi sulle proposte di oggi:\n\n${predictionsContext}\n\nOgni partita è selezionata analizzando forma recente, scontri diretti, statistiche di gol e infortuni. Se hai domande su una partita specifica, chiedimi pure!`
-      } else if (msg.includes('quanto') && (msg.includes('giocare') || msg.includes('puntare'))) {
-        response = "Ti consiglio di seguire il metodo spiegato in /metodo: mai più del 5% del tuo budget su una singola giocata. Per le singole e doppie puoi arrivare al 3-5%, per le triple 1-2%, e per BOMBA e multiple solo lo 0.5-1%. La gestione del bankroll è fondamentale!"
-      } else {
-        response = `Sono TipsterAI! Ecco le proposte di oggi:\n\n${predictionsContext}\n\nChiedimi qualsiasi cosa sulle partite!`
-      }
-      
-      return NextResponse.json({ message: response })
-    }
-
-    // Costruisci il contesto del sistema con le predizioni reali DA SUPABASE
-    const today = new Date().toLocaleDateString('it-IT', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+  // 3. Costruisci informazioni complete sui tips
+  const availableTips = []
+  
+  if (singola.data) {
+    availableTips.push({
+      tipo: 'SINGOLA',
+      partita: `${singola.data.home_team} vs ${singola.data.away_team}`,
+      lega: singola.data.league,
+      ora: singola.data.match_time,
+      predizione: singola.data.prediction,
+      dettagli: singola.data.prediction_label,
+      quota: singola.data.odds,
+      confidence: singola.data.confidence,
+      motivazione: singola.data.reasoning
     })
-    
-    const predictionsContext = formatPredictionsForContext(todayTips)
-    
-    const systemPrompt = `Sei TipsterAI, un esperto tutor di scommesse calcistiche che aiuta gli utenti con consigli basati su dati e analisi. 
-
-Oggi è ${today}.
-
-${predictionsContext}
-
-🎯 REGOLE TipsterAI:
-- Le proposte sono generate AUTOMATICAMENTE 2 volte al giorno usando solo partite REALI
-- Ogni tip ha 5 tipi: SINGOLA (quota ≥1.70), DOPPIA (~2x), TRIPLA (~3x), MISTA (7-8 partite, 15-20x), BOMBA (3-5 upset, 50x+)
-- Ogni partita è analizzata con predictions AI, odds reali e reasoning dettagliato
-- CONOSCI PERFETTAMENTE ogni tip e puoi spiegare nel dettaglio PERCHÉ ogni partita è stata scelta
-- Se chiedono di una partita specifica, usa il reasoning fornito e spiega la logica della selezione
-- Gestione bankroll: SINGOLA/DOPPIA 3-5%, TRIPLA 1-2%, MISTA/BOMBA 0.5-1% del budget
-- Mai promettere vincite sicure - il calcio è imprevedibile
-- Per analisi H2H dettagliate suggerisci /matches
-- Rispondi sempre in italiano con tono da tipster esperto
-- Se una partita non è nelle proposte, significa che non aveva confidence sufficiente per essere inclusa
-
-🔍 QUANDO TI CHIEDONO:
-- "Perché questa partita?" → Usa il reasoning specifico del tip
-- "Quanto giocare?" → Spiega le % del metodo TipsterAI  
-- "È sicura?" → Spiega confidence + ricorda che nulla è garantito
-- "Alternative?" → Spiega le altre proposte disponibili`
-
-    // Prepara i messaggi per la conversazione
-    const messages = [
-      { role: 'system' as const, content: systemPrompt },
-      ...conversationHistory.map((msg: any) => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
+  }
+  
+  if (doppia.data) {
+    availableTips.push({
+      tipo: 'DOPPIA',
+      partite: doppia.data.matches?.map((m: any) => ({
+        partita: `${m.home_team} vs ${m.away_team}`,
+        lega: m.league,
+        predizione: m.prediction_label || m.prediction,
+        quota: m.odds,
+        motivazione: m.reasoning
       })),
-      { role: 'user' as const, content: message }
-    ]
+      quota_totale: doppia.data.total_odds,
+      confidence: doppia.data.confidence,
+      strategia: doppia.data.strategy_reasoning
+    })
+  }
+  
+  if (tripla.data) {
+    availableTips.push({
+      tipo: 'TRIPLA',
+      partite: tripla.data.matches?.map((m: any) => ({
+        partita: `${m.home_team} vs ${m.away_team}`,
+        lega: m.league,
+        predizione: m.prediction_label || m.prediction,
+        quota: m.odds,
+        motivazione: m.reasoning
+      })),
+      quota_totale: tripla.data.total_odds,
+      confidence: tripla.data.confidence,
+      strategia: tripla.data.strategy_reasoning
+    })
+  }
+  
+  if (mista.data) {
+    availableTips.push({
+      tipo: 'MISTA',
+      partite: mista.data.matches?.map((m: any) => ({
+        partita: `${m.home_team} vs ${m.away_team}`,
+        lega: m.league,
+        predizione: m.prediction_label || m.prediction,
+        quota: m.odds
+      })),
+      quota_totale: mista.data.total_odds,
+      strategia: mista.data.strategy_reasoning
+    })
+  }
+  
+  if (bomba.data) {
+    availableTips.push({
+      tipo: 'BOMBA',
+      partite: bomba.data.matches?.map((m: any) => ({
+        partita: `${m.home_team} vs ${m.away_team}`,
+        lega: m.league,
+        predizione: m.prediction_label || m.prediction,
+        quota: m.odds,
+        motivazione: m.reasoning
+      })),
+      quota_totale: bomba.data.total_odds,
+      strategia: bomba.data.strategy_reasoning
+    })
+  }
 
-    // Chiama OpenAI
-    const completion = await openai.chat.completions.create({
+  const systemPrompt = `Sei TipsterAI, un esperto di scommesse calcistiche italiano molto competente e amichevole.
+
+## LE MIE PROPOSTE DI OGGI
+${JSON.stringify(availableTips, null, 2)}
+
+## PARTITE DISPONIBILI OGGI
+${JSON.stringify(matches?.slice(0, 15).map(m => ({
+  partita: `${m.home_team?.name} vs ${m.away_team?.name}`,
+  lega: m.league_name,
+  ora: m.match_time,
+  quote: {
+    casa: m.odds?.winner?.home,
+    pareggio: m.odds?.winner?.draw,
+    ospite: m.odds?.winner?.away,
+    over25: m.odds?.goals?.over_2_5,
+    under25: m.odds?.goals?.under_2_5
+  },
+  statistiche: {
+    casa_perc: m.predictions?.predictions?.home,
+    pareggio_perc: m.predictions?.predictions?.draw,
+    ospite_perc: m.predictions?.predictions?.away,
+    consiglio: m.predictions?.predictions?.advice
+  }
+})), null, 2)}
+
+## COME RISPONDERE
+
+### SE CHIEDONO DELLE MIE PROPOSTE:
+- Spiega SEMPRE il ragionamento dietro ogni scelta usando le motivazioni fornite
+- Menziona le quote reali e perché sono interessanti
+- Se chiedono "perché hai scelto X?" → usa le motivazioni specifiche di quella partita
+- Spiega la differenza tra singola (sicurezza), doppia (equilibrio), tripla (rischio moderato), mista (alto rischio), bomba (pura fortuna)
+
+### SE CHIEDONO CONSIGLI GENERICI:
+- Analizza le partite disponibili usando quote e statistiche
+- Suggerisci alternative alle mie proposte se richiesto
+- Considera sempre i campionati: Serie A ha SEMPRE priorità, poi Premier, Liga, etc.
+- Proponi scommesse multiple (1X, X2, Over/Under combo)
+
+### SE CHIEDONO CAMBI O ALTERNATIVE:
+- Puoi suggerire modifiche ragionate
+- Analizza partite non incluse nelle mie proposte
+- Proponi quote diverse (es. se ho messo 1, puoi suggerire 1X per sicurezza)
+
+### REGOLE SEMPRE:
+- Rispondi SEMPRE in italiano colloquiale
+- Stile: amico competente al bar ("guarda", "secondo me", "ti dico")
+- NEVER promettere vincite sicure ("potrebbe", "secondo me", "rischio c'è sempre")
+- Ricorda: "Gioca responsabile, mai più di quello che puoi permetterti"
+- Se non hai dati sufficienti per rispondere, dillo chiaramente
+
+### ESEMPI DI RISPOSTE CORRETTE:
+❌ "La Roma ha il 75% di probabilità di vincere"
+✅ "Guarda, ho messo la Roma perché in casa raramente delude, e il Lecce viene da 3 sconfitte. Quota 1.75 è interessante"
+
+❌ "Questa è una vincita sicura"  
+✅ "Secondo me è una buona scelta, ma il rischio c'è sempre nel calcio"
+
+❌ "Statisticamente conviene"
+✅ "Ti dico, guardando le quote e la forma, mi convincerebbe"`
+
+  try {
+    const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: messages,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...(conversationHistory || []),
+        { role: 'user', content: message }
+      ],
       temperature: 0.7,
       max_tokens: 500
     })
-
-    const aiResponse = completion.choices[0].message.content || 'Mi dispiace, non sono riuscito a elaborare la risposta.'
-
-    return NextResponse.json({
-      message: aiResponse
-    })
-
-  } catch (error) {
-    console.error('Error in chat:', error)
     
-    // Fallback migliorato in caso di errore
     return NextResponse.json({
-      message: "Ciao! Sono TipsterAI. Anche se ho qualche problema tecnico, posso comunque aiutarti! Guarda le proposte di oggi sopra e chiedimi perché ho scelto certe partite o quanto dovresti giocare. Ricorda sempre di consultare /metodo per la gestione del bankroll!"
+      message: response.choices[0].message.content
     })
+  } catch (error) {
+    console.error('Chat error:', error)
+    return NextResponse.json({ error: 'Errore nella chat' }, { status: 500 })
   }
 }

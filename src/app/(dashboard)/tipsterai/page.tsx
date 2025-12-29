@@ -33,6 +33,162 @@ interface Prediction {
   totalOdds?: number
 }
 
+// Componente per singola selezione migliorato
+function TipCard({ tip, type }: { tip: any, type: string }) {
+  const isMultiple = tip.matches && Array.isArray(tip.matches) && tip.matches.length > 1
+  
+  return (
+    <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 rounded-xl p-6 border border-slate-600/50 shadow-2xl backdrop-blur-sm hover:border-emerald-500/30 transition-all duration-300">
+      {/* Header migliorato */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center gap-3">
+          <div className="text-3xl p-2 bg-slate-700/50 rounded-lg">
+            {getEmoji(type)}
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white tracking-tight">
+              {type.toUpperCase()}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium">
+                Quota @{Number(tip.total_odds || tip.odds).toFixed(2)}
+              </span>
+              {tip.confidence && (
+                <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
+                  {tip.confidence}% sicurezza
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Moltiplicatore evidenziato */}
+        <div className="text-right">
+          <div className="text-3xl font-bold text-emerald-400">
+            {Number(tip.total_odds || tip.odds).toFixed(2)}x
+          </div>
+          <div className="text-xs text-slate-400">moltiplicatore</div>
+        </div>
+      </div>
+      
+      {/* Partite con layout migliorato */}
+      <div className="space-y-4">
+        {(isMultiple ? tip.matches : [{ 
+          home_team: tip.home_team, 
+          away_team: tip.away_team, 
+          league: tip.league, 
+          time: tip.match_time,
+          prediction: tip.prediction,
+          prediction_label: tip.prediction_label,
+          odds: tip.odds,
+          reasoning: tip.reasoning,
+          ...tip 
+        }]).map((match: any, i: number) => (
+          <div key={i} className="bg-slate-800/40 rounded-xl p-5 border border-slate-700/30 hover:border-slate-600/50 transition-all">
+            {/* Info partita */}
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h4 className="text-lg font-bold text-white mb-1">
+                  {match.home_team && match.away_team 
+                    ? `${match.home_team} vs ${match.away_team}` 
+                    : match.match}
+                </h4>
+                <div className="flex items-center gap-3 text-sm text-slate-400 mb-2">
+                  <span className="flex items-center gap-1">
+                    🏆 {match.league}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    🕐 {match.time}
+                  </span>
+                </div>
+              </div>
+              
+              {isMultiple && (
+                <div className="text-right ml-4">
+                  <div className="text-lg font-bold text-cyan-400">
+                    @{Number(match.odds).toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-400">quota</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Predizione evidenziata */}
+            <div className="bg-gradient-to-r from-emerald-600/20 to-blue-600/20 rounded-lg p-3 mb-3">
+              <div className="text-emerald-300 font-bold text-lg">
+                {match.prediction_label || match.prediction}
+              </div>
+            </div>
+            
+            {/* Motivazione migliorata */}
+            {(match.reasoning || tip.reasoning) && (
+              <div className="bg-slate-700/30 rounded-lg p-4 border-l-4 border-amber-500">
+                <div className="flex items-start gap-3">
+                  <span className="text-amber-400 text-lg">💭</span>
+                  <div>
+                    <div className="text-xs text-amber-400/80 font-medium mb-1">ANALISI</div>
+                    <p className="text-slate-200 leading-relaxed">
+                      {match.reasoning || tip.reasoning}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      {/* Strategia complessiva migliorata */}
+      {(tip.strategy_reasoning || tip.strategy) && (
+        <div className="mt-6 pt-4 border-t border-slate-700/50">
+          <div className="bg-blue-500/10 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-blue-400 text-lg">🎯</span>
+              <div>
+                <div className="text-xs text-blue-400/80 font-medium mb-1">STRATEGIA</div>
+                <p className="text-slate-200 text-sm leading-relaxed">
+                  {tip.strategy_reasoning || tip.strategy}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Footer con statistiche */}
+      <div className="mt-6 pt-4 border-t border-slate-700/50">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-emerald-400">
+              {Number(tip.total_odds || tip.odds).toFixed(2)}
+            </div>
+            <div className="text-xs text-slate-400">Quota Finale</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-400">
+              {isMultiple ? tip.matches.length : '1'}
+            </div>
+            <div className="text-xs text-slate-400">
+              {isMultiple ? 'Selezioni' : 'Selezione'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getEmoji(type: string) {
+  switch(type.toLowerCase()) {
+    case 'singola': return '🎯'
+    case 'doppia': return '✌️'
+    case 'tripla': return '🔥'
+    case 'mista': return '🎲'
+    case 'bomba': return '💣'
+    default: return '⚽'
+  }
+}
+
 interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
@@ -86,27 +242,72 @@ export default function TipsterAI() {
     fetchDailyPredictions()
   }, [])
 
-  const fetchDailyPredictions = async () => {
+  const fetchDailyPredictions = async (forceRegenerate = false) => {
     setLoading(true)
     try {
-      const response = await fetch('/api/tipsterai/predictions-v2')
-      const data = await response.json()
+      let response, data
       
-      if (data.noMatchesMessage) {
+      if (forceRegenerate) {
+        // Forza rigenerazione con sistema V4 aggiornato
+        console.log('🔄 Forzando rigenerazione tips V4...')
+        response = await fetch('/api/tipsterai/regenerate-v4', { 
+          method: 'POST',
+          cache: 'no-store'
+        })
+        data = await response.json()
+        
+        if (data.success) {
+          console.log('✅ Tips V4 rigenerati, ricaricando...')
+          // Dopo rigenerazione, ricarica i tips con cache-busting
+          const cacheBuster = Date.now()
+          response = await fetch(`/api/tipsterai/predictions-v2?v=${cacheBuster}`, { 
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          })
+          data = await response.json()
+        }
+      } else {
+        // Caricamento normale con cache-busting
+        const cacheBuster = Date.now()
+        response = await fetch(`/api/tipsterai/predictions-v2?v=${cacheBuster}`, { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+        data = await response.json()
+      }
+      
+      if (data.error) {
         setPredictions([])
         setNoMatchesToday(true)
-        setNoMatchesMessage(data.message || 'Nessuna proposta per oggi, torna domani!')
+        setNoMatchesMessage(data.error)
       } else if (data.predictions && Array.isArray(data.predictions)) {
+        console.log('📊 Raw predictions data:', data.predictions)
+        console.log('📊 Prediction types:', data.predictions.map(p => p.type))
         setPredictions(data.predictions)
         setNoMatchesToday(false)
+        console.log(`📊 Tips caricati: ${data.predictions.length} selezioni`)
+      } else if (data.tips && data.predictions) {
+        // Nuovo formato con tips GPT-4
+        setPredictions(data.predictions)
+        setNoMatchesToday(false)
+        console.log('📊 Tips GPT-4 ricevuti:', data.cached ? 'cached' : 'fresh')
       } else {
         console.error('Invalid predictions data:', data)
         setPredictions([])
-        setNoMatchesToday(false)
+        setNoMatchesToday(true)
+        setNoMatchesMessage('Errore nel caricamento delle proposte')
       }
     } catch (error) {
       console.error('Error fetching predictions:', error)
       setPredictions([])
+      setNoMatchesToday(true)
+      setNoMatchesMessage('Errore di connessione')
     } finally {
       setLoading(false)
     }
@@ -291,7 +492,7 @@ export default function TipsterAI() {
         <TabsContent value="proposte">
           <div className="mb-6 flex justify-center gap-4">
             <Button 
-              onClick={fetchDailyPredictions} 
+              onClick={() => fetchDailyPredictions(true)} 
               disabled={loading}
               className="gap-2"
             >
@@ -307,90 +508,17 @@ export default function TipsterAI() {
             </div>
           ) : predictions && predictions.length > 0 ? (
             <div className="grid gap-6 mb-12">
-              {predictions.map((prediction, index) => (
-            <Card key={index} className={`${prediction.type === 'bomba' ? 'border-red-500 shadow-lg' : ''}`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {getTypeIcon(prediction.type)}
-                  {getTypeTitle(prediction.type)}
-                  <Badge className={getTypeColor(prediction.type)}>
-                    {prediction.potential_multiplier || `Quota: ${(prediction.total_odds || prediction.totalOdds || 0).toFixed(2)}`}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>{prediction.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Partite */}
-                  <div className="space-y-3">
-                    {prediction.matches.map((match, idx) => (
-                      <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:bg-slate-900/70 transition-all duration-200">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <p className="font-medium">{match.match}</p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              {match.league && <span>{match.league}</span>}
-                              {match.time && (
-                                <>
-                                  {match.league && <span>•</span>}
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {match.time}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                            <p className="text-sm text-primary font-semibold">{match.prediction}</p>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant="outline">@{(typeof match.odds === 'number' ? match.odds : 0).toFixed(2)}</Badge>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Confidenza: {match.confidence || 0}%
-                            </p>
-                          </div>
-                        </div>
-                        {match.reasoning && (
-                          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mt-3">
-                            <p className="text-sm text-emerald-400 font-medium mb-1">💡 Perché questa scelta?</p>
-                            <p className="text-sm text-slate-300 leading-relaxed">
-                              {match.reasoning}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Strategy Reasoning Box */}
-                  {prediction.strategy_reasoning && (
-                    <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                      <h4 className="text-base font-bold text-emerald-400 mb-2 flex items-center gap-2">
-                        🎯 Strategia della Selezione
-                      </h4>
-                      <p className="text-sm text-slate-300 leading-relaxed">
-                        {prediction.strategy_reasoning}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Quota Totale e Info */}
-                  <div className="flex justify-between items-center pt-3 border-t">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Quota totale: <span className="font-bold text-foreground">{(prediction.total_odds || prediction.totalOdds || 0).toFixed(2)}</span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Potenziale: €{((prediction.total_odds || prediction.totalOdds || 0) * 10).toFixed(0)} con €10
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      Confidence: {prediction.confidence || 'N/A'}
-                    </Badge>
-                  </div>
+              {/* Info header */}
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium">
+                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                  {predictions.length} proposte attive per oggi
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+              
+              {predictions.map((prediction, index) => (
+                <TipCard key={index} tip={prediction} type={prediction.type} />
+              ))}
             </div>
           ) : noMatchesToday ? (
             <div className="text-center py-12">
