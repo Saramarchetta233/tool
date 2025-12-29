@@ -9,8 +9,8 @@ const supabase = createClient(
   }
 )
 
-// League configurations
-export const FOOTBALL_LEAGUES = {
+// Tutti i campionati che avevamo configurato
+export const COMPLETE_LEAGUES = {
   'serie-a': 135,
   'serie-b': 136,
   'premier': 39,
@@ -19,103 +19,97 @@ export const FOOTBALL_LEAGUES = {
   'ligue-1': 61,
   'champions': 2,
   'europa': 3,
-}
+  'serie-c': 137, // Serie C italiana
+  'eredivisie': 88, // Olanda
+  'primeira': 94, // Portogallo
+} as const
 
 const API_KEY = process.env.API_FOOTBALL_KEY
 const BASE_URL = 'https://v3.football.api-sports.io'
 
-// Fetch fixtures from API-Football
-async function fetchFixturesFromAPI(leagueId: number, date: string) {
-  const response = await fetch(`${BASE_URL}/fixtures?date=${date}&league=${leagueId}&season=${new Date().getFullYear()}`, {
+// Fetch da API-Football con retry
+async function fetchWithRetry(url: string, options: any, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.warn(`Tentativo ${i + 1} fallito:`, error)
+      if (i === retries - 1) throw error
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+    }
+  }
+}
+
+// Fetch fixtures complete
+async function fetchFixturesComplete(leagueId: number, date: string) {
+  const url = `${BASE_URL}/fixtures?date=${date}&league=${leagueId}&season=${new Date().getFullYear()}`
+  return fetchWithRetry(url, {
     headers: {
       'X-RapidAPI-Key': API_KEY!,
       'X-RapidAPI-Host': 'v3.football.api-sports.io',
     },
   })
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`)
-  }
-  
-  return await response.json()
 }
 
-// Fetch odds from API-Football
-async function fetchOddsFromAPI(fixtureId: number) {
-  try {
-    const response = await fetch(`${BASE_URL}/odds?fixture=${fixtureId}`, {
-      headers: {
-        'X-RapidAPI-Key': API_KEY!,
-        'X-RapidAPI-Host': 'v3.football.api-sports.io',
-      },
-    })
-    
-    if (!response.ok) {
-      console.warn(`Could not fetch odds for fixture ${fixtureId}`)
-      return null
-    }
-    
-    return await response.json()
-  } catch (error) {
-    console.warn(`Error fetching odds for fixture ${fixtureId}:`, error)
-    return null
-  }
+// Fetch odds complete
+async function fetchOddsComplete(fixtureId: number) {
+  const url = `${BASE_URL}/odds?fixture=${fixtureId}&bookmaker=1` // Bet365
+  return fetchWithRetry(url, {
+    headers: {
+      'X-RapidAPI-Key': API_KEY!,
+      'X-RapidAPI-Host': 'v3.football.api-sports.io',
+    },
+  })
 }
 
-// Fetch predictions from API-Football
-async function fetchPredictionsFromAPI(fixtureId: number) {
-  try {
-    const response = await fetch(`${BASE_URL}/predictions?fixture=${fixtureId}`, {
-      headers: {
-        'X-RapidAPI-Key': API_KEY!,
-        'X-RapidAPI-Host': 'v3.football.api-sports.io',
-      },
-    })
-    
-    if (!response.ok) {
-      console.warn(`Could not fetch predictions for fixture ${fixtureId}`)
-      return null
-    }
-    
-    return await response.json()
-  } catch (error) {
-    console.warn(`Error fetching predictions for fixture ${fixtureId}:`, error)
-    return null
-  }
+// Fetch predictions complete
+async function fetchPredictionsComplete(fixtureId: number) {
+  const url = `${BASE_URL}/predictions?fixture=${fixtureId}`
+  return fetchWithRetry(url, {
+    headers: {
+      'X-RapidAPI-Key': API_KEY!,
+      'X-RapidAPI-Host': 'v3.football.api-sports.io',
+    },
+  })
 }
 
-// Sync matches for a specific date
-export async function syncMatchesForDate(date: string) {
-  console.log(`🔄 Syncing matches for ${date}...`)
+// Sync completo per una data
+export async function syncCompleteMatchesForDate(date: string) {
+  console.log(`🔄 Starting COMPLETE sync for ${date}...`)
   
   const results = []
   
-  for (const [leagueKey, leagueId] of Object.entries(FOOTBALL_LEAGUES)) {
-    console.log(`📥 Fetching ${leagueKey} fixtures...`)
+  for (const [leagueKey, leagueId] of Object.entries(COMPLETE_LEAGUES)) {
+    console.log(`📥 Syncing ${leagueKey} (${leagueId})...`)
     
     try {
-      const fixturesData = await fetchFixturesFromAPI(leagueId, date)
+      // 1. Fetch fixtures
+      const fixturesData = await fetchFixturesComplete(leagueId, date)
       const fixtures = fixturesData?.response || []
       
       console.log(`Found ${fixtures.length} fixtures for ${leagueKey}`)
       
       for (const fixture of fixtures) {
-        // Fetch additional data
-        const [oddsData, predictionsData] = await Promise.all([
-          fetchOddsFromAPI(fixture.fixture.id),
-          fetchPredictionsFromAPI(fixture.fixture.id)
+        // 2. Fetch odds e predictions in parallelo
+        const [oddsResult, predictionsResult] = await Promise.allSettled([
+          fetchOddsComplete(fixture.fixture.id),
+          fetchPredictionsComplete(fixture.fixture.id)
         ])
         
-        // Process odds
-        let processedOdds = null
-        if (oddsData?.response?.[0]) {
-          const odds = oddsData.response[0]
-          const bookmaker = odds.bookmakers?.[0] // Take first bookmaker
+        // 3. Process odds
+        let processedOdds: any = null
+        if (oddsResult.status === 'fulfilled' && oddsResult.value?.response?.[0]) {
+          const odds = oddsResult.value.response[0]
+          const bookmaker = odds.bookmakers?.[0]
           
           processedOdds = {
-            winner: {},
-            doubleChance: {},
-            goals: {}
+            winner: {} as any,
+            doubleChance: {} as any,
+            goals: {} as any
           }
           
           bookmaker?.bets?.forEach((bet: any) => {
@@ -152,20 +146,21 @@ export async function syncMatchesForDate(date: string) {
           })
         }
         
-        // Process predictions
-        let processedPredictions = null
-        if (predictionsData?.response?.[0]) {
-          const pred = predictionsData.response[0].predictions
+        // 4. Process predictions
+        let processedPredictions: any = null
+        if (predictionsResult.status === 'fulfilled' && predictionsResult.value?.response?.[0]) {
+          const pred = predictionsResult.value.response[0].predictions
           processedPredictions = {
             advice: pred.advice,
             home: pred.percent.home,
             draw: pred.percent.draw,
             away: pred.percent.away,
-            confidence: parseInt(pred.percent.home) > 60 ? 'high' : parseInt(pred.percent.home) > 40 ? 'medium' : 'low'
+            confidence: parseInt(pred.percent.home) > 60 ? 'high' : 
+                      parseInt(pred.percent.home) > 40 ? 'medium' : 'low'
           }
         }
         
-        // Format match data for Supabase
+        // 5. Save to matches table
         const matchData = {
           fixture_id: fixture.fixture.id,
           match_date: date,
@@ -192,7 +187,6 @@ export async function syncMatchesForDate(date: string) {
           updated_at: new Date().toISOString()
         }
         
-        // Upsert to Supabase
         const { error } = await supabase
           .from('matches')
           .upsert(matchData, { 
@@ -203,11 +197,11 @@ export async function syncMatchesForDate(date: string) {
         if (error) {
           console.error(`❌ Error saving match ${fixture.fixture.id}:`, error)
         } else {
-          console.log(`✅ Saved match: ${fixture.teams.home.name} vs ${fixture.teams.away.name}`)
+          console.log(`✅ Saved: ${fixture.teams.home.name} vs ${fixture.teams.away.name}`)
         }
         
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200))
       }
       
       results.push({
@@ -227,25 +221,25 @@ export async function syncMatchesForDate(date: string) {
     }
   }
   
-  console.log(`🏁 Sync completed for ${date}`)
+  console.log(`🏁 Complete sync finished for ${date}`)
   return results
 }
 
-// Sync today's matches
-export async function syncTodayMatches() {
+// Sync per oggi
+export async function syncTodayComplete() {
   const today = new Date().toISOString().split('T')[0]
-  return syncMatchesForDate(today)
+  return syncCompleteMatchesForDate(today)
 }
 
-// Sync matches for a date range
-export async function syncMatchesForDateRange(startDate: string, endDate: string) {
+// Sync per range di date
+export async function syncDateRangeComplete(startDate: string, endDate: string) {
   const results = []
   const start = new Date(startDate)
   const end = new Date(endDate)
   
   for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
     const dateStr = date.toISOString().split('T')[0]
-    const result = await syncMatchesForDate(dateStr)
+    const result = await syncCompleteMatchesForDate(dateStr)
     results.push({ date: dateStr, results: result })
   }
   

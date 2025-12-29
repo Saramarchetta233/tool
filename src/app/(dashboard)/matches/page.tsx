@@ -33,25 +33,50 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedLeague, setSelectedLeague] = useState('all')
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
   const leagues = [
     { key: 'all', name: 'Tutti i Campionati' },
     { key: 'serie-a', name: 'Serie A' },
+    { key: 'serie-b', name: 'Serie B' },
     { key: 'premier', name: 'Premier League' },
     { key: 'la-liga', name: 'La Liga' },
     { key: 'bundesliga', name: 'Bundesliga' },
     { key: 'ligue-1', name: 'Ligue 1' },
+    { key: 'champions', name: 'Champions League' },
+    { key: 'europa', name: 'Europa League' },
+    { key: 'eredivisie', name: 'Eredivisie' },
+    { key: 'primeira', name: 'Primeira Liga' },
   ]
+
+  // Genera array dei prossimi 7 giorni
+  const getDates = () => {
+    const dates = []
+    for (let i = 0; i < 7; i++) {
+      const date = new Date()
+      date.setDate(date.getDate() + i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' })
+      const dayNumber = date.getDate()
+      dates.push({
+        value: dateStr,
+        label: i === 0 ? 'Oggi' : i === 1 ? 'Domani' : `${dayName} ${dayNumber}`,
+        fullDate: date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })
+      })
+    }
+    return dates
+  }
+
+  const dates = getDates()
 
   useEffect(() => {
     fetchMatches()
-  }, [selectedLeague])
+  }, [selectedLeague, selectedDate])
 
   const fetchMatches = async () => {
     try {
       setLoading(true)
-      const leagueParam = selectedLeague === 'all' ? 'all' : selectedLeague
-      const response = await fetch(`/api/matches/today?league=${leagueParam}`)
+      const response = await fetch(`/api/matches/today?league=${selectedLeague}&date=${selectedDate}`)
       const data = await response.json()
       setMatches(data.matches || [])
     } catch (error) {
@@ -111,6 +136,29 @@ export default function MatchesPage() {
               onClick={() => setSelectedLeague(league.key)}
             >
               {league.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Date Selector */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="flex space-x-2 overflow-x-auto pb-2">
+          {dates.map((date) => (
+            <Button
+              key={date.value}
+              variant={selectedDate === date.value ? 'default' : 'outline'}
+              className={`whitespace-nowrap ${
+                selectedDate === date.value
+                  ? 'bg-blue-500 hover:bg-blue-600'
+                  : 'border-slate-600 text-slate-300 hover:bg-slate-800'
+              }`}
+              onClick={() => setSelectedDate(date.value)}
+            >
+              <div className="flex flex-col items-center">
+                <span className="text-sm">{date.label}</span>
+                <span className="text-xs text-slate-400">{date.fullDate}</span>
+              </div>
             </Button>
           ))}
         </div>

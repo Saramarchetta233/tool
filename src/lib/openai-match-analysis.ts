@@ -12,7 +12,7 @@ const supabase = createClient(
   }
 )
 
-export interface MatchAnalysis {
+export interface CompleteMatchAnalysis {
   fixture_id: number
   match_date: string
   home_team: string
@@ -64,88 +64,95 @@ export interface MatchAnalysis {
   created_at: string
 }
 
-// Generate comprehensive match analysis with OpenAI
-export async function generateMatchAnalysis(match: any): Promise<MatchAnalysis | null> {
+// Genera analisi completa con OpenAI GPT-4
+export async function generateCompleteAnalysis(match: any): Promise<CompleteMatchAnalysis | null> {
   try {
-    console.log(`🤖 Generating analysis for ${match.home_team.name} vs ${match.away_team.name}...`)
+    console.log(`🤖 Generating COMPLETE analysis for ${match.home_team.name} vs ${match.away_team.name}...`)
     
-    const prompt = `Sei un esperto analista di calcio con 15 anni di esperienza. Analizza questa partita e fornisci un'analisi completa.
+    const prompt = `Sei un analista esperto di calcio con 20 anni di esperienza. Analizza questa partita in modo DETTAGLIATO e PROFESSIONALE.
 
-MATCH DATA:
+DATI PARTITA:
 - Partita: ${match.home_team.name} vs ${match.away_team.name}
 - Campionato: ${match.league_name}
-- Data: ${match.match_date}
-- Orario: ${match.match_time}
+- Data: ${match.match_date} alle ${match.match_time}
+- Stadio: ${match.venue?.name}, ${match.venue?.city}
 
-ODDS DISPONIBILI:
+ODDS REALI DISPONIBILI:
 ${JSON.stringify(match.odds, null, 2)}
 
 PREDICTIONS API-FOOTBALL:
 ${JSON.stringify(match.predictions, null, 2)}
 
-VENUE: ${match.venue?.name || 'TBD'}, ${match.venue?.city || ''}
-
-Fornisci un'analisi DETTAGLIATA e PROFESSIONALE in formato JSON seguendo questa struttura:
+GENERA un'analisi COMPLETA e PROFESSIONALE in formato JSON seguendo ESATTAMENTE questa struttura:
 
 {
   "overall_prediction": {
-    "recommended_bet": "Migliore scommessa consigliata (es: 1X, Over 2.5, BTTS Yes)",
-    "confidence": 75,
-    "reasoning": "Spiegazione dettagliata della previsione principale basata su tattica, forma, statistiche"
+    "recommended_bet": "La migliore scommessa consigliata (es: 1X, Over 2.5, BTTS Yes)",
+    "confidence": 78,
+    "reasoning": "Spiegazione dettagliata della previsione principale basata su tattica, forma, statistiche e analisi completa"
   },
   "tactical_analysis": {
-    "formation_prediction": "Formazioni previste e come si confronteranno tatticamente",
-    "key_battles": ["Duello chiave 1", "Duello chiave 2", "Duello chiave 3"],
-    "tactical_advantage": "Chi ha il vantaggio tattico e perché"
+    "formation_prediction": "Formazioni previste e come si confronteranno tatticamente sul campo",
+    "key_battles": ["Duello chiave centrocampo", "Battaglia sulle fasce", "Scontro tra difesa e attacco"],
+    "tactical_advantage": "Quale squadra ha il vantaggio tattico e perché in dettaglio"
   },
   "statistical_insights": {
-    "form_analysis": "Analisi della forma recente di entrambe le squadre",
-    "h2h_record": "Storico scontri diretti e tendenze",
-    "scoring_trends": "Tendenze gol, difesa, attacco di entrambe"
+    "form_analysis": "Analisi dettagliata della forma recente di entrambe le squadre negli ultimi 5-10 match",
+    "h2h_record": "Storico degli scontri diretti, tendenze, risultati precedenti e pattern ricorrenti",
+    "scoring_trends": "Tendenze gol, media reti, efficacia difensiva, rendimento in casa/trasferta di entrambe"
   },
   "betting_recommendations": {
     "primary_bet": {
       "market": "1X2",
       "selection": "1X",
       "odds": 1.45,
-      "confidence": 80,
-      "reasoning": "Spiegazione dettagliata del perché questa scommessa"
+      "confidence": 85,
+      "reasoning": "Spiegazione dettagliata del perché questa è la scommessa principale raccomandata"
     },
     "secondary_bet": {
       "market": "Over/Under",
       "selection": "Over 2.5",
       "odds": 2.1,
-      "confidence": 65,
-      "reasoning": "Spiegazione della scommessa secondaria"
+      "confidence": 72,
+      "reasoning": "Spiegazione della scommessa secondaria e perché ha valore"
     },
     "value_bets": [
       {
         "market": "BTTS",
         "selection": "Yes",
         "odds": 1.8,
-        "value_rating": 85,
-        "reasoning": "Perché questa scommessa ha valore"
+        "value_rating": 88,
+        "reasoning": "Perché questa scommessa offre valore superiore alle odds indicate"
+      },
+      {
+        "market": "Risultato Esatto",
+        "selection": "2-1",
+        "odds": 8.5,
+        "value_rating": 75,
+        "reasoning": "Analisi del perché questo risultato è probabile"
       }
     ]
   },
   "risk_factors": [
-    "Fattore di rischio 1 (es: giocatori chiave squalificati)",
-    "Fattore di rischio 2 (es: condizioni meteo)",
-    "Fattore di rischio 3"
+    "Giocatori chiave squalificati o infortunati",
+    "Condizioni meteo avverse previste",
+    "Pressione psicologica o situazione di classifica",
+    "Fattori esterni che potrebbero influenzare l'esito"
   ],
   "final_score_prediction": "2-1"
 }
 
 IMPORTANTE:
-- Usa le quote REALI fornite
-- Sii specifico e professionale
-- Basa tutto su dati concreti
-- La confidenza deve essere realistica (50-90%)
-- Include sempre almeno 2-3 value bets
-- Spiega SEMPRE il ragionamento`
+- Usa SEMPRE le quote REALI fornite nei dati
+- Basa tutto su analisi CONCRETE e PROFESSIONAL
+- Sii specifico nelle spiegazioni
+- La confidenza deve essere realistica (60-90%)
+- Include SEMPRE almeno 3 value bets
+- Ogni reasoning deve essere dettagliato e professionale
+- Analizza tattiche, forma, statistiche H2H, condizioni di gioco`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
       response_format: { type: 'json_object' }
@@ -158,35 +165,34 @@ IMPORTANTE:
     
     const analysis = JSON.parse(analysisContent)
     
-    // Create the match analysis object
-    const matchAnalysis: MatchAnalysis = {
+    const completeAnalysis: CompleteMatchAnalysis = {
       fixture_id: match.fixture_id,
       match_date: match.match_date,
       home_team: match.home_team.name,
       away_team: match.away_team.name,
       league: match.league_name,
       analysis,
-      confidence_score: analysis.overall_prediction.confidence || 50,
+      confidence_score: analysis.overall_prediction.confidence || 70,
       created_at: new Date().toISOString()
     }
     
-    console.log(`✅ Analysis generated for ${match.home_team.name} vs ${match.away_team.name}`)
-    return matchAnalysis
+    console.log(`✅ COMPLETE analysis generated for ${match.home_team.name} vs ${match.away_team.name}`)
+    return completeAnalysis
     
   } catch (error) {
-    console.error(`❌ Error generating analysis for match ${match.fixture_id}:`, error)
+    console.error(`❌ Error generating COMPLETE analysis for match ${match.fixture_id}:`, error)
     return null
   }
 }
 
-// Generate analyses for all today's matches
-export async function generateTodayAnalyses() {
-  console.log('🤖 Starting match analysis generation...')
+// Genera analisi per tutte le partite di oggi
+export async function generateTodayCompleteAnalyses() {
+  console.log('🤖 Starting COMPLETE match analysis generation...')
   
   const today = new Date().toISOString().split('T')[0]
   const currentTime = new Date().toTimeString().slice(0, 5)
   
-  // Get matches that don't have analysis yet
+  // Fetch matches senza analisi
   const { data: matches, error: matchesError } = await supabase
     .from('matches')
     .select('*')
@@ -204,7 +210,7 @@ export async function generateTodayAnalyses() {
   const results = []
   
   for (const match of matches) {
-    // Check if analysis already exists
+    // Check se esiste già analisi
     const { data: existingAnalysis } = await supabase
       .from('match_analyses')
       .select('fixture_id')
@@ -222,11 +228,11 @@ export async function generateTodayAnalyses() {
       continue
     }
     
-    // Generate analysis
-    const analysis = await generateMatchAnalysis(match)
+    // Genera analisi
+    const analysis = await generateCompleteAnalysis(match)
     
     if (analysis) {
-      // Save to database
+      // Salva nel database
       const { error: saveError } = await supabase
         .from('match_analyses')
         .upsert(analysis, { onConflict: 'fixture_id' })
@@ -240,7 +246,7 @@ export async function generateTodayAnalyses() {
           error: saveError.message
         })
       } else {
-        console.log(`✅ Saved analysis for ${match.home_team.name} vs ${match.away_team.name}`)
+        console.log(`✅ Saved COMPLETE analysis for ${match.home_team.name} vs ${match.away_team.name}`)
         results.push({
           fixture_id: match.fixture_id,
           teams: `${match.home_team.name} vs ${match.away_team.name}`,
@@ -257,14 +263,14 @@ export async function generateTodayAnalyses() {
       })
     }
     
-    // Small delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Rate limiting per OpenAI
+    await new Promise(resolve => setTimeout(resolve, 3000))
   }
   
   const successful = results.filter(r => r.status === 'success').length
   const failed = results.filter(r => r.status === 'failed' || r.status === 'error').length
   
-  console.log(`🏁 Analysis generation completed: ${successful} successful, ${failed} failed`)
+  console.log(`🏁 COMPLETE analysis generation completed: ${successful} successful, ${failed} failed`)
   
   return {
     success: true,
@@ -275,8 +281,8 @@ export async function generateTodayAnalyses() {
   }
 }
 
-// Get analysis for a specific match
-export async function getMatchAnalysis(fixtureId: number) {
+// Get analisi per match specifico
+export async function getCompleteMatchAnalysis(fixtureId: number) {
   const { data, error } = await supabase
     .from('match_analyses')
     .select('*')
@@ -284,7 +290,7 @@ export async function getMatchAnalysis(fixtureId: number) {
     .single()
   
   if (error) {
-    console.error('Error fetching match analysis:', error)
+    console.error('Error fetching COMPLETE match analysis:', error)
     return null
   }
   

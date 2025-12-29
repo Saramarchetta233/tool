@@ -328,9 +328,18 @@ export default function TipsterAI() {
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <p className="font-medium">{match.match}</p>
-                            {match.league && (
-                              <p className="text-xs text-muted-foreground">{match.league}</p>
-                            )}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {match.league && <span>{match.league}</span>}
+                              {match.time && (
+                                <>
+                                  {match.league && <span>•</span>}
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {match.time}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                             <p className="text-sm text-primary font-semibold">{match.prediction}</p>
                           </div>
                           <div className="text-right">
@@ -516,7 +525,18 @@ export default function TipsterAI() {
                               <div className="flex justify-between items-center">
                                 <div className="flex-1">
                                   <p className="text-sm font-medium">{match.match}</p>
-                                  <p className="text-xs text-slate-400">{match.league}</p>
+                                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    {match.league && <span>{match.league}</span>}
+                                    {match.time && (
+                                      <>
+                                        {match.league && <span>•</span>}
+                                        <span className="flex items-center gap-1">
+                                          <Clock className="w-3 h-3" />
+                                          {match.time}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
                                   <p className="text-sm text-emerald-400 font-semibold">{match.prediction}</p>
                                 </div>
                                 <Badge variant="outline" className="text-xs">

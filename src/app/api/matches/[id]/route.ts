@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getMatchAnalysis } from '@/lib/match-analysis'
+import { getCompleteMatchAnalysis } from '@/lib/openai-match-analysis'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,9 +22,9 @@ export async function GET(
       )
     }
     
-    console.log(`🔍 Fetching match data for fixture ${fixtureId}`)
+    console.log(`🔍 Fetching COMPLETE match data for fixture ${fixtureId}`)
     
-    // Get match basic data
+    // Get match data from database
     const { data: match, error: matchError } = await supabase
       .from('matches')
       .select('*')
@@ -39,11 +39,11 @@ export async function GET(
       )
     }
     
-    // Get analysis
-    const analysis = await getMatchAnalysis(fixtureId)
+    // Get COMPLETE OpenAI analysis
+    const completeAnalysis = await getCompleteMatchAnalysis(fixtureId)
     
-    // Format response with rich analysis if available
-    if (analysis) {
+    // Format response with COMPLETE data
+    if (completeAnalysis) {
       const response = {
         success: true,
         match: {
@@ -58,15 +58,17 @@ export async function GET(
           predictions: match.predictions,
           status: match.status || 'scheduled'
         },
-        analysis: analysis.analysis,
-        confidence: analysis.confidence_score,
+        // COMPLETE OpenAI analysis
+        analysis: completeAnalysis.analysis,
+        confidence: completeAnalysis.confidence_score,
         hasAnalysis: true,
-        credits: 2 // Cost for this analysis
+        analysisType: 'OpenAI_GPT4_Complete',
+        credits: 2
       }
       
       return NextResponse.json(response)
     } else {
-      // Return basic match data with indication that analysis is not ready
+      // Match esiste ma analisi non ancora disponibile
       const response = {
         success: true,
         match: {
@@ -84,17 +86,19 @@ export async function GET(
         analysis: null,
         confidence: null,
         hasAnalysis: false,
-        message: 'Analisi in corso... Riprova tra qualche minuto.'
+        message: 'Analisi OpenAI in corso... Riprova tra qualche minuto.',
+        analysisType: 'pending'
       }
       
       return NextResponse.json(response)
     }
     
   } catch (error) {
-    console.error('❌ Error fetching match:', error)
+    console.error('❌ Error fetching COMPLETE match:', error)
     
+    const { id } = await params
     return NextResponse.json(
-      getMockMatchAnalysis(await params.then(p => p.id)),
+      getMockMatchAnalysis(id),
       { status: 200 }
     )
   }

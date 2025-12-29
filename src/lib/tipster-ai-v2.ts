@@ -164,13 +164,13 @@ OUTPUT JSON:
     
     const singola = JSON.parse(response.choices[0].message.content || '{}')
     
-    // Salva in tips_singola
+    // Salva in tips_singola (tabella separata)
     const { error } = await supabase
       .from('tips_singola')
       .upsert({
         ...singola,
         valid_until: today
-      })
+      }, { onConflict: 'valid_until' })
     
     if (error) {
       console.error('❌ Errore salvataggio singola:', error)
@@ -242,7 +242,7 @@ OUTPUT JSON:
     
     const doppia = JSON.parse(response.choices[0].message.content || '{}')
     
-    // Salva in tips_doppia
+    // Salva in tips_doppia (tabella separata)
     const { error } = await supabase
       .from('tips_doppia')
       .upsert({
@@ -251,7 +251,7 @@ OUTPUT JSON:
         confidence: doppia.confidence,
         strategy_reasoning: doppia.strategy_reasoning,
         valid_until: today
-      })
+      }, { onConflict: 'valid_until' })
     
     if (error) {
       console.error('❌ Errore salvataggio doppia:', error)
@@ -340,7 +340,7 @@ OUTPUT JSON:
         confidence: tripla.confidence,
         strategy_reasoning: tripla.strategy_reasoning,
         valid_until: today
-      })
+      }, { onConflict: 'valid_until' })
     
     return !error
     
@@ -412,7 +412,7 @@ OUTPUT JSON:
         confidence: mista.confidence,
         strategy_reasoning: mista.strategy_reasoning,
         valid_until: today
-      })
+      }, { onConflict: 'valid_until' })
     
     return !error
     
@@ -497,7 +497,7 @@ OUTPUT JSON:
         confidence: bomba.confidence,
         strategy_reasoning: bomba.strategy_reasoning,
         valid_until: today
-      })
+      }, { onConflict: 'valid_until' })
     
     return !error
     

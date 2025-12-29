@@ -270,33 +270,33 @@ export default function MatchAnalysisPage() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-sm text-slate-400 mb-2">HOME WIN</div>
-                <div className="text-3xl font-bold text-emerald-400 mb-2">{analysis.predictions.winner.home}%</div>
+                <div className="text-3xl font-bold text-emerald-400 mb-2">{analysis?.predictions?.winner?.home || analysis?.overall_prediction?.home_percentage || 33}%</div>
                 <div className="w-full bg-slate-700 rounded-full h-3">
                   <div 
                     className="bg-emerald-500 h-3 rounded-full" 
-                    style={{ width: `${analysis.predictions.winner.home}%` }}
+                    style={{ width: `${analysis?.predictions?.winner?.home || analysis?.overall_prediction?.home_percentage || 33}%` }}
                   ></div>
                 </div>
               </div>
               
               <div>
                 <div className="text-sm text-slate-400 mb-2">DRAW</div>
-                <div className="text-3xl font-bold text-yellow-400 mb-2">{analysis.predictions.winner.draw}%</div>
+                <div className="text-3xl font-bold text-yellow-400 mb-2">{analysis?.predictions?.winner?.draw || analysis?.overall_prediction?.draw_percentage || 33}%</div>
                 <div className="w-full bg-slate-700 rounded-full h-3">
                   <div 
                     className="bg-yellow-500 h-3 rounded-full" 
-                    style={{ width: `${analysis.predictions.winner.draw}%` }}
+                    style={{ width: `${analysis?.predictions?.winner?.draw || analysis?.overall_prediction?.draw_percentage || 33}%` }}
                   ></div>
                 </div>
               </div>
               
               <div>
                 <div className="text-sm text-slate-400 mb-2">AWAY WIN</div>
-                <div className="text-3xl font-bold text-red-400 mb-2">{analysis.predictions.winner.away}%</div>
+                <div className="text-3xl font-bold text-red-400 mb-2">{analysis?.predictions?.winner?.away || analysis?.overall_prediction?.away_percentage || 34}%</div>
                 <div className="w-full bg-slate-700 rounded-full h-3">
                   <div 
                     className="bg-red-500 h-3 rounded-full" 
-                    style={{ width: `${analysis.predictions.winner.away}%` }}
+                    style={{ width: `${analysis?.predictions?.winner?.away || analysis?.overall_prediction?.away_percentage || 34}%` }}
                   ></div>
                 </div>
               </div>

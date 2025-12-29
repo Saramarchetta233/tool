@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { FOOTBALL_LEAGUES } from '@/lib/football-data-sync'
+import { COMPLETE_LEAGUES } from '@/lib/football-api-complete'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,25 +9,25 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Get league from search params, default to all leagues
+    // Get league and date from search params
     const searchParams = request.nextUrl.searchParams
     const leagueParam = searchParams.get('league') || 'all'
-    const today = new Date().toISOString().split('T')[0]
+    const dateParam = searchParams.get('date') || new Date().toISOString().split('T')[0]
     const currentTime = new Date().toTimeString().slice(0, 5)
     
-    console.log(`🔍 Fetching matches for ${leagueParam} on ${today}`)
+    console.log(`🔍 Fetching matches for ${leagueParam} on ${dateParam}`)
     
-    // Build query
+    // Build query per il database completo
     let query = supabase
       .from('matches')
       .select('*')
-      .eq('match_date', today)
-      .gte('match_time', currentTime) // Only future matches
+      .eq('match_date', dateParam)
+      .gte('match_time', currentTime) // Solo partite future
       .order('match_time', { ascending: true })
     
-    // Filter by specific league if requested
-    if (leagueParam !== 'all' && FOOTBALL_LEAGUES[leagueParam as keyof typeof FOOTBALL_LEAGUES]) {
-      const leagueId = FOOTBALL_LEAGUES[leagueParam as keyof typeof FOOTBALL_LEAGUES]
+    // Filter by specific league se richiesto
+    if (leagueParam !== 'all' && COMPLETE_LEAGUES[leagueParam as keyof typeof COMPLETE_LEAGUES]) {
+      const leagueId = COMPLETE_LEAGUES[leagueParam as keyof typeof COMPLETE_LEAGUES]
       query = query.eq('league_id', leagueId)
     }
     
@@ -46,18 +46,18 @@ export async function GET(request: NextRequest) {
     }
     
     if (!matches || matches.length === 0) {
-      console.log('⚠️ No matches found in database')
+      console.log(`⚠️ No matches found for ${leagueParam} on ${dateParam}`)
       return NextResponse.json({
         success: true,
         league: leagueParam,
-        date: today,
+        date: dateParam,
         count: 0,
         matches: [],
-        message: 'Nessuna partita trovata. Esegui la sincronizzazione dei dati.'
+        message: 'Nessuna partita trovata. Prova con un\'altra data o campionato.'
       })
     }
     
-    // Format matches for frontend
+    // Format matches for frontend (COMPLETO)
     const formattedMatches = matches.map(match => ({
       id: match.fixture_id.toString(),
       league: match.league_name,
@@ -83,17 +83,23 @@ export async function GET(request: NextRequest) {
         confidence: match.predictions.confidence === 'high' ? 'ALTA' : 
                    match.predictions.confidence === 'medium' ? 'MEDIA' : 'BASSA'
       } : undefined,
-      odds: match.odds || null
+      odds: match.odds || null,
+      // Aggiungi info complete
+      api_predictions: match.predictions,
+      complete_odds: match.odds,
+      venue_details: match.venue
     }))
     
-    console.log(`✅ Found ${formattedMatches.length} matches`)
+    console.log(`✅ Found ${formattedMatches.length} matches for ${leagueParam}`)
     
     return NextResponse.json({
       success: true,
       league: leagueParam,
-      date: today,
+      date: dateParam,
       count: formattedMatches.length,
       matches: formattedMatches,
+      leagues_available: Object.keys(COMPLETE_LEAGUES),
+      database_source: true
     })
     
   } catch (error) {
