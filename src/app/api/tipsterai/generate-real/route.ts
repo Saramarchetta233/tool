@@ -47,7 +47,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Real tips generated successfully with GPT-4o-mini',
-      generatedCount: result.savedCount || 0,
+      generatedCount: [result.singola, result.doppia, result.tripla, result.mista, result.bomba].filter(Boolean).length,
       totalTips: newTips?.length || 0,
       tips: newTips?.map(tip => ({
         type: tip.tip_type,
