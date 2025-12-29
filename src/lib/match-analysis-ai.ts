@@ -863,6 +863,9 @@ IMPORTANTE:
           console.log('⚠️ Correzione: Under + Vittoria → NoGol')
           analysis.mercati.gol_nogol.consigliato = 'NoGol'
           analysis.mercati.gol_nogol.reasoning = 'Con Under 2.5 e vittoria netta, difficile che entrambe segnino'
+          // Correggi anche la quota!
+          analysis.mercati.gol_nogol.quota = matchData.odds?.goals?.nogol || 2.10
+          console.log('💰 Quota corretta da Gol a NoGol:', analysis.mercati.gol_nogol.quota)
         }
       }
 
