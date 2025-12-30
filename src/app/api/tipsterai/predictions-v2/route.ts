@@ -43,7 +43,9 @@ export async function GET() {
       type: 'singola',
       matches: [{
         fixture_id: singola.data.fixture_id,
-        match: `${singola.data.home_team} vs ${singola.data.away_team}`,
+        match: singola.data.home_team && singola.data.away_team 
+          ? `${singola.data.home_team} vs ${singola.data.away_team}`
+          : `Partita ${singola.data.fixture_id}`,
         league: singola.data.league,
         time: singola.data.match_time,
         prediction: singola.data.prediction,

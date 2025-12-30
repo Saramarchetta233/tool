@@ -90,7 +90,10 @@ function TipCard({ tip, type }: { tip: any, type: string }) {
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h4 className="text-lg font-bold text-white mb-1">
-                  {match.match || `${match.home_team} vs ${match.away_team}` || 'Partita in caricamento'}
+                  {match.match || 
+                   (match.home_team && match.away_team ? `${match.home_team} vs ${match.away_team}` : null) ||
+                   (tip.home_team && tip.away_team ? `${tip.home_team} vs ${tip.away_team}` : null) ||
+                   'Partita in elaborazione'}
                 </h4>
                 <div className="flex items-center gap-3 text-sm text-slate-400 mb-2">
                   <span className="flex items-center gap-1">
