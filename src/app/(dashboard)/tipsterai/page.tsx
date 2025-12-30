@@ -118,7 +118,7 @@ function TipCard({ tip, type }: { tip: any, type: string }) {
             {/* Predizione evidenziata */}
             <div className="bg-gradient-to-r from-emerald-600/20 to-blue-600/20 rounded-lg p-3 mb-3">
               <div className="text-emerald-300 font-bold text-lg">
-                {match.prediction_label || match.prediction}
+                {match.prediction || match.prediction_label}
               </div>
             </div>
             
