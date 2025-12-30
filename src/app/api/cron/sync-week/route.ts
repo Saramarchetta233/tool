@@ -1,17 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  console.log('🕐 CRON sync-week called at', new Date().toISOString())
+  const executionStart = Date.now()
+  const timestamp = new Date()
+  
+  // Enhanced timezone and execution logging
+  const timeInfo = {
+    utc: timestamp.toISOString(),
+    italy: new Intl.DateTimeFormat('it-IT', {
+      timeZone: 'Europe/Rome',
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    }).format(timestamp),
+    utcHour: timestamp.getUTCHours(),
+    utcMinute: timestamp.getUTCMinutes(),
+    expectedSchedule: '00:01 UTC (01:01/02:01 Italy time)'
+  }
+  
+  console.log('🕐 CRON sync-week called')
+  console.log('⏰ Execution timing:', timeInfo)
+  
+  // Enhanced request logging
+  const requestInfo = {
+    userAgent: request.headers.get('user-agent') || 'Unknown',
+    vercelCron: request.headers.get('x-vercel-cron') || 'Not present',
+    vercelRegion: request.headers.get('x-vercel-deployment-url') || 'Unknown',
+    environment: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV
+  }
+  
+  console.log('📡 Request context:', requestInfo)
   
   const cronSecret = request.nextUrl.searchParams.get('secret')
   const expectedSecret = process.env.CRON_SECRET
   
-  // Log per debug
-  console.log('CRON Secret check:', {
+  // Enhanced secret logging
+  console.log('🔐 CRON Secret validation:', {
     hasSecret: !!cronSecret,
     hasExpectedSecret: !!expectedSecret,
     secretLength: cronSecret?.length || 0,
-    expectedLength: expectedSecret?.length || 0
+    expectedLength: expectedSecret?.length || 0,
+    secretPreview: cronSecret ? `${cronSecret.substring(0, 4)}...${cronSecret.substring(cronSecret.length - 4)}` : 'None',
+    isScheduledExecution: timeInfo.utcHour === 0 && timeInfo.utcMinute <= 5
   })
   
   if (!expectedSecret) {
@@ -48,21 +83,31 @@ export async function GET(request: NextRequest) {
       throw new Error(`Sync week failed: ${data.error || response.statusText}`)
     }
     
+    const executionTime = Date.now() - executionStart
     console.log(`✅ WEEKLY sync completed via cron: ${data.message}`)
+    console.log(`⚡ Total execution time: ${executionTime}ms`)
     
     return NextResponse.json({
       success: true,
       message: `WEEKLY cron sync: ${data.message}`,
       data,
+      executionTime: `${executionTime}ms`,
+      timing: timeInfo,
+      context: requestInfo,
       timestamp: new Date().toISOString()
     })
     
   } catch (error) {
+    const executionTime = Date.now() - executionStart
     console.error('❌ WEEKLY cron sync failed:', error)
+    console.log(`⚡ Failed execution time: ${executionTime}ms`)
     
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
+      executionTime: `${executionTime}ms`,
+      timing: timeInfo,
+      context: requestInfo,
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
