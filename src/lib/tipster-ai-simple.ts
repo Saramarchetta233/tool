@@ -438,8 +438,8 @@ function buildLabel(prediction: string, partita: string): string {
     case 'Under 2.5': return 'MASSIMO 2 GOL' 
     case 'Over 3.5': return 'ALMENO 4 GOL'
     case 'Under 3.5': return 'MASSIMO 3 GOL'
-    case 'Gol': case 'BTTS': return 'ENTRAMBE SEGNANO'
-    case 'NoGol': case 'No BTTS': return 'NON ENTRAMBE SEGNANO'
+    case 'Gol': case 'BTTS': return 'Gol'
+    case 'NoGol': case 'No BTTS': return 'NoGol'
     default: 
       if (prediction.includes('-')) return `RISULTATO ESATTO ${prediction}`
       return prediction.toUpperCase()

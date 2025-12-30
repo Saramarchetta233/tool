@@ -161,8 +161,8 @@ export class RealOddsManager {
     if (realOdds.goals?.under_2_5) options.push({ prediction: 'Under 2.5', odds: realOdds.goals.under_2_5, label: 'MASSIMO 2 GOL' })
     if (realOdds.goals?.over_3_5) options.push({ prediction: 'Over 3.5', odds: realOdds.goals.over_3_5, label: 'ALMENO 4 GOL' })
     if (realOdds.goals?.under_3_5) options.push({ prediction: 'Under 3.5', odds: realOdds.goals.under_3_5, label: 'MASSIMO 3 GOL' })
-    if (realOdds.goals?.btts) options.push({ prediction: 'Gol', odds: realOdds.goals.btts, label: 'ENTRAMBE SEGNANO' })
-    if (realOdds.goals?.nobtts) options.push({ prediction: 'NoGol', odds: realOdds.goals.nobtts, label: 'NON ENTRAMBE SEGNANO' })
+    if (realOdds.goals?.btts) options.push({ prediction: 'Gol', odds: realOdds.goals.btts, label: 'Gol' })
+    if (realOdds.goals?.nobtts) options.push({ prediction: 'NoGol', odds: realOdds.goals.nobtts, label: 'NoGol' })
     
     // Filtra opzioni nel range target
     const validOptions = options.filter(opt => opt.odds >= targetMin && opt.odds <= targetMax)

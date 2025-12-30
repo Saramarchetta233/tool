@@ -829,8 +829,8 @@ function buildPredictionLabel(prediction: string, homeTeam: string, awayTeam: st
     case 'under 2.5': return 'MASSIMO 2 GOL'
     case 'over 3.5': return 'ALMENO 4 GOL'
     case 'under 3.5': return 'MASSIMO 3 GOL'
-    case 'gol': case 'btts': return 'ENTRAMBE SEGNANO'
-    case 'nogol': case 'no btts': return 'NON ENTRAMBE SEGNANO'
+    case 'gol': case 'btts': return 'Gol'
+    case 'nogol': case 'no btts': return 'NoGol'
     default: return prediction.toUpperCase()
   }
 }
