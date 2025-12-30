@@ -74,7 +74,7 @@ function TipCard({ tip, type }: { tip: any, type: string }) {
       
       {/* Partite con layout migliorato */}
       <div className="space-y-4">
-        {(isMultiple ? tip.matches : [{ 
+        {(isMultiple ? tip.matches : tip.matches || [{ 
           home_team: tip.home_team, 
           away_team: tip.away_team, 
           league: tip.league, 

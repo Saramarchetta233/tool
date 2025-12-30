@@ -319,7 +319,7 @@ function buildSmartSingola(matches: MatchAnalysis[], usedMatches: Set<number>): 
     league: best.league,
     match_time: best.time,
     prediction: '1X',
-    prediction_label: `${best.home_team} NON PERDE`,
+    prediction_label: '1X',
     odds: 1.75,
     confidence: best.confidence,
     reasoning: best.reasoning,
@@ -401,7 +401,7 @@ function buildSmartDoppia(matches: MatchAnalysis[], usedMatches: Set<number>): a
         league: match.league,
         time: match.time,
         prediction: 'Under 3.5',
-        prediction_label: 'MASSIMO 3 GOL',
+        prediction_label: 'Under 3.5',
         odds: 1.25,
         confidence: match.confidence,
         reasoning: match.reasoning
@@ -542,29 +542,29 @@ function getSelectionsForMatch(match: MatchAnalysis): Array<{type: string, label
   if (match.suggestions.esito === '1') {
     selections.push({
       type: '1',
-      label: `${match.home_team} VINCE`,
+      label: '1',
       odds: match.odds.home
     })
     selections.push({
       type: '1X',
-      label: `${match.home_team} NON PERDE`,
+      label: '1X',
       odds: match.odds.home * 0.65
     })
   } else if (match.suggestions.esito === '2') {
     selections.push({
       type: '2',
-      label: `${match.away_team} VINCE`,
+      label: '2',
       odds: match.odds.away
     })
     selections.push({
       type: 'X2',
-      label: `${match.away_team} NON PERDE`,
+      label: 'X2',
       odds: match.odds.away * 0.65
     })
   } else {
     selections.push({
       type: 'X',
-      label: 'PAREGGIO',
+      label: 'X',
       odds: match.odds.draw
     })
   }
@@ -572,9 +572,7 @@ function getSelectionsForMatch(match: MatchAnalysis): Array<{type: string, label
   // Over/Under
   selections.push({
     type: match.suggestions.over_under,
-    label: match.suggestions.over_under === 'Over 2.5' ? 'ALMENO 3 GOL' : 
-           match.suggestions.over_under === 'Under 2.5' ? 'MASSIMO 2 GOL' :
-           match.suggestions.over_under === 'Over 1.5' ? 'ALMENO 2 GOL' : 'MASSIMO 1 GOL',
+    label: match.suggestions.over_under,
     odds: match.suggestions.over_under === 'Over 2.5' ? match.odds.over_25 :
           match.suggestions.over_under === 'Under 2.5' ? match.odds.under_25 :
           match.suggestions.over_under === 'Over 1.5' ? match.odds.over_15 : match.odds.under_15
@@ -583,7 +581,7 @@ function getSelectionsForMatch(match: MatchAnalysis): Array<{type: string, label
   // Gol/NoGol
   selections.push({
     type: match.suggestions.gol,
-    label: match.suggestions.gol === 'Gol' ? 'ENTRAMBE SEGNANO' : 'ALMENO UNA NON SEGNA',
+    label: match.suggestions.gol,
     odds: match.suggestions.gol === 'Gol' ? match.odds.gol : match.odds.nogol
   })
   
@@ -611,13 +609,13 @@ function getSafeSelectionsForMatch(match: MatchAnalysis): Array<{type: string, l
   if (match.suggestions.esito === '1') {
     selections.push({
       type: '1X',
-      label: `${match.home_team} NON PERDE`,
+      label: '1X',
       odds: match.odds.home * 0.65
     })
   } else if (match.suggestions.esito === '2') {
     selections.push({
       type: 'X2', 
-      label: `${match.away_team} NON PERDE`,
+      label: 'X2',
       odds: match.odds.away * 0.65
     })
   }
@@ -625,12 +623,12 @@ function getSafeSelectionsForMatch(match: MatchAnalysis): Array<{type: string, l
   // Under alti sempre sicuri
   selections.push({
     type: 'Under 4.5',
-    label: 'MASSIMO 4 GOL',
+    label: 'Under 4.5',
     odds: 1.15
   })
   selections.push({
     type: 'Under 3.5',
-    label: 'MASSIMO 3 GOL',
+    label: 'Under 3.5',
     odds: 1.25
   })
   
@@ -662,28 +660,8 @@ function calculateComboOdds(combo: string, match: MatchAnalysis): number {
 }
 
 function getComboLabel(combo: string, match: MatchAnalysis): string {
-  const labels: Record<string, string> = {
-    '1': match.home_team + ' VINCE',
-    '2': match.away_team + ' VINCE',
-    'X': 'PAREGGIO',
-    '1X': match.home_team + ' NON PERDE',
-    'X2': match.away_team + ' NON PERDE',
-    'Over 2.5': 'ALMENO 3 GOL',
-    'Under 2.5': 'MASSIMO 2 GOL',
-    'Over 1.5': 'ALMENO 2 GOL',
-    'Under 1.5': 'MASSIMO 1 GOL',
-    'Over 3.5': 'ALMENO 4 GOL',
-    'Under 3.5': 'MASSIMO 3 GOL',
-    'Gol': 'ENTRAMBE SEGNANO',
-    'NoGol': 'ALMENO UNA NON SEGNA'
-  }
-  
-  if (combo.includes('+')) {
-    const parts = combo.split('+').map(p => p.trim())
-    return parts.map(p => labels[p] || p).join(' + ')
-  }
-  
-  return labels[combo] || combo
+  // Ora restituiamo direttamente i codici
+  return combo
 }
 
 function getExactScoreOdds(score: string): number {

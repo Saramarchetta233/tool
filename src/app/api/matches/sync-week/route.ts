@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { syncTodayComplete } from '@/lib/football-api-complete'
+import { syncCompleteMatchesForDate } from '@/lib/football-api-complete'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -20,19 +20,13 @@ export async function POST() {
       console.log(`📅 Syncing ${dateStr}...`)
       
       try {
-        // Modifichiamo temporaneamente la data nel processo
-        const originalDate = Date.now
-        Date.now = () => targetDate.getTime()
-        
-        const dayResults = await syncTodayComplete()
+        // Chiamiamo direttamente syncCompleteMatchesForDate con la data corretta
+        const dayResults = await syncCompleteMatchesForDate(dateStr)
         results.push({
           date: dateStr,
           results: dayResults,
           matches: dayResults.reduce((sum, r) => sum + r.fixtures, 0)
         })
-        
-        // Ripristina Date.now
-        Date.now = originalDate
         
         console.log(`✅ ${dateStr}: ${dayResults.reduce((sum, r) => sum + r.fixtures, 0)} matches`)
         
