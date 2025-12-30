@@ -121,9 +121,9 @@ async function testCronExecution(providedSecret: string | null, method: string) 
   
   // Simulate CRON work - test the actual sync-week endpoint
   let testResults = {
-    syncWeek: { success: false, error: 'Not tested' },
-    completeSync: { success: false, error: 'Not tested' },
-    generateTips: { success: false, error: 'Not tested' }
+    syncWeek: { success: false, error: 'Not tested' } as any,
+    completeSync: { success: false, error: 'Not tested' } as any,
+    generateTips: { success: false, error: 'Not tested' } as any
   }
   
   try {

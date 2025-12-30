@@ -104,8 +104,8 @@ export async function GET(request: NextRequest) {
   nextMidnight.setUTCHours(0, 1, 0, 0) // 00:01 UTC
   
   const timeTo0001UTC = nextMidnight.getTime() - now.getTime()
-  const hoursTo0001 = Math.floor(timeTo0001 / (1000 * 60 * 60))
-  const minutesTo0001 = Math.floor((timeTo0001 % (1000 * 60 * 60)) / (1000 * 60))
+  const hoursTo0001 = Math.floor(timeTo0001UTC / (1000 * 60 * 60))
+  const minutesTo0001 = Math.floor((timeTo0001UTC % (1000 * 60 * 60)) / (1000 * 60))
   
   // Italy timezone calculations (UTC+1 or UTC+2)
   const italyNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Rome" }))

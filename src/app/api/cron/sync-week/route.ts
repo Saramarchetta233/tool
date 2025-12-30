@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     const totalMatches = results.reduce((sum, r) => sum + (r.matches || 0), 0)
     
     const executionTime = Date.now() - executionStart
-    console.log(`✅ WEEKLY sync completed via cron: ${data.message}`)
+    console.log(`✅ WEEKLY sync completed via cron: ${totalMatches} matches`)
     console.log(`⚡ Total execution time: ${executionTime}ms`)
     
     return NextResponse.json({
