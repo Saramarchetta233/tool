@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { syncCompleteMatchesForDate } from '@/lib/football-api-complete'
+
+export const dynamic = 'force-dynamic'
+export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
   const executionStart = Date.now()
@@ -65,23 +69,37 @@ export async function GET(request: NextRequest) {
   console.log('🔄 Starting WEEKLY sync from cron...')
   
   try {
-    // Chiama l'endpoint interno per il sync settimanale
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000'
+    // Sincronizza direttamente i prossimi 7 giorni
+    const results = []
+    const today = new Date()
     
-    const response = await fetch(`${baseUrl}/api/matches/sync-week`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    
-    const data = await response.json()
-    
-    if (!response.ok) {
-      throw new Error(`Sync week failed: ${data.error || response.statusText}`)
+    for (let i = 0; i < 7; i++) {
+      const targetDate = new Date(today)
+      targetDate.setDate(today.getDate() + i)
+      const dateStr = targetDate.toISOString().split('T')[0]
+      
+      console.log(`📅 CRON syncing ${dateStr}...`)
+      
+      try {
+        const dayResults = await syncCompleteMatchesForDate(dateStr)
+        results.push({
+          date: dateStr,
+          matches: dayResults.reduce((sum, r) => sum + r.fixtures, 0)
+        })
+        
+        // Pausa tra le chiamate
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+      } catch (error) {
+        console.error(`❌ Error syncing ${dateStr}:`, error)
+        results.push({
+          date: dateStr,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+      }
     }
+    
+    const totalMatches = results.reduce((sum, r) => sum + (r.matches || 0), 0)
     
     const executionTime = Date.now() - executionStart
     console.log(`✅ WEEKLY sync completed via cron: ${data.message}`)
@@ -89,8 +107,9 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      message: `WEEKLY cron sync: ${data.message}`,
-      data,
+      message: `CRON sync completato: ${totalMatches} partite per 7 giorni`,
+      results,
+      totalMatches,
       executionTime: `${executionTime}ms`,
       timing: timeInfo,
       context: requestInfo,
