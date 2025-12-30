@@ -1,9 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const cronSecret = request.nextUrl.searchParams.get('secret')
+  console.log('🕐 CRON sync-week called at', new Date().toISOString())
   
-  if (cronSecret !== process.env.CRON_SECRET) {
+  const cronSecret = request.nextUrl.searchParams.get('secret')
+  const expectedSecret = process.env.CRON_SECRET
+  
+  // Log per debug
+  console.log('CRON Secret check:', {
+    hasSecret: !!cronSecret,
+    hasExpectedSecret: !!expectedSecret,
+    secretLength: cronSecret?.length || 0,
+    expectedLength: expectedSecret?.length || 0
+  })
+  
+  if (!expectedSecret) {
+    console.error('❌ CRON_SECRET not configured in environment variables!')
+    return NextResponse.json({ 
+      error: 'Server configuration error', 
+      message: 'CRON_SECRET not set'
+    }, { status: 500 })
+  }
+  
+  if (cronSecret !== expectedSecret) {
+    console.error('❌ CRON authentication failed')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
