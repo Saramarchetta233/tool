@@ -243,6 +243,7 @@ export default function TipsterAI() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('proposte')
+  const [activeTipTab, setActiveTipTab] = useState('singola')
   const [historyTips, setHistoryTips] = useState<HistoryTip[]>([])
   const [historyStats, setHistoryStats] = useState<HistoryStats | null>(null)
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -506,35 +507,246 @@ export default function TipsterAI() {
         </TabsList>
 
         <TabsContent value="proposte">
-          <div className="mb-6 flex justify-center gap-4">
-            <Button 
-              onClick={() => fetchDailyPredictions(true)} 
-              disabled={loading}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Aggiorna Proposte
-            </Button>
-          </div>
-
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
               <p className="mt-4 text-muted-foreground">Analizzando le partite di oggi...</p>
             </div>
           ) : predictions && predictions.length > 0 ? (
-            <div className="grid gap-6 mb-12">
-              {/* Info header */}
-              <div className="text-center mb-6">
+            <div>
+              {/* Tab delle proposte - PRIMA del pulsante aggiorna */}
+              <div className="mb-6">
+                {/* Tab con design moderno */}
+                <div className="bg-slate-900/50 backdrop-blur rounded-2xl p-2 border border-slate-700/50 shadow-xl">
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                    <button 
+                      onClick={() => setActiveTipTab('singola')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'singola' 
+                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">🎯</span>
+                        <span className="text-xs font-semibold">Singola</span>
+                        {predictions.find(p => p.type === 'singola') && (
+                          <span className="text-[10px] text-emerald-400 font-bold">
+                            @{predictions.find(p => p.type === 'singola')?.total_odds || predictions.find(p => p.type === 'singola')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'singola') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTipTab('doppia')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'doppia' 
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">✌️</span>
+                        <span className="text-xs font-semibold">Doppia</span>
+                        {predictions.find(p => p.type === 'doppia') && (
+                          <span className="text-[10px] text-blue-400 font-bold">
+                            @{predictions.find(p => p.type === 'doppia')?.total_odds || predictions.find(p => p.type === 'doppia')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'doppia') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTipTab('tripla')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'tripla' 
+                          ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">🔥</span>
+                        <span className="text-xs font-semibold">Tripla</span>
+                        {predictions.find(p => p.type === 'tripla') && (
+                          <span className="text-[10px] text-purple-400 font-bold">
+                            @{predictions.find(p => p.type === 'tripla')?.total_odds || predictions.find(p => p.type === 'tripla')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'tripla') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTipTab('mista')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'mista' 
+                          ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">🎲</span>
+                        <span className="text-xs font-semibold">Mista</span>
+                        {predictions.find(p => p.type === 'mista') && (
+                          <span className="text-[10px] text-amber-400 font-bold">
+                            @{predictions.find(p => p.type === 'mista')?.total_odds || predictions.find(p => p.type === 'mista')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'mista') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTipTab('bomba')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'bomba' 
+                          ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">💣</span>
+                        <span className="text-xs font-semibold">Bomba</span>
+                        {predictions.find(p => p.type === 'bomba') && (
+                          <span className="text-[10px] text-red-400 font-bold">
+                            @{predictions.find(p => p.type === 'bomba')?.total_odds || predictions.find(p => p.type === 'bomba')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'bomba') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTipTab('serieA')}
+                      className={`
+                        relative px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                        ${activeTipTab === 'serieA' 
+                          ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30' 
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">🇮🇹</span>
+                        <span className="text-xs font-semibold">Serie A</span>
+                        {predictions.find(p => p.type === 'serieA') && (
+                          <span className="text-[10px] text-green-400 font-bold">
+                            @{predictions.find(p => p.type === 'serieA')?.total_odds || predictions.find(p => p.type === 'serieA')?.totalOdds}
+                          </span>
+                        )}
+                      </div>
+                      {predictions.find(p => p.type === 'serieA') && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse border-2 border-slate-900"></span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Info header e pulsante aggiorna */}
+              <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium">
                   <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
                   {predictions.length} proposte attive per oggi
                 </div>
+                <Button 
+                  onClick={() => fetchDailyPredictions(true)} 
+                  disabled={loading}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                  Aggiorna Proposte
+                </Button>
               </div>
               
-              {predictions.map((prediction, index) => (
-                <TipCard key={index} tip={prediction} type={prediction.type} />
-              ))}
+              {/* Content delle proposte */}
+              <Tabs value={activeTipTab} onValueChange={setActiveTipTab} className="w-full">
+                <TabsList className="hidden"></TabsList>
+                
+                {/* Content per ogni tab */}
+                <TabsContent value="singola">
+                  {predictions.find(p => p.type === 'singola') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'singola')!} type="singola" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Singola non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="doppia">
+                  {predictions.find(p => p.type === 'doppia') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'doppia')!} type="doppia" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Doppia non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="tripla">
+                  {predictions.find(p => p.type === 'tripla') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'tripla')!} type="tripla" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Tripla non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="mista">
+                  {predictions.find(p => p.type === 'mista') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'mista')!} type="mista" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Mista non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="bomba">
+                  {predictions.find(p => p.type === 'bomba') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'bomba')!} type="bomba" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Bomba non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="serieA">
+                  {predictions.find(p => p.type === 'serieA') ? (
+                    <TipCard tip={predictions.find(p => p.type === 'serieA')!} type="serieA" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Serie A speciale non disponibile oggi
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           ) : noMatchesToday ? (
             <div className="text-center py-12">

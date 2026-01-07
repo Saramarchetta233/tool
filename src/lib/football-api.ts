@@ -127,7 +127,7 @@ export async function getH2H(team1Id: number, team2Id: number): Promise<H2HMatch
   }
 }
 
-// Ultime 5 partite di una squadra
+// Ultime 5 partite di una squadra - versione ibrida con fallback database
 export async function getTeamForm(teamId: number, leagueId: number, season: number): Promise<TeamFormMatch[]> {
   if (!API_KEY) {
     console.log('⚠️ API_FOOTBALL_KEY not configured, using fallback team form data')
@@ -135,28 +135,31 @@ export async function getTeamForm(teamId: number, leagueId: number, season: numb
   }
 
   try {
+    console.log(`📊 Fetching team form for ${teamId} (season ${season})...`)
+    
+    // 1. Try API-Football first (shorter cache time for freshness)
     const response = await fetch(
-      `${BASE_URL}/fixtures?team=${teamId}&league=${leagueId}&season=${season}&last=5&status=FT`,
+      `${BASE_URL}/fixtures?team=${teamId}&league=${leagueId}&season=${season}&last=10&status=FT`,
       { 
         headers: { 'x-apisports-key': API_KEY },
-        next: { revalidate: 3600 }
+        next: { revalidate: 1800 } // Reduced cache time: 30 minutes instead of 1 hour
       }
     )
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      console.warn(`⚠️ API-Football returned ${response.status}, trying database fallback...`)
+      return await getTeamFormFromDatabase(teamId, leagueId, season)
     }
     
     const data: ApiResponse<any[]> = await response.json()
     
     if (data.errors.length > 0) {
       console.error('API Football team form errors:', data.errors)
-      return []
+      console.log('🔄 Falling back to database data...')
+      return await getTeamFormFromDatabase(teamId, leagueId, season)
     }
     
-    console.log(`📊 Team ${teamId} form: received ${data.response.length} matches from API`)
-    
-    return data.response.map(match => {
+    const apiMatches = data.response.map(match => {
       const isHome = match.teams.home.id === teamId
       let result: 'W' | 'L' | 'D' = 'D'
       
@@ -179,8 +182,125 @@ export async function getTeamForm(teamId: number, leagueId: number, season: numb
       }
     }).slice(0, 5)
     
+    console.log(`✅ Team ${teamId} form from API: ${apiMatches.length} matches`)
+    console.log(`📅 Latest match: ${apiMatches[0]?.date || 'none'} vs ${apiMatches[0]?.opponent || 'none'}`)
+    
+    // 2. Validate freshness - if API data seems stale, supplement with database
+    if (apiMatches.length > 0) {
+      const latestMatch = new Date(apiMatches[0].date)
+      const daysSinceLatest = Math.floor((Date.now() - latestMatch.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (daysSinceLatest > 14) {
+        console.log(`⚠️ API data may be stale (${daysSinceLatest} days old), checking database for newer matches...`)
+        const dbMatches = await getTeamFormFromDatabase(teamId, leagueId, season)
+        
+        if (dbMatches.length > 0) {
+          const dbLatest = new Date(dbMatches[0].date)
+          if (dbLatest > latestMatch) {
+            console.log('🔄 Database has newer data, using hybrid approach...')
+            // Merge API and DB data, prioritizing freshness
+            const allMatches = [...dbMatches, ...apiMatches]
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .slice(0, 5)
+            return allMatches
+          }
+        }
+      }
+    }
+    
+    return apiMatches
+    
   } catch (error) {
-    console.error('Error fetching team form data:', error)
+    console.error('Error fetching team form from API:', error)
+    console.log('🔄 Falling back to database data...')
+    return await getTeamFormFromDatabase(teamId, leagueId, season)
+  }
+}
+
+// Fallback: Get team form from our database
+async function getTeamFormFromDatabase(teamId: number, leagueId: number, season: number): Promise<TeamFormMatch[]> {
+  try {
+    // Import supabase here to avoid circular dependencies
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        db: { schema: 'public' },
+        auth: { persistSession: false }
+      }
+    )
+
+    // Calculate season date range
+    const seasonStart = `${season}-08-01`
+    const seasonEnd = `${season + 1}-07-31`
+    
+    console.log(`🔍 Querying database for team ${teamId} matches between ${seasonStart} and ${seasonEnd}`)
+    
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select(`
+        fixture_id,
+        match_date,
+        match_time,
+        home_team,
+        away_team,
+        league_id,
+        league_name,
+        result
+      `)
+      .or(`home_team.id.eq.${teamId},away_team.id.eq.${teamId}`)
+      .eq('league_id', leagueId)
+      .gte('match_date', seasonStart)
+      .lte('match_date', seasonEnd)
+      .not('result', 'is', null)
+      .order('match_date', { ascending: false })
+      .limit(5)
+
+    if (error) {
+      console.error('Database query error:', error)
+      return []
+    }
+
+    if (!matches || matches.length === 0) {
+      console.log('📭 No finished matches found in database')
+      return []
+    }
+
+    const formMatches: TeamFormMatch[] = matches.map(match => {
+      const isHome = match.home_team?.id === teamId
+      const homeGoals = match.result?.home || 0
+      const awayGoals = match.result?.away || 0
+      
+      let result: 'W' | 'L' | 'D' = 'D'
+      if (homeGoals > awayGoals) {
+        result = isHome ? 'W' : 'L'
+      } else if (awayGoals > homeGoals) {
+        result = isHome ? 'L' : 'W'
+      }
+
+      return {
+        date: match.match_date,
+        home: match.home_team?.name || 'Unknown',
+        away: match.away_team?.name || 'Unknown', 
+        homeGoals,
+        awayGoals,
+        isHome,
+        result,
+        status: 'FT',
+        opponent: isHome ? match.away_team?.name || 'Unknown' : match.home_team?.name || 'Unknown'
+      }
+    })
+
+    console.log(`💾 Database form data: ${formMatches.length} matches found`)
+    if (formMatches.length > 0) {
+      console.log(`📅 Latest match from DB: ${formMatches[0].date} vs ${formMatches[0].opponent}`)
+    }
+
+    return formMatches
+    
+  } catch (error) {
+    console.error('Error fetching team form from database:', error)
     return []
   }
 }
