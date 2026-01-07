@@ -96,41 +96,129 @@ export async function generateDailyTipsV2() {
     doppia: false,
     tripla: false,
     mista: false,
-    bomba: false
+    bomba: false,
+    serieA: false
   }
   
-  // REGOLE AGGIORNATE:
-  // 1+ partite: Singola
-  // 2+ partite: Singola + Doppia
-  // 3+ partite: + Tripla e Bomba
-  // 5+ partite: + Mista (TUTTI)
+  // REGOLE FINALI:
+  // 10+ partite: TUTTE le proposte (singola, doppia, tripla, mista, bomba)
+  // 5+ partite: SINGOLA + DOPPIA (almeno queste due)
+  // Meno di 5: regole progressive
   
-  if (numMatches >= 1) {
-    console.log('🎲 Generando SINGOLA...')
-    const singola = await generateSingola(matchesData, supabase, today)
-    results.singola = singola
-  }
-  
-  if (numMatches >= 2) {
-    console.log('🎲 Generando DOPPIA...')
-    const doppia = await generateDoppia(matchesData, supabase, today)
-    results.doppia = doppia
-  }
-  
-  if (numMatches >= 3) {
-    console.log('🎲 Generando TRIPLA e BOMBA...')
-    const [tripla, bomba] = await Promise.all([
+  if (numMatches >= 10) {
+    console.log(`🎯 Trovate ${numMatches} partite (>=10), generando TUTTE le proposte!`)
+    
+    // Genera tutto in parallelo per velocità
+    const [singola, doppia, tripla, mista, bomba] = await Promise.all([
+      generateSingola(matchesData, supabase, today),
+      generateDoppia(matchesData, supabase, today),
       generateTripla(matchesData, supabase, today),
+      generateMista(matchesData, supabase, today),
       generateBomba(matchesData, supabase, today)
     ])
+    
+    results.singola = singola
+    results.doppia = doppia
     results.tripla = tripla
+    results.mista = mista
     results.bomba = bomba
+  } else if (numMatches >= 5) {
+    console.log(`🎯 Trovate ${numMatches} partite (>=5), generando SINGOLA + DOPPIA obbligatorie + altre se possibili`)
+    
+    // SEMPRE singola e doppia con 5+ partite
+    const [singola, doppia] = await Promise.all([
+      generateSingola(matchesData, supabase, today),
+      generateDoppia(matchesData, supabase, today)
+    ])
+    
+    results.singola = singola
+    results.doppia = doppia
+    
+    // Aggiungi altre se possibile
+    if (numMatches >= 7) {
+      console.log('🎲 Aggiungendo TRIPLA e BOMBA...')
+      const [tripla, bomba] = await Promise.all([
+        generateTripla(matchesData, supabase, today),
+        generateBomba(matchesData, supabase, today)
+      ])
+      results.tripla = tripla
+      results.bomba = bomba
+    }
+    
+    if (numMatches >= 8) {
+      console.log('🎲 Aggiungendo MISTA...')
+      const mista = await generateMista(matchesData, supabase, today)
+      results.mista = mista
+    }
+  } else {
+    // Regole progressive per meno di 5 partite
+    if (numMatches >= 1) {
+      console.log('🎲 Generando SINGOLA...')
+      const singola = await generateSingola(matchesData, supabase, today)
+      results.singola = singola
+    }
+    
+    if (numMatches >= 2) {
+      console.log('🎲 Generando DOPPIA...')
+      const doppia = await generateDoppia(matchesData, supabase, today)
+      results.doppia = doppia
+    }
+    
+    if (numMatches >= 3) {
+      console.log('🎲 Generando TRIPLA...')
+      const tripla = await generateTripla(matchesData, supabase, today)
+      results.tripla = tripla
+    }
   }
   
-  if (numMatches >= 5) {
-    console.log('🎲 Generando MISTA...')
-    const mista = await generateMista(matchesData, supabase, today)
-    results.mista = mista
+  // SEMPRE: Se ci sono partite di Serie A (anche domani), genera la sesta proposta
+  const serieAMatches = matchesData.filter(m => m.league === 'Serie A' || m.league.includes('Serie A'))
+  if (serieAMatches.length > 0) {
+    console.log(`🇮🇹 Trovate ${serieAMatches.length} partite di Serie A oggi, generando proposta speciale Serie A...`)
+    const serieA = await generateSerieASpecial(serieAMatches, matchesData, supabase, today)
+    results.serieA = serieA
+  } else {
+    console.log('🇮🇹 Verifico partite Serie A per domani...')
+    // Controlla anche domani per Serie A
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toISOString().split('T')[0]
+    
+    const { data: tomorrowMatches } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('match_date', tomorrowStr)
+      .or('league_name.ilike.%Serie A%')
+      .order('match_time', { ascending: true })
+    
+    if (tomorrowMatches && tomorrowMatches.length > 0) {
+      console.log(`🇮🇹 Trovate ${tomorrowMatches.length} partite Serie A domani, generando proposta speciale...`)
+      
+      // Prepara dati partite di domani
+      const tomorrowData = tomorrowMatches.map(m => ({
+        fixture_id: m.fixture_id,
+        home_team: m.home_team?.name || 'Casa',
+        away_team: m.away_team?.name || 'Ospite',
+        league: m.league_name,
+        time: m.match_time,
+        date: m.match_date,
+        api_prediction: {
+          advice: m.predictions?.advice || null,
+          home_percent: parseInt(m.predictions?.home) || 33,
+          draw_percent: parseInt(m.predictions?.draw) || 33,
+          away_percent: parseInt(m.predictions?.away) || 34,
+          confidence: m.predictions?.confidence || 50
+        },
+        odds: {
+          winner: m.odds?.winner || {},
+          doubleChance: m.odds?.doubleChance || {},
+          goals: m.odds?.goals || {}
+        }
+      }))
+      
+      const serieA = await generateSerieASpecial(tomorrowData, matchesData.concat(tomorrowData), supabase, today)
+      results.serieA = serieA
+    }
   }
   
   console.log('✅ Generazione completata:', results)
@@ -139,89 +227,7 @@ export async function generateDailyTipsV2() {
 
 // SINGOLA: 1 partita con combo se necessario (1.70-2.50)
 async function generateSingola(matches: any[], supabase: any, today: string) {
-  // OVERRIDE: Se c'è Roma vs Genoa, la forza come singola
-  const romaMatch = matches.find(m => 
-    (m.home_team === 'AS Roma' && m.away_team === 'Genoa') ||
-    (m.league === 'Serie A' && (m.home_team?.includes('Roma') || m.away_team?.includes('Roma')))
-  )
-  
-  if (romaMatch) {
-    console.log('🇮🇹 OVERRIDE: Forzando Roma vs Genoa come singola (priorità Serie A)')
-    
-    // Chiedi a GPT-4 di scegliere la migliore selezione per Roma vs Genoa
-    const romaPrompt = `Analizza questa partita Serie A e scegli la MIGLIORE selezione per singola.
-
-PARTITA: ${romaMatch.home_team} vs ${romaMatch.away_team} (${romaMatch.league})
-
-Quote disponibili:
-- Casa (1): ${romaMatch.odds?.winner?.home || 'N/A'}
-- Pareggio (X): ${romaMatch.odds?.winner?.draw || 'N/A'}  
-- Ospite (2): ${romaMatch.odds?.winner?.away || 'N/A'}
-- Casa non perde (1X): ${romaMatch.odds?.doubleChance?.x1 || 'N/A'}
-- Ospite non perde (X2): ${romaMatch.odds?.doubleChance?.x2 || 'N/A'}
-- Over 2.5: ${romaMatch.odds?.goals?.over_2_5 || 'N/A'}
-- Under 2.5: ${romaMatch.odds?.goals?.under_2_5 || 'N/A'}
-- Entrambe segnano: ${romaMatch.odds?.goals?.btts || 'N/A'}
-- Non entrambe segnano: ${romaMatch.odds?.goals?.nobtts || 'N/A'}
-
-NON c'è range di quota. Scegli la selezione PIÙ SENSATA per questa partita.
-Roma in casa difficilmente perde. Considera 1, 1X, Under 2.5, Over 2.5, Gol, NoGol.
-MAI X2 per squadra di casa forte!
-
-OUTPUT JSON:
-{
-  "prediction": "Under 2.5",
-  "confidence": 75,
-  "reasoning": "La Roma gioca con prudenza in casa, il Genoa si difende"
-}`
-
-    try {
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: romaPrompt }],
-        temperature: 0.3,
-        response_format: { type: 'json_object' }
-      })
-      
-      const romaDecision = JSON.parse(response.choices[0].message.content || '{}')
-      
-      // Prendi la quota REALE per la decisione di GPT-4
-      const realOdds = romaMatch.odds
-      const realQuota = RealOddsManager.assignRealOdds(romaDecision.prediction, realOdds)
-      
-      const singola = {
-        fixture_id: romaMatch.fixture_id,
-        home_team: romaMatch.home_team,
-        away_team: romaMatch.away_team,
-        league: romaMatch.league,
-        match_time: romaMatch.time,
-        prediction: romaDecision.prediction,
-        prediction_label: buildPredictionLabel(romaDecision.prediction, romaMatch.home_team, romaMatch.away_team),
-        odds: realQuota,
-        confidence: romaDecision.confidence,
-        reasoning: romaDecision.reasoning,
-        valid_until: today
-      }
-      
-      console.log(`📊 Roma singola GPT-4: ${romaDecision.prediction} @${realQuota}`)
-      
-      const { error } = await supabase
-        .from('tips_singola')
-        .upsert(singola, { onConflict: 'valid_until' })
-      
-      if (!error) {
-        console.log('✅ ROMA SINGOLA (GPT-4 + quote reali) salvata')
-        return true
-      } else {
-        console.error('❌ Errore salvataggio Roma singola:', error)
-        return false
-      }
-      
-    } catch (error) {
-      console.error('❌ Errore GPT-4 per Roma:', error)
-      // Fallback al normale flusso
-    }
-  }
+  console.log(`🎯 Generando SINGOLA da ${matches.length} partite disponibili`)
 
   const prompt = `Sei TipsterAI. Trova la MIGLIORE SINGOLA per oggi.
 
@@ -265,6 +271,7 @@ OUTPUT JSON:
 }`
 
   try {
+    console.log('🤖 Chiamando OpenAI per singola...')
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
@@ -272,14 +279,19 @@ OUTPUT JSON:
       response_format: { type: 'json_object' }
     })
     
+    console.log('🤖 Risposta OpenAI ricevuta, parsing JSON...')
     const gptSelection = JSON.parse(response.choices[0].message.content || '{}')
+    console.log('📊 GPT Selection:', JSON.stringify(gptSelection, null, 2))
     
     // Trova il match corrispondente per le quote reali
     const selectedMatch = matches.find(m => m.fixture_id === gptSelection.fixture_id)
     if (!selectedMatch) {
       console.error('❌ Match non trovato per fixture_id:', gptSelection.fixture_id)
+      console.error('Available fixture_ids:', matches.map(m => m.fixture_id))
       return false
     }
+    
+    console.log('✅ Match trovato:', selectedMatch.home_team, 'vs', selectedMatch.away_team)
     
     // Assegna quota REALE dal database
     const realOdds = selectedMatch.odds as RealOdds
@@ -288,9 +300,10 @@ OUTPUT JSON:
       return false
     }
     
-    let realQuota = RealOddsManager.assignRealOdds(gptSelection.prediction, realOdds)
+    console.log('📈 Odds disponibili per il match:', JSON.stringify(realOdds, null, 2))
     
-    // La quota ora ha sempre un fallback ragionevole
+    let realQuota = RealOddsManager.assignRealOdds(gptSelection.prediction, realOdds)
+    console.log(`💰 Quota assegnata: ${gptSelection.prediction} = ${realQuota}`)
     
     // Verifica che sia nel range singola
     if (!RealOddsManager.validateOddsRange(realQuota, 'singola')) {
@@ -306,6 +319,7 @@ OUTPUT JSON:
       
       gptSelection.prediction = bestSelection.prediction
       realQuota = bestSelection.odds
+      console.log(`🔄 Usata alternativa: ${bestSelection.prediction} = ${realQuota}`)
     }
     
     const singola = {
@@ -319,23 +333,30 @@ OUTPUT JSON:
       valid_until: today
     }
     
-    console.log(`📊 Singola con quota REALE: ${singola.prediction} @${singola.odds}`)
+    console.log(`📊 Singola finale da salvare:`, JSON.stringify(singola, null, 2))
     
     // Salva in tips_singola (tabella separata)
-    const { error } = await supabase
+    console.log('💾 Salvando in database...')
+    const { error, data } = await supabase
       .from('tips_singola')
       .upsert(singola, { onConflict: 'valid_until' })
+      .select()
     
     if (error) {
       console.error('❌ Errore salvataggio singola:', error)
+      console.error('❌ Dettagli errore:', error.message, error.details, error.hint)
       return false
     }
     
-    console.log('✅ Singola (quote reali) salvata')
+    console.log('✅ Singola salvata nel database:', data)
     return true
     
   } catch (error) {
-    console.error('❌ Errore generazione singola:', error)
+    console.error('❌ ERRORE CRITICO in generateSingola:', error)
+    if (error instanceof Error) {
+      console.error('❌ Errore message:', error.message)
+      console.error('❌ Errore stack:', error.stack)
+    }
     return false
   }
 }
@@ -832,5 +853,127 @@ function buildPredictionLabel(prediction: string, homeTeam: string, awayTeam: st
     case 'gol': case 'btts': return 'Gol'
     case 'nogol': case 'no btts': return 'NoGol'
     default: return prediction.toUpperCase()
+  }
+}
+
+// SERIE A SPECIAL: Mista solo con partite Serie A (3-5 partite)
+async function generateSerieASpecial(serieAMatches: any[], allMatches: any[], supabase: any, today: string) {
+  console.log('🇮🇹 Generando proposta speciale SOLO Serie A...')
+  
+  // Ordina per orario
+  const sortedMatches = serieAMatches.sort((a, b) => {
+    if (a.date !== b.date) {
+      return new Date(a.date || today).getTime() - new Date(b.date || today).getTime()
+    }
+    return a.time.localeCompare(b.time)
+  })
+  
+  // Prendi al massimo 5 partite Serie A
+  const matchesToUse = sortedMatches.slice(0, 5)
+  
+  // Prepara informazioni sulle partite per GPT-4
+  const matchesInfo = matchesToUse.map((m, i) => {
+    const dateStr = m.date || today
+    const dateFormatted = new Date(dateStr).toLocaleDateString('it-IT', { 
+      weekday: 'short', 
+      day: 'numeric', 
+      month: 'short' 
+    })
+    
+    return `${i+1}. ${m.home_team} vs ${m.away_team} (${dateFormatted} ${m.time})
+   Quote: 1=${m.odds?.winner?.home || 'N/A'} X=${m.odds?.winner?.draw || 'N/A'} 2=${m.odds?.winner?.away || 'N/A'}
+   Doppie: 1X=${m.odds?.doubleChance?.x1 || 'N/A'} X2=${m.odds?.doubleChance?.x2 || 'N/A'} 12=${m.odds?.doubleChance?.x12 || 'N/A'}
+   Goals: O2.5=${m.odds?.goals?.over_2_5 || 'N/A'} U2.5=${m.odds?.goals?.under_2_5 || 'N/A'} 
+   Gol=${m.odds?.goals?.btts || 'N/A'} NoGol=${m.odds?.goals?.nobtts || 'N/A'}`
+  }).join('\n')
+
+  const prompt = `🇮🇹 PROPOSTA SPECIALE SOLO SERIE A (max 5 partite)
+
+Crea una schedina MISTA con SOLO partite di Serie A.
+Usa una varietà di scommesse: risultati (1X2), doppie chance, gol/nogol, over/under, combo (1+O2.5, X+U2.5, ecc).
+Se ci sono partite su più giorni, distribuiscile bene.
+
+PARTITE SERIE A DISPONIBILI:
+${matchesInfo}
+
+REGOLE SPECIALI SERIE A:
+- Varia le tipologie di scommessa (non solo 1X2)
+- Quote tra 1.30 e 2.50 per selezione
+- Quota totale tra 8.00 e 25.00
+- Minimo 3, massimo 5 selezioni
+- Se ci sono partite su più giorni, bilanciale
+- Prediligi partite con quote reali disponibili
+
+OUTPUT JSON:
+{
+  "matches": [
+    {
+      "fixture_id": 123456,
+      "home_team": "Juventus", 
+      "away_team": "Torino",
+      "league": "Serie A",
+      "time": "18:00",
+      "date": "2026-01-07",
+      "prediction": "1X",
+      "prediction_label": "JUVENTUS NON PERDE",
+      "odds": 1.45,
+      "confidence": 75,
+      "reasoning": "Derby della Mole, la Juve in casa raramente perde"
+    }
+  ],
+  "total_odds": 12.50,
+  "confidence": 65,
+  "strategy_reasoning": "Mix di favoriti e scommesse sui gol per una schedina equilibrata solo Serie A"
+}`
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      response_format: { type: 'json_object' }
+    })
+    
+    const serieASpecial = JSON.parse(response.choices[0].message.content || '{}')
+    
+    // Assegna quote reali per ogni selezione
+    serieASpecial.matches = serieASpecial.matches.map((match: any) => {
+      const realMatch = matchesToUse.find(m => m.fixture_id === match.fixture_id)
+      if (realMatch) {
+        const realOdds = RealOddsManager.assignRealOdds(match.prediction, realMatch.odds)
+        return {
+          ...match,
+          odds: realOdds,
+          date: match.date || today
+        }
+      }
+      return match
+    })
+    
+    // Ricalcola quota totale con quote reali
+    serieASpecial.total_odds = serieASpecial.matches.reduce((acc: number, m: any) => acc * m.odds, 1)
+    
+    // Salva nella nuova tabella tips_serie_a
+    const { error } = await supabase
+      .from('tips_serie_a')
+      .upsert({
+        matches: serieASpecial.matches,
+        total_odds: serieASpecial.total_odds,
+        confidence: serieASpecial.confidence,
+        strategy_reasoning: serieASpecial.strategy_reasoning,
+        valid_until: today
+      }, { onConflict: 'valid_until' })
+    
+    if (error) {
+      console.error('❌ Errore salvataggio Serie A Special:', error)
+      return false
+    }
+    
+    console.log(`✅ Serie A Special salvata: ${serieASpecial.matches.length} partite, quota ${serieASpecial.total_odds.toFixed(2)}`)
+    return true
+    
+  } catch (error) {
+    console.error('❌ Errore generazione Serie A Special:', error)
+    return false
   }
 }

@@ -18,13 +18,14 @@ export async function GET() {
     }
   )
   
-  // Leggi dalle 5 tabelle separate (RIPRISTINATO)
-  const [singola, doppia, tripla, mista, bomba] = await Promise.all([
+  // Leggi dalle 6 tabelle separate (AGGIORNATO con Serie A)
+  const [singola, doppia, tripla, mista, bomba, serieA] = await Promise.all([
     supabase.from('tips_singola').select('*').eq('valid_until', today).single(),
     supabase.from('tips_doppia').select('*').eq('valid_until', today).single(),
     supabase.from('tips_tripla').select('*').eq('valid_until', today).single(),
     supabase.from('tips_mista').select('*').eq('valid_until', today).single(),
-    supabase.from('tips_bomba').select('*').eq('valid_until', today).single()
+    supabase.from('tips_bomba').select('*').eq('valid_until', today).single(),
+    supabase.from('tips_serie_a').select('*').eq('valid_until', today).single()
   ])
   
   console.log('🔍 DEBUG: Risultati query database:')
@@ -33,6 +34,7 @@ export async function GET() {
   console.log('  Tripla:', tripla.error ? `ERROR: ${tripla.error.message}` : 'OK')
   console.log('  Mista:', mista.error ? `ERROR: ${mista.error.message}` : 'OK')
   console.log('  Bomba:', bomba.error ? `ERROR: ${bomba.error.message}` : 'OK')
+  console.log('  Serie A:', serieA.error ? `ERROR: ${serieA.error.message}` : 'OK')
   
   // Costruisci array di tips disponibili
   const tips = []
@@ -165,6 +167,32 @@ export async function GET() {
     })
   }
   
+  // SERIE A SPECIAL (nuova proposta)
+  if (serieA.data) {
+    tips.push({
+      type: 'serieA',
+      matches: serieA.data.matches.map((m: any) => ({
+        fixture_id: m.fixture_id,
+        match: `${m.home_team} vs ${m.away_team}`,
+        league: m.league,
+        time: m.time,
+        date: m.date,
+        prediction: m.prediction,
+        prediction_label: m.prediction_label,
+        odds: m.odds,
+        confidence: m.confidence,
+        reasoning: m.reasoning
+      })),
+      total_odds: serieA.data.total_odds,
+      potential_multiplier: `${serieA.data.total_odds}x`,
+      description: '🇮🇹 Speciale Solo Serie A - La schedina del campionato italiano',
+      strategy_reasoning: serieA.data.strategy_reasoning,
+      confidence: serieA.data.confidence,
+      result: 'pending',
+      validUntil: serieA.data.valid_until
+    })
+  }
+  
   // Se non ci sono tips
   if (tips.length === 0) {
     const errorResponse = NextResponse.json({
@@ -179,7 +207,8 @@ export async function GET() {
         doppia: doppia.data ? 'found' : 'missing',
         tripla: tripla.data ? 'found' : 'missing',
         mista: mista.data ? 'found' : 'missing',
-        bomba: bomba.data ? 'found' : 'missing'
+        bomba: bomba.data ? 'found' : 'missing',
+        serieA: serieA.data ? 'found' : 'missing'
       }
     })
 
@@ -192,8 +221,8 @@ export async function GET() {
     return errorResponse
   }
   
-  // Ordina: Singola, Doppia, Tripla, Mista, Bomba
-  const tipOrder = ['singola', 'doppia', 'tripla', 'mista', 'bomba']
+  // Ordina: Singola, Doppia, Tripla, Mista, Bomba, Serie A
+  const tipOrder = ['singola', 'doppia', 'tripla', 'mista', 'bomba', 'serieA']
   const sortedTips = tips.sort((a, b) => {
     const indexA = tipOrder.indexOf(a.type)
     const indexB = tipOrder.indexOf(b.type)
@@ -212,7 +241,8 @@ export async function GET() {
       hasDoppia: !!doppia.data,
       hasTripla: !!tripla.data,
       hasMista: !!mista.data,
-      hasBomba: !!bomba.data
+      hasBomba: !!bomba.data,
+      hasSerieA: !!serieA.data
     }
   })
 

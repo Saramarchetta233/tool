@@ -12,7 +12,7 @@ import { it } from 'date-fns/locale'
 import Link from 'next/link'
 
 interface Prediction {
-  type: 'singola' | 'doppia' | 'tripla' | 'mista' | 'bomba'
+  type: 'singola' | 'doppia' | 'tripla' | 'mista' | 'bomba' | 'serieA'
   matches: Array<{
     fixture_id: number
     match: string
@@ -22,6 +22,7 @@ interface Prediction {
     confidence: number
     reasoning: string
     time?: string
+    date?: string
   }>
   total_odds: number
   potential_multiplier: string
@@ -99,6 +100,11 @@ function TipCard({ tip, type }: { tip: any, type: string }) {
                   <span className="flex items-center gap-1">
                     🏆 {match.league}
                   </span>
+                  {match.date && (
+                    <span className="flex items-center gap-1">
+                      📅 {new Date(match.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     🕐 {match.time}
                   </span>
@@ -187,6 +193,7 @@ function getEmoji(type: string) {
     case 'tripla': return '🔥'
     case 'mista': return '🎲'
     case 'bomba': return '💣'
+    case 'seriea': return '🇮🇹'
     default: return '⚽'
   }
 }
@@ -399,6 +406,8 @@ export default function TipsterAI() {
         return <Sparkles className="w-6 h-6 text-yellow-500" />
       case 'bomba':
         return <Bomb className="w-6 h-6 text-red-500" />
+      case 'serieA':
+        return <span className="text-2xl">🇮🇹</span>
       default:
         return null
     }
@@ -416,6 +425,8 @@ export default function TipsterAI() {
         return '🎰 MISTA'
       case 'bomba':
         return '💥 BOMBA'
+      case 'serieA':
+        return '🇮🇹 SERIE A'
       default:
         return ''
     }
@@ -433,6 +444,8 @@ export default function TipsterAI() {
         return 'bg-yellow-100 text-yellow-800'
       case 'bomba':
         return 'bg-red-100 text-red-800'
+      case 'serieA':
+        return 'bg-green-100 text-green-800'
       default:
         return ''
     }
