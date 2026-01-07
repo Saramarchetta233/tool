@@ -180,7 +180,7 @@ export async function syncCompleteMatchesForDate(date: string) {
         }
         
         // 5. Save to matches table
-        const matchData = {
+        const matchData: any = {
           fixture_id: fixture.fixture.id,
           match_date: date,
           match_time: new Date(fixture.fixture.date).toTimeString().slice(0, 5),
@@ -204,6 +204,15 @@ export async function syncCompleteMatchesForDate(date: string) {
           odds: processedOdds,
           predictions: processedPredictions,
           updated_at: new Date().toISOString()
+        }
+        
+        // 6. Add match result if the game is finished
+        if (fixture.fixture.status.short === 'FT' && fixture.goals) {
+          matchData.result = {
+            home: fixture.goals.home,
+            away: fixture.goals.away
+          }
+          console.log(`📊 Match finished: ${fixture.teams.home.name} ${fixture.goals.home}-${fixture.goals.away} ${fixture.teams.away.name}`)
         }
         
         const { error } = await supabase

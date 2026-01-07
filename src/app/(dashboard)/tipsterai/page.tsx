@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Sparkles, TrendingUp, Zap, Bomb, MessageSquare, RefreshCw, History, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Sparkles, TrendingUp, Zap, Bomb, MessageSquare, RefreshCw, Clock } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import Link from 'next/link'
@@ -205,34 +205,6 @@ interface ChatMessage {
   timestamp: Date
 }
 
-interface HistoryTip {
-  id: string
-  type: 'singola' | 'doppia' | 'tripla' | 'mista' | 'bomba'
-  matches: Array<{
-    fixture_id: number
-    match: string
-    league: string
-    prediction: string
-    odds: number
-    confidence: number
-    reasoning: string
-    time?: string
-  }>
-  total_odds: number
-  result: 'won' | 'lost' | 'pending'
-  confidence: string
-  created_at: string
-  valid_until: string
-}
-
-interface HistoryStats {
-  totalTips: number
-  singole: { total: number; won: number; percentage: number }
-  doppie: { total: number; won: number; percentage: number }
-  triple: { total: number; won: number; percentage: number }
-  miste: { total: number; won: number; percentage: number }
-  bombe: { total: number; won: number; percentage: number }
-}
 
 export default function TipsterAI() {
   const [predictions, setPredictions] = useState<Prediction[]>([])
@@ -242,11 +214,7 @@ export default function TipsterAI() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('proposte')
   const [activeTipTab, setActiveTipTab] = useState('singola')
-  const [historyTips, setHistoryTips] = useState<HistoryTip[]>([])
-  const [historyStats, setHistoryStats] = useState<HistoryStats | null>(null)
-  const [historyLoading, setHistoryLoading] = useState(false)
   const today = new Date()
 
   useEffect(() => {
@@ -324,27 +292,6 @@ export default function TipsterAI() {
     }
   }
 
-  const fetchHistory = async () => {
-    setHistoryLoading(true)
-    try {
-      const response = await fetch('/api/tipsterai/history-v2')
-      const data = await response.json()
-      
-      if ((data.tips && Array.isArray(data.tips)) || (data.history && Array.isArray(data.history))) {
-        setHistoryTips(data.tips || data.history || [])
-        setHistoryStats(data.stats)
-      } else {
-        setHistoryTips([])
-        setHistoryStats(null)
-      }
-    } catch (error) {
-      console.error('Error fetching history:', error)
-      setHistoryTips([])
-      setHistoryStats(null)
-    } finally {
-      setHistoryLoading(false)
-    }
-  }
 
 
   const sendChatMessage = async () => {
@@ -374,7 +321,7 @@ export default function TipsterAI() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message: chatInput,
-          conversationHistory: conversationHistory.slice(0, -1) // Chat ora carica tips direttamente da Supabase
+          conversationHistory: conversationHistory.slice(0, -1)
         })
       })
       
@@ -452,31 +399,6 @@ export default function TipsterAI() {
     }
   }
 
-  const getResultIcon = (result: string) => {
-    switch (result) {
-      case 'won':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
-      case 'lost':
-        return <XCircle className="w-5 h-5 text-red-500" />
-      case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-500" />
-      default:
-        return <Clock className="w-5 h-5 text-gray-500" />
-    }
-  }
-
-  const getResultBadge = (result: string) => {
-    switch (result) {
-      case 'won':
-        return <Badge className="bg-green-500 hover:bg-green-600">✅ VINTA</Badge>
-      case 'lost':
-        return <Badge className="bg-red-500 hover:bg-red-600">❌ PERSA</Badge>
-      case 'pending':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">⏳ In attesa</Badge>
-      default:
-        return <Badge variant="outline">❓ N/A</Badge>
-    }
-  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -490,23 +412,7 @@ export default function TipsterAI() {
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="proposte" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Proposte Attive
-          </TabsTrigger>
-          <TabsTrigger value="storico" className="flex items-center gap-2" onClick={() => {
-            if (activeTab === 'proposte' && historyTips.length === 0) {
-              fetchHistory()
-            }
-          }}>
-            <History className="w-4 h-4" />
-            Storico
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="proposte">
+      <div className="w-full">
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -788,134 +694,7 @@ export default function TipsterAI() {
               </Button>
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="storico">
-          <div className="mb-6 flex justify-center gap-4">
-            <Button 
-              onClick={fetchHistory} 
-              disabled={historyLoading}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} />
-              Aggiorna Storico
-            </Button>
-          </div>
-
-          {historyLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Caricando storico tips...</p>
-            </div>
-          ) : (
-            <div>
-              {/* Statistics */}
-              {historyStats && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                  <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-green-500">{historyStats.singole.percentage}%</div>
-                      <div className="text-sm text-muted-foreground">Singole</div>
-                      <div className="text-xs text-slate-400">{historyStats.singole.won}/{historyStats.singole.total}</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-blue-500">{historyStats.doppie.percentage}%</div>
-                      <div className="text-sm text-muted-foreground">Doppie</div>
-                      <div className="text-xs text-slate-400">{historyStats.doppie.won}/{historyStats.doppie.total}</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-500">{historyStats.triple.percentage}%</div>
-                      <div className="text-sm text-muted-foreground">Triple</div>
-                      <div className="text-xs text-slate-400">{historyStats.triple.won}/{historyStats.triple.total}</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-yellow-500">{historyStats.miste.percentage}%</div>
-                      <div className="text-sm text-muted-foreground">Miste</div>
-                      <div className="text-xs text-slate-400">{historyStats.miste.won}/{historyStats.miste.total}</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-red-500">{historyStats.bombe.percentage}%</div>
-                      <div className="text-sm text-muted-foreground">Bombe</div>
-                      <div className="text-xs text-slate-400">{historyStats.bombe.won}/{historyStats.bombe.total}</div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* History Tips */}
-              {historyTips && historyTips.length > 0 ? (
-                <div className="grid gap-4">
-                  {historyTips.map((tip) => (
-                    <Card key={tip.id} className="bg-slate-900/50 border-slate-800">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {getTypeIcon(tip.type)}
-                            <div>
-                              <CardTitle className="text-lg">{getTypeTitle(tip.type)}</CardTitle>
-                              <CardDescription className="text-xs">
-                                {format(parseISO(tip.created_at), 'dd/MM/yyyy', { locale: it })}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {getResultBadge(tip.result)}
-                            <Badge variant="outline">
-                              @{tip.total_odds.toFixed(2)}
-                            </Badge>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-2">
-                          {tip.matches.map((match, idx) => (
-                            <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
-                              <div className="flex justify-between items-center">
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{match.match}</p>
-                                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                                    {match.league && <span>{match.league}</span>}
-                                    {match.time && (
-                                      <>
-                                        {match.league && <span>•</span>}
-                                        <span className="flex items-center gap-1">
-                                          <Clock className="w-3 h-3" />
-                                          {match.time}
-                                        </span>
-                                      </>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-emerald-400 font-semibold">{match.prediction}</p>
-                                </div>
-                                <Badge variant="outline" className="text-xs">
-                                  @{(typeof match.odds === 'number' ? match.odds : 0).toFixed(2)}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">Nessun tip nello storico.</p>
-                  <p className="text-sm text-slate-400">I risultati verranno mostrati qui dopo che le partite saranno finite.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <Card className="mt-8">
         <CardHeader>
