@@ -448,12 +448,12 @@ export function getCurrentSeason(): number {
   const month = now.getMonth() + 1 // JavaScript months are 0-indexed
   const year = now.getFullYear()
   
-  // Football season typically runs from August to May
-  // If we're in Jan-July, it's the previous year's season
-  // If we're in Aug-Dec, it's the current year's season
-  if (month >= 8) {
-    return year // August 2024 onwards = 2024 season
+  // La stagione calcistica europea va da agosto a luglio
+  // Se siamo tra gennaio e luglio, siamo nella seconda metà della stagione (anno precedente)
+  // Se siamo tra agosto e dicembre, siamo nella prima metà della stagione (anno corrente)
+  if (month >= 1 && month <= 7) {
+    return year - 1 // es. gennaio 2026 = stagione 2025-2026
   } else {
-    return year - 1 // January-July 2025 = 2024 season
+    return year // es. settembre 2026 = stagione 2026-2027
   }
 }

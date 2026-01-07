@@ -61,16 +61,16 @@ export function getLeagueDisplayInfo() {
 // Helper function to get current season based on date
 function getCurrentSeason(): number {
   const now = new Date()
-  const currentYear = now.getFullYear() // 2025
-  const currentMonth = now.getMonth() + 1 // Dicembre = 12
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1
   
-  // Siamo a fine 2025, quindi stagione 2025-26
-  // European seasons start in August and end in May
-  // Da Agosto 2025 in poi = stagione 2025-26
-  if (currentMonth >= 8) {
-    return currentYear // 2025 per stagione 2025-26
+  // La stagione calcistica europea va da agosto a luglio
+  // Se siamo tra gennaio e luglio, siamo nella seconda metà della stagione (anno precedente)
+  // Se siamo tra agosto e dicembre, siamo nella prima metà della stagione (anno corrente)
+  if (currentMonth >= 1 && currentMonth <= 7) {
+    return currentYear - 1 // es. gennaio 2026 = stagione 2025-2026
   } else {
-    return currentYear - 1
+    return currentYear // es. settembre 2026 = stagione 2026-2027
   }
 }
 

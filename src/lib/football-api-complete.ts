@@ -44,9 +44,28 @@ async function fetchWithRetry(url: string, options: any, retries = 3) {
   }
 }
 
+// Funzione helper per determinare la stagione corretta
+function getCurrentSeason(date: string) {
+  const targetDate = new Date(date)
+  const year = targetDate.getFullYear()
+  const month = targetDate.getMonth() + 1 // getMonth() è 0-based
+  
+  // La stagione calcistica va da agosto a maggio
+  // Se siamo tra gennaio e luglio, usiamo l'anno precedente (siamo nella seconda metà della stagione)
+  // Se siamo tra agosto e dicembre, usiamo l'anno corrente (siamo nella prima metà della stagione)
+  if (month >= 1 && month <= 7) {
+    return year - 1
+  } else {
+    return year
+  }
+}
+
 // Fetch fixtures complete
 async function fetchFixturesComplete(leagueId: number, date: string) {
-  const url = `${BASE_URL}/fixtures?date=${date}&league=${leagueId}&season=${new Date().getFullYear()}`
+  const season = getCurrentSeason(date)
+  console.log(`📅 Fetching fixtures for date: ${date}, season: ${season}`)
+  
+  const url = `${BASE_URL}/fixtures?date=${date}&league=${leagueId}&season=${season}`
   return fetchWithRetry(url, {
     headers: {
       'X-RapidAPI-Key': API_KEY!,
