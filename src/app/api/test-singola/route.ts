@@ -3,6 +3,35 @@ import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
+export async function DELETE() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      db: { schema: 'public' },
+      auth: { persistSession: false }
+    }
+  )
+  
+  const today = new Date().toISOString().split('T')[0]
+  
+  try {
+    // Cancella la singola di test
+    const { error } = await supabase
+      .from('tips_singola')
+      .delete()
+      .eq('fixture_id', 999999)
+    
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message })
+    }
+    
+    return NextResponse.json({ success: true, message: 'Test singola rimossa' })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+}
+
 export async function POST() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
