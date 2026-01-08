@@ -282,8 +282,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         
         {/* Header */}
         <div className="flex items-center space-x-2 mb-8">
@@ -309,10 +309,11 @@ export default function DashboardPage() {
                 </p>
                 
                 {/* TipsterAI CTA */}
-                <Link href="/tipsterai">
-                  <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-violet-500/25 border border-violet-500/30">
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    🎯 Ottieni Proposte TipsterAI
+                <Link href="/tipsterai" className="block">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold px-4 sm:px-6 py-3 rounded-xl shadow-lg shadow-violet-500/25 border border-violet-500/30 text-sm">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">🎯 Ottieni Proposte TipsterAI</span>
+                    <span className="sm:hidden">🎯 TipsterAI</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
@@ -390,32 +391,38 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-3">
                     {todayMatches.slice(0, 5).map((match) => (
-                      <div key={match.id} className="bg-slate-800 rounded-lg p-3 hover:bg-slate-700 transition-colors">
-                        <div className="space-y-2">
-                          {/* Header row */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2 min-w-0">
-                              <div className="text-center">
-                                <div className="text-white font-medium text-xs leading-tight max-w-12 truncate">{match.homeTeam}</div>
-                                <div className="text-slate-400 text-xs">vs</div>
-                                <div className="text-white font-medium text-xs leading-tight max-w-12 truncate">{match.awayTeam}</div>
+                      <div key={match.id} className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors">
+                        <div className="space-y-3">
+                          {/* Match info */}
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="text-slate-400 text-xs flex items-center space-x-1">
+                                <span>🕐 {match.time}</span>
+                                <span>•</span>
+                                <span>{match.league.length > 12 ? match.league.substring(0, 12) + '...' : match.league}</span>
                               </div>
-                              <div className="text-slate-400 text-xs">
-                                🕐 {match.time}
+                              <div className="flex items-center space-x-2">
+                                <div className="text-emerald-400 font-bold text-sm">{match.homeProb}%</div>
+                                {getConfidenceBadge(match.confidence)}
                               </div>
                             </div>
                             
-                            <div className="flex items-center space-x-1">
-                              <div className="text-emerald-400 font-bold text-xs">{match.homeProb}%</div>
-                              {getConfidenceBadge(match.confidence)}
+                            {/* Teams - layout verticale per mobile */}
+                            <div className="bg-slate-700 rounded-lg p-3">
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-white font-medium text-sm">{match.homeTeam}</span>
+                                  <span className="text-slate-400 text-xs px-2 py-1 bg-slate-600 rounded">CASA</span>
+                                </div>
+                                <div className="text-center">
+                                  <span className="text-slate-400 text-xs">VS</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-white font-medium text-sm">{match.awayTeam}</span>
+                                  <span className="text-slate-400 text-xs px-2 py-1 bg-slate-600 rounded">FUORI</span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          
-                          {/* League badge */}
-                          <div>
-                            <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs">
-                              {match.league.length > 10 ? match.league.substring(0, 10) + '...' : match.league}
-                            </Badge>
                           </div>
                           
                           {/* Button */}
@@ -423,18 +430,18 @@ export default function DashboardPage() {
                             <Link href={`/matches/${match.fixture_id}`}>
                               <Button 
                                 size="sm" 
-                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-xs py-1"
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-sm py-2"
                               >
-                                📊 Analizza (-2💎)
+                                📊 Analizza Partita (-2💎)
                               </Button>
                             </Link>
                           ) : (
                             <Button 
                               size="sm" 
-                              className="w-full bg-slate-600 cursor-not-allowed text-xs py-1"
+                              className="w-full bg-slate-600 cursor-not-allowed text-sm py-2"
                               disabled
                             >
-                              N/A
+                              Partita non disponibile
                             </Button>
                           )}
                         </div>
