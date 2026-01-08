@@ -390,55 +390,53 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-3">
                     {todayMatches.slice(0, 5).map((match) => (
-                      <div key={match.id} className="bg-slate-800 rounded-lg p-3 sm:p-4 hover:bg-slate-700 transition-colors">
-                        <div className="flex flex-col gap-3">
+                      <div key={match.id} className="bg-slate-800 rounded-lg p-3 hover:bg-slate-700 transition-colors">
+                        <div className="space-y-2">
+                          {/* Header row */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2 min-w-0 flex-1">
+                            <div className="flex items-center space-x-2 min-w-0">
                               <div className="text-center">
-                                <div className="text-white font-semibold text-xs truncate max-w-16">{match.homeTeam}</div>
+                                <div className="text-white font-medium text-xs leading-tight max-w-12 truncate">{match.homeTeam}</div>
                                 <div className="text-slate-400 text-xs">vs</div>
-                                <div className="text-white font-semibold text-xs truncate max-w-16">{match.awayTeam}</div>
+                                <div className="text-white font-medium text-xs leading-tight max-w-12 truncate">{match.awayTeam}</div>
                               </div>
-                              <div className="text-slate-400 flex-shrink-0">
-                                <div className="flex items-center space-x-1">
-                                  <Clock className="h-3 w-3" />
-                                  <span className="text-xs">{match.time}</span>
-                                </div>
-                                <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs mt-1">
-                                  {match.league.length > 8 ? match.league.substring(0, 8) + '...' : match.league}
-                                </Badge>
+                              <div className="text-slate-400 text-xs">
+                                🕐 {match.time}
                               </div>
                             </div>
                             
-                            <div className="flex items-center space-x-2 flex-shrink-0">
-                              <div className="text-center">
-                                <div className="text-emerald-400 font-bold text-sm">{match.homeProb}%</div>
-                                <div className="text-slate-400 text-xs">Casa</div>
-                              </div>
+                            <div className="flex items-center space-x-1">
+                              <div className="text-emerald-400 font-bold text-xs">{match.homeProb}%</div>
                               {getConfidenceBadge(match.confidence)}
                             </div>
                           </div>
                           
-                          <div className="flex justify-center">
-                            {match.fixture_id ? (
-                              <Link href={`/matches/${match.fixture_id}`} className="w-full">
-                                <Button 
-                                  size="sm" 
-                                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-xs"
-                                >
-                                  📊 Analizza (-2💎)
-                                </Button>
-                              </Link>
-                            ) : (
+                          {/* League badge */}
+                          <div>
+                            <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs">
+                              {match.league.length > 10 ? match.league.substring(0, 10) + '...' : match.league}
+                            </Badge>
+                          </div>
+                          
+                          {/* Button */}
+                          {match.fixture_id ? (
+                            <Link href={`/matches/${match.fixture_id}`}>
                               <Button 
                                 size="sm" 
-                                className="w-full bg-slate-600 cursor-not-allowed text-xs"
-                                disabled
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-xs py-1"
                               >
-                                N/A
+                                📊 Analizza (-2💎)
                               </Button>
-                            )}
-                          </div>
+                            </Link>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="w-full bg-slate-600 cursor-not-allowed text-xs py-1"
+                              disabled
+                            >
+                              N/A
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}

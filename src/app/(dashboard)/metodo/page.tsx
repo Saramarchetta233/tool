@@ -90,10 +90,21 @@ export default function MetodoPage() {
     winRate: ''
   })
 
+  // User ID simulato (in futuro da auth)
+  const getUserId = () => {
+    let userId = localStorage.getItem('calcio-ai-user-id')
+    if (!userId) {
+      userId = 'user-' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('calcio-ai-user-id', userId)
+    }
+    return userId
+  }
+
   // Load data from localStorage on mount
   useEffect(() => {
-    const savedBankroll = localStorage.getItem('calcio-ai-bankroll')
-    const savedBets = localStorage.getItem('calcio-ai-bets')
+    const userId = getUserId()
+    const savedBankroll = localStorage.getItem(`calcio-ai-bankroll-${userId}`)
+    const savedBets = localStorage.getItem(`calcio-ai-bets-${userId}`)
     
     if (savedBankroll) {
       setBankroll(parseFloat(savedBankroll))
@@ -103,15 +114,20 @@ export default function MetodoPage() {
     }
   }, [])
 
-  // Save to localStorage
+  // Save to localStorage per-user
   const saveBankroll = (amount: number) => {
     setBankroll(amount)
-    localStorage.setItem('calcio-ai-bankroll', amount.toString())
+    const userId = getUserId()
+    localStorage.setItem(`calcio-ai-bankroll-${userId}`, amount.toString())
+    // Aggiorna anche input
+    const input = document.getElementById('bankroll-input') as HTMLInputElement
+    if (input) input.value = amount.toString()
   }
 
   const saveBets = (newBets: Bet[]) => {
     setBets(newBets)
-    localStorage.setItem('calcio-ai-bets', JSON.stringify(newBets))
+    const userId = getUserId()
+    localStorage.setItem(`calcio-ai-bets-${userId}`, JSON.stringify(newBets))
   }
 
   // Bet management
@@ -333,7 +349,7 @@ La formula è: 100 / quota = probabilità %
 I bookmaker mettono un margine. Se sommi le probabilità di 1, X, 2 non fa mai 100%, fa tipo 105%. Quel 5% è il loro guadagno.
 
 **Come ti aiuta CalcioAI:**
-Su [/matches](/matches) vedi le quote reali e le nostre analisi. Ti diciamo quando una quota ha valore e quando è una trappola.`
+Su nella sezione Match Center vedi le quote reali e le nostre analisi. Ti diciamo quando una quota ha valore e quando è una trappola.`
     },
     {
       title: "Il Segreto per Non Perdere Tutto",
@@ -358,7 +374,7 @@ Se perdi 10 scommesse di fila (capita!), hai perso €40-60, non tutto. Hai anco
 🔴 Bassa sicurezza: 5% max - Solo quando sei MOLTO sicuro
 
 **Come ti aiuta CalcioAI:**
-Su [TipsterAI](/tipsterai) ti diamo la "confidence" di ogni proposta. Confidence alta? Puoi osare un po' di più. Confidence bassa? Stake minimo.
+Su in TipsterAI ti diamo la "confidence" di ogni proposta. Confidence alta? Puoi osare un po' di più. Confidence bassa? Stake minimo.
 
 Usa il nostro Tracker qui sopra per tenere traccia di tutto!`
     },
@@ -389,7 +405,7 @@ Value = (Probabilità tua × Quota) - 1
 Il value betting funziona sul LUNGO termine. Puoi perdere la singola scommessa, ma se scommetti sempre con value, dopo 100 scommesse sarai in profitto.
 
 **Come ti aiuta CalcioAI:**
-Le nostre analisi su [/matches](/matches) ti mostrano quando c'è value. Guarda la sezione "Value Bets" in ogni analisi!`
+Le nostre analisi su nella sezione Match Center ti mostrano quando c'è value. Guarda la sezione "Value Bets" in ogni analisi!`
     },
     {
       title: "Tutte le Scommesse Spiegate",
@@ -427,7 +443,7 @@ Quote più basse ma più sicure!
 - Le quote si moltiplicano!
 
 **Come ti aiuta CalcioAI:**
-Su [/matches](/matches) ti consigliamo il mercato migliore per ogni partita. Non devi decidere tu!`
+Su nella sezione Match Center ti consigliamo il mercato migliore per ogni partita. Non devi decidere tu!`
     },
     {
       title: "I Numeri che Contano Davvero",
@@ -460,7 +476,7 @@ Su [/matches](/matches) ti consigliamo il mercato migliore per ogni partita. Non
 - Statistiche di 2+ anni fa
 
 **Come ti aiuta CalcioAI:**
-Facciamo noi il lavoro sporco! Su [/matches](/matches) vedi già le statistiche che contano, elaborate dalla nostra AI.`
+Facciamo noi il lavoro sporco! Su nella sezione Match Center vedi già le statistiche che contano, elaborate dalla nostra AI.`
     },
     {
       title: "Le Partite da Evitare",
@@ -496,7 +512,7 @@ Facciamo noi il lavoro sporco! Su [/matches](/matches) vedi già le statistiche 
 "Non so" è una risposta valida. Non devi scommettere su tutto.
 
 **Come ti aiuta CalcioAI:**
-Se non siamo sicuri, te lo diciamo. Quando vedi "Confidence: 50%" su [TipsterAI](/tipsterai), significa "forse meglio lasciar stare".`
+Se non siamo sicuri, te lo diciamo. Quando vedi "Confidence: 50%" su in TipsterAI, significa "forse meglio lasciar stare".`
     },
     {
       title: "Cosa Conviene Davvero?",
@@ -537,7 +553,7 @@ Tripla con tre scommesse al 70%:
 - Bombe e miste solo per divertimento (1% max)
 
 **Come ti aiuta CalcioAI:**
-Su [TipsterAI](/tipsterai) ti diamo sia singole sicure che multiple per chi vuole rischiare. Scegli tu!`
+Su in TipsterAI ti diamo sia singole sicure che multiple per chi vuole rischiare. Scegli tu!`
     },
     {
       title: "Come Sopravvivere alle Serie Negative",
@@ -604,7 +620,7 @@ Usa il Tracker qui sopra! Vedere i numeri reali (ROI, % vincita) ti aiuta a capi
 - Eredivisie (difese colabrodo)
 
 **Come ti aiuta CalcioAI:**
-Nelle analisi su [/matches](/matches) vedi la media gol e il nostro consiglio Over/Under. Fidati dei dati!`
+Nelle analisi su nella sezione Match Center vedi la media gol e il nostro consiglio Over/Under. Fidati dei dati!`
     },
     {
       title: "Quando Fidarsi del Fattore Campo",
@@ -634,7 +650,7 @@ Nelle analisi su [/matches](/matches) vedi la media gol e il nostro consiglio Ov
 Il fattore campo sta diminuendo negli ultimi anni. Verifica sempre i dati recenti, non la reputazione storica!
 
 **Come ti aiuta CalcioAI:**
-Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati freschi, non reputazione!`
+Su nella sezione Match Center vedi il rendimento casa/trasferta di ogni squadra. Dati freschi, non reputazione!`
     }
   ]
 
@@ -686,52 +702,76 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
           <TabsContent value="tracker" className="space-y-6">
             
             {/* Bankroll Setup */}
-            {bankroll === 0 && (
-              <Card className="bg-gradient-to-r from-emerald-900/20 to-cyan-900/20 border-emerald-500/50">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
+            <Card className="bg-gradient-to-r from-emerald-900/20 to-cyan-900/20 border-emerald-500/50">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center justify-between">
+                  <div className="flex items-center">
                     <DollarSign className="h-6 w-6 mr-2 text-emerald-500" />
-                    Imposta il tuo Bankroll
-                  </CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Quanto vuoi dedicare alle scommesse? Questo sarà il tuo budget di partenza.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label htmlFor="initial-bankroll" className="text-slate-300 text-sm font-medium">Bankroll iniziale (€)</label>
-                      <Input
-                        id="initial-bankroll"
-                        type="number"
-                        placeholder="es. 100"
-                        className="bg-slate-800 border-slate-700 text-white text-base"
-                        style={{ fontSize: '16px' }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            const value = parseFloat((e.target as HTMLInputElement).value)
-                            if (value > 0) saveBankroll(value)
-                          }
-                        }}
-                      />
-                    </div>
+                    {bankroll === 0 ? 'Imposta il tuo Bankroll' : 'Il tuo Bankroll'}
+                  </div>
+                  {bankroll > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        setBankroll(0)
+                        const userId = getUserId()
+                        localStorage.removeItem(`calcio-ai-bankroll-${userId}`)
+                        const input = document.getElementById('bankroll-input') as HTMLInputElement
+                        if (input) input.value = ''
+                      }}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  {bankroll === 0 ? 
+                    'Quanto vuoi dedicare alle scommesse? Questo sarà il tuo budget di partenza.' :
+                    `Budget attuale: €${bankroll.toFixed(2)}`
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2 items-end flex-col sm:flex-row">
+                  <div className="flex-1 w-full">
+                    <label htmlFor="bankroll-input" className="text-slate-300 text-sm font-medium">
+                      {bankroll === 0 ? 'Bankroll iniziale (€)' : 'Modifica bankroll (€)'}
+                    </label>
+                    <Input
+                      id="bankroll-input"
+                      type="number"
+                      placeholder={bankroll === 0 ? "es. 100" : bankroll.toString()}
+                      defaultValue={bankroll > 0 ? bankroll : ''}
+                      className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = parseFloat((e.target as HTMLInputElement).value)
+                          if (value > 0) saveBankroll(value)
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button 
                       onClick={() => {
-                        const input = document.getElementById('initial-bankroll') as HTMLInputElement
+                        const input = document.getElementById('bankroll-input') as HTMLInputElement
                         const value = parseFloat(input.value)
                         if (value > 0) saveBankroll(value)
                       }}
-                      className="bg-emerald-500 hover:bg-emerald-600"
+                      className="bg-emerald-500 hover:bg-emerald-600 flex-1 sm:flex-initial"
                     >
-                      Inizia
+                      {bankroll === 0 ? 'Inizia' : 'Aggiorna'}
                     </Button>
                   </div>
-                  <p className="text-xs text-slate-400">
+                </div>
+                <p className="text-xs text-slate-400">
                     💡 Consiglio: usa solo soldi che puoi permetterti di perdere
                   </p>
                 </CardContent>
               </Card>
-            )}
 
             {bankroll > 0 && (
               <>
@@ -817,7 +857,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                           placeholder="es. Roma vs Genoa"
                           value={newBet.match}
                           onChange={(e) => setNewBet({...newBet, match: e.target.value})}
-                          className="bg-slate-800 border-slate-700 text-white"
+                          className="bg-slate-800 border-slate-700 text-white text-base"
+                          style={{ fontSize: '16px' }}
                         />
                       </div>
                       
@@ -827,7 +868,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                           placeholder="es. 1, Over 2.5"
                           value={newBet.selection}
                           onChange={(e) => setNewBet({...newBet, selection: e.target.value})}
-                          className="bg-slate-800 border-slate-700 text-white"
+                          className="bg-slate-800 border-slate-700 text-white text-base"
+                          style={{ fontSize: '16px' }}
                         />
                       </div>
                       
@@ -883,20 +925,23 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
 
                 {/* Bets List */}
                 <Card className="bg-slate-900/50 border-slate-800">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-white flex items-center">
-                      <Activity className="h-6 w-6 mr-2 text-emerald-500" />
-                      Le Tue Scommesse ({bets.length})
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Button onClick={exportToCSV} variant="outline" size="sm" className="border-slate-700 text-slate-300">
-                        <Download className="h-4 w-4 mr-2" />
-                        Esporta CSV
-                      </Button>
-                      <Button onClick={reset} variant="outline" size="sm" className="border-red-500 text-red-400">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Reset
-                      </Button>
+                  <CardHeader>
+                    <div className="flex flex-col space-y-3">
+                      <CardTitle className="text-white flex items-center">
+                        <Activity className="h-6 w-6 mr-2 text-emerald-500" />
+                        Le Tue Scommesse ({bets.length})
+                      </CardTitle>
+                      <div className="flex gap-2 flex-col sm:flex-row">
+                        <Button onClick={exportToCSV} variant="outline" size="sm" className="border-slate-700 text-slate-300 flex-1 sm:flex-initial">
+                          <Download className="h-4 w-4 mr-2" />
+                          <span className="hidden sm:inline">Esporta CSV</span>
+                          <span className="sm:hidden">CSV</span>
+                        </Button>
+                        <Button onClick={reset} variant="outline" size="sm" className="border-red-500 text-red-400 flex-1 sm:flex-initial">
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Reset
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -980,7 +1025,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                             newOdds[index] = e.target.value
                             setMultiplaCalc({...multiplaCalc, odds: newOdds})
                           }}
-                          className="bg-slate-800 border-slate-700 text-white"
+                          className="bg-slate-800 border-slate-700 text-white text-base"
+                          style={{ fontSize: '16px' }}
                         />
                         {multiplaCalc.odds.length > 2 && (
                           <Button
@@ -1013,7 +1059,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                       type="number"
                       value={multiplaCalc.stake}
                       onChange={(e) => setMultiplaCalc({...multiplaCalc, stake: e.target.value})}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                     />
                   </div>
 
@@ -1059,7 +1106,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                       type="number"
                       value={stakeCalc.bankroll}
                       onChange={(e) => setStakeCalc({...stakeCalc, bankroll: e.target.value})}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                     />
                   </div>
                   
@@ -1118,7 +1166,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                       step="0.01"
                       value={valueCalc.bookmakerOdds}
                       onChange={(e) => setValueCalc({...valueCalc, bookmakerOdds: e.target.value})}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                     />
                   </div>
                   
@@ -1130,7 +1179,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                       max="99"
                       value={valueCalc.myProbability}
                       onChange={(e) => setValueCalc({...valueCalc, myProbability: e.target.value})}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                     />
                     <p className="text-xs text-slate-400 mt-1">
                       Secondo te, quante % ha di vincere?
@@ -1184,7 +1234,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                         type="number"
                         value={simulatorCalc.initialBankroll}
                         onChange={(e) => setSimulatorCalc({...simulatorCalc, initialBankroll: e.target.value})}
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                       />
                     </div>
                     <div>
@@ -1193,7 +1244,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                         type="number"
                         value={simulatorCalc.fixedStake}
                         onChange={(e) => setSimulatorCalc({...simulatorCalc, fixedStake: e.target.value})}
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                       />
                     </div>
                     <div>
@@ -1203,7 +1255,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                         step="0.01"
                         value={simulatorCalc.averageOdds}
                         onChange={(e) => setSimulatorCalc({...simulatorCalc, averageOdds: e.target.value})}
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                       />
                     </div>
                     <div>
@@ -1214,7 +1267,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                         max="99"
                         value={simulatorCalc.winRate}
                         onChange={(e) => setSimulatorCalc({...simulatorCalc, winRate: e.target.value})}
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800 border-slate-700 text-white text-base"
+                      style={{ fontSize: '16px' }}
                       />
                     </div>
                   </div>
