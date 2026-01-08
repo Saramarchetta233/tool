@@ -209,13 +209,11 @@ export default function DashboardPage() {
     }
   }
 
-  // Helper functions
+  // Helper functions - using consistent logic with utils.ts
   const getConfidenceFromProb = (homeProb: number): 'ALTA' | 'MEDIA' | 'BASSA' => {
-    // Calcola confidence basata su quanto la probabilità è lontana dal 50% (equilibrio)
-    const distance = Math.abs(homeProb - 50)
-    if (distance >= 25) return 'ALTA'      // 75%+ o 25%- = Alta confidence
-    if (distance >= 15) return 'MEDIA'     // 65-74% o 26-35% = Media confidence  
-    return 'BASSA'                         // 36-64% = Bassa confidence (partita equilibrata)
+    if (homeProb >= 60) return 'ALTA'
+    if (homeProb >= 40) return 'MEDIA'
+    return 'BASSA'
   }
 
   const getHomeProb = (match: any): number => {

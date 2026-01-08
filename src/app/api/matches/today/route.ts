@@ -183,7 +183,7 @@ function getIntelligentPredictions(homeTeam: string | undefined, awayTeam: strin
   return {home, draw, away}
 }
 
-// Logica INTELLIGENTE per confidence basata su forza squadre
+// Logica STANDARD per confidence - coerente con utils.ts
 function getSmartConfidence(predictions: any, homeTeam: string | undefined, awayTeam: string | undefined): 'ALTA' | 'MEDIA' | 'BASSA' {
   if (!homeTeam || !awayTeam || !predictions) return 'BASSA'
   
@@ -191,29 +191,10 @@ function getSmartConfidence(predictions: any, homeTeam: string | undefined, away
   const draw = parseInt(predictions.draw) || 33  
   const away = parseInt(predictions.away) || 34
   
-  // Squadre top in Serie A (sempre confidence alta)
-  const topTeams = ['Inter', 'Juventus', 'Milan', 'AC Milan', 'Napoli', 'Roma', 'Atalanta', 'Lazio']
-  const midTeams = ['Fiorentina', 'Bologna', 'Torino', 'Udinese', 'Sassuolo', 'Verona']
-  const bottomTeams = ['Genoa', 'Empoli', 'Lecce', 'Monza', 'Salernitana', 'Spezia', 'Cremonese', 'Frosinone']
-  
-  // Top teams in Premier League
-  const topPL = ['Manchester City', 'Arsenal', 'Liverpool', 'Chelsea', 'Manchester United', 'Newcastle', 'Tottenham']
-  const midPL = ['Brighton', 'Aston Villa', 'West Ham', 'Crystal Palace', 'Brentford', 'Fulham']
-  
-  const isHomeTop = topTeams.includes(homeTeam) || topPL.includes(homeTeam)
-  const isAwayTop = topTeams.includes(awayTeam) || topPL.includes(awayTeam)
-  const isHomeBottom = bottomTeams.includes(homeTeam)
-  const isAwayBottom = bottomTeams.includes(awayTeam)
-  
-  // ALTA confidence: top vs bottom, o grande differenza %
-  if ((isHomeTop && isAwayBottom) || (isAwayTop && isHomeBottom)) {
-    return 'ALTA'
-  }
-  
-  // Differenza netta nelle percentuali
+  // Usa la stessa logica di utils.ts per coerenza
   const maxPercent = Math.max(home, draw, away)
   if (maxPercent >= 60) return 'ALTA'
-  if (maxPercent >= 45) return 'MEDIA'
+  if (maxPercent >= 40) return 'MEDIA'
   
   return 'BASSA'
 }
