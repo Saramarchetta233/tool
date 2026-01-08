@@ -23,16 +23,41 @@ interface DailySchedule {
   count: number
 }
 
+interface TipsterData {
+  count: number
+  lastUpdated: string | null
+}
+
+interface RecentInsight {
+  type: string
+  title: string
+  description: string
+  value: string
+  time: string
+  href: string
+}
+
 export default function DashboardPage() {
   const [todayMatches, setTodayMatches] = useState<QuickMatch[]>([])
   const [dailySchedule, setDailySchedule] = useState<DailySchedule[]>([])
+  const [tipsterData, setTipsterData] = useState<TipsterData>({ count: 0, lastUpdated: null })
+  const [recentInsights, setRecentInsights] = useState<RecentInsight[]>([])
   const [loading, setLoading] = useState(true)
   const [scheduleLoading, setScheduleLoading] = useState(true)
+  const [insightsLoading, setInsightsLoading] = useState(true)
 
   useEffect(() => {
     fetchTodayMatches()
     fetchDailySchedule()
+    fetchTipsterData()
   }, [])
+
+  useEffect(() => {
+    // Fetch insights after tipster data and matches are loaded
+    if (!loading && tipsterData) {
+      fetchRecentInsights()
+    }
+  }, [loading, tipsterData, todayMatches])
 
   const fetchTodayMatches = async () => {
     try {
@@ -68,19 +93,7 @@ export default function DashboardPage() {
       
     } catch (error) {
       console.error('Error fetching today matches:', error)
-      // Fallback to sample data if API fails
-      setTodayMatches([
-        {
-          id: 'sample-1',
-          fixture_id: 0,
-          homeTeam: 'Juventus',
-          awayTeam: 'Milan', 
-          time: '20:45',
-          league: 'Serie A',
-          confidence: 'ALTA',
-          homeProb: 52
-        }
-      ])
+      setTodayMatches([])
     } finally {
       setLoading(false)
     }
@@ -115,14 +128,84 @@ export default function DashboardPage() {
       
     } catch (error) {
       console.error('Error fetching daily schedule:', error)
-      // Fallback data
-      setDailySchedule([
-        { league: 'Serie A', count: 6 },
-        { league: 'Premier League', count: 4 },
-        { league: 'La Liga', count: 3 }
-      ])
+      setDailySchedule([])
     } finally {
       setScheduleLoading(false)
+    }
+  }
+
+  const fetchTipsterData = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const response = await fetch(`/api/tipsterai/predictions-v2?date=${today}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        const tips = data.tips || []
+        setTipsterData({
+          count: tips.length,
+          lastUpdated: tips.length > 0 ? 'Oggi' : null
+        })
+      } else {
+        setTipsterData({ count: 0, lastUpdated: null })
+      }
+    } catch (error) {
+      console.error('Error fetching tipster data:', error)
+      setTipsterData({ count: 0, lastUpdated: null })
+    }
+  }
+
+  const fetchRecentInsights = async () => {
+    try {
+      setInsightsLoading(true)
+      const insights: RecentInsight[] = []
+      
+      // Add TipsterAI insight
+      if (tipsterData.count > 0) {
+        insights.push({
+          type: 'tipsterai',
+          title: 'TipsterAI Aggiornato',
+          description: `${tipsterData.count} ${tipsterData.count === 1 ? 'proposta disponibile' : 'proposte disponibili'}`,
+          value: 'LIVE',
+          time: tipsterData.lastUpdated || 'N/A',
+          href: '/tipsterai'
+        })
+      }
+      
+      // Add matches insight if we have matches
+      if (todayMatches.length > 0) {
+        const highConfidenceMatch = todayMatches.find(m => m.confidence === 'ALTA')
+        if (highConfidenceMatch) {
+          insights.push({
+            type: 'hot-tip',
+            title: 'Partita in Evidenza',
+            description: `${highConfidenceMatch.homeTeam} vs ${highConfidenceMatch.awayTeam} - ${highConfidenceMatch.confidence} confidence`,
+            value: `${highConfidenceMatch.homeProb}% casa`,
+            time: 'Oggi',
+            href: `/matches/${highConfidenceMatch.fixture_id}`
+          })
+        }
+      }
+      
+      // Show system status if no real data
+      if (insights.length === 0) {
+        insights.push({
+          type: 'analysis',
+          title: 'Sistema CalcioAI',
+          description: 'Pronto per le analisi - Carica dati aggiornati ogni giorno',
+          value: 'READY',
+          time: 'Ora',
+          href: '/matches'
+        })
+      }
+      
+      setRecentInsights(insights)
+      
+    } catch (error) {
+      console.error('Error fetching insights:', error)
+      setRecentInsights([])
+    } finally {
+      setInsightsLoading(false)
     }
   }
 
@@ -147,20 +230,20 @@ export default function DashboardPage() {
   }
 
   const stats = [
-    { label: 'Analisi Oggi', value: '24', change: '+12%', trend: 'up' },
-    { label: 'Accuracy Media', value: '92.3%', change: '+2.1%', trend: 'up' },
-    { label: 'Value Bets', value: '8', change: '+5', trend: 'up' },
-    { label: 'Utenti Online', value: '2.4K', change: '+18%', trend: 'up' }
+    { label: 'Partite Oggi', value: todayMatches.length.toString(), change: '+0', trend: 'up' },
+    { label: 'Leghe Attive', value: dailySchedule.length.toString(), change: '+0', trend: 'up' },
+    { label: 'Tips AI', value: tipsterData.count.toString(), change: '+0', trend: 'up' },
+    { label: 'Crediti', value: '87', change: '-2', trend: 'down' }
   ]
 
   const quickTools = [
     {
       title: 'TipsterAI',
-      description: '6 proposte giornaliere AI',
+      description: `${tipsterData.count > 0 ? `${tipsterData.count} ${tipsterData.count === 1 ? 'proposta' : 'proposte'} oggi` : 'Proposte AI giornaliere'}`,
       icon: <Sparkles className="h-6 w-6" />,
       href: '/tipsterai',
       color: 'violet',
-      highlight: true
+      highlight: tipsterData.count > 0
     },
     {
       title: 'Match Center',
@@ -185,41 +268,6 @@ export default function DashboardPage() {
     }
   ]
 
-  const recentInsights = [
-    {
-      type: 'tipsterai',
-      title: 'TipsterAI Aggiornato',
-      description: 'Nuove 6 proposte giornaliere disponibili',
-      value: 'LIVE',
-      time: 'Ora',
-      href: '/tipsterai'
-    },
-    {
-      type: 'value-bet',
-      title: 'Value Bet Rilevato',
-      description: 'Atalanta vs Bologna - Over 2.5 Goals',
-      value: '+15.3%',
-      time: '2 min fa',
-      href: '/matches'
-    },
-    {
-      type: 'hot-tip',
-      title: 'Partita Interessante',
-      description: 'Juventus vs Milan - Alta confidence',
-      value: '82% win',
-      time: '5 min fa',
-      href: '/matches'
-    },
-    {
-      type: 'analysis',
-      title: 'Analisi Completata',
-      description: 'Inter vs Napoli - Pronostici aggiornati',
-      value: '78% casa',
-      time: '8 min fa',
-      href: '/matches'
-    }
-  ]
-
   const getConfidenceBadge = (confidence: string) => {
     switch (confidence) {
       case 'ALTA':
@@ -232,7 +280,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4">
+    <div className="min-h-screen bg-slate-950 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
@@ -244,7 +292,7 @@ export default function DashboardPage() {
         {/* Welcome Section with TipsterAI CTA */}
         <Card className="bg-gradient-to-r from-emerald-900/20 to-cyan-900/20 border-emerald-500/50 mb-8">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-white mb-2">
                   Benvenuto in CalcioAI 👋
@@ -266,10 +314,10 @@ export default function DashboardPage() {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
-                <p className="text-xs text-slate-400 mt-2">6 proposte intelligenti generate ogni giorno dall'AI</p>
+                <p className="text-xs text-slate-400 mt-2">{tipsterData.count > 0 ? `${tipsterData.count} ${tipsterData.count === 1 ? 'proposta intelligente' : 'proposte intelligenti'} ${tipsterData.lastUpdated ? 'di ' + tipsterData.lastUpdated : 'disponibili'}` : 'Proposte intelligenti generate dall\'AI'}</p>
               </div>
               
-              <div className="text-right ml-6">
+              <div className="text-right">
                 <div className="text-slate-400 text-sm">I tuoi crediti</div>
                 <div className="text-2xl font-bold text-emerald-400">87</div>
                 <div className="text-xs text-slate-500 mt-1">2 crediti per analisi</div>
@@ -279,7 +327,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (
             <Card key={i} className="bg-slate-900/50 border-slate-800">
               <CardContent className="p-6">
@@ -300,7 +348,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
@@ -331,21 +379,25 @@ export default function DashboardPage() {
                       <div key={i} className="animate-pulse bg-slate-800 h-16 rounded"></div>
                     ))}
                   </div>
+                ) : todayMatches.length === 0 ? (
+                  <div className="text-center text-slate-400 py-8">
+                    Nessuna partita disponibile oggi
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {todayMatches.slice(0, 5).map((match) => (
-                      <div key={match.id} className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="text-center">
-                              <div className="text-white font-semibold">{match.homeTeam}</div>
-                              <div className="text-slate-400 text-sm">vs</div>
-                              <div className="text-white font-semibold">{match.awayTeam}</div>
+                      <div key={match.id} className="bg-slate-800 rounded-lg p-3 sm:p-4 hover:bg-slate-700 transition-colors">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-center space-x-3 min-w-0 flex-1">
+                            <div className="text-center flex-shrink-0">
+                              <div className="text-white font-semibold text-sm sm:text-base truncate max-w-20 sm:max-w-none">{match.homeTeam}</div>
+                              <div className="text-slate-400 text-xs sm:text-sm">vs</div>
+                              <div className="text-white font-semibold text-sm sm:text-base truncate max-w-20 sm:max-w-none">{match.awayTeam}</div>
                             </div>
-                            <div className="text-slate-400">
+                            <div className="text-slate-400 flex-shrink-0">
                               <div className="flex items-center space-x-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{match.time}</span>
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                                <span className="text-xs sm:text-sm">{match.time}</span>
                               </div>
                               <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs mt-1">
                                 {match.league}
@@ -353,33 +405,36 @@ export default function DashboardPage() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center space-x-4">
-                            <div className="text-center">
-                              <div className="text-emerald-400 font-bold text-lg">{match.homeProb}%</div>
+                          <div className="flex items-center justify-between sm:justify-start sm:space-x-3 flex-shrink-0">
+                            <div className="text-center flex-shrink-0">
+                              <div className="text-emerald-400 font-bold text-base sm:text-lg">{match.homeProb}%</div>
                               <div className="text-slate-400 text-xs">Casa</div>
                             </div>
-                            {getConfidenceBadge(match.confidence)}
-                            {match.fixture_id ? (
-                              <Link href={`/matches/${match.fixture_id}`}>
+                            <div className="flex items-center space-x-2">
+                              {getConfidenceBadge(match.confidence)}
+                              {match.fixture_id ? (
+                                <Link href={`/matches/${match.fixture_id}`}>
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-emerald-500 hover:bg-emerald-600 relative text-xs sm:text-sm px-2 sm:px-3"
+                                  >
+                                    <span className="hidden sm:inline mr-1">Analizza</span>
+                                    <span className="sm:hidden">📊</span>
+                                    <span className="text-xs bg-emerald-700 px-1 sm:px-1.5 py-0.5 rounded-full ml-1">
+                                      -2💎
+                                    </span>
+                                  </Button>
+                                </Link>
+                              ) : (
                                 <Button 
                                   size="sm" 
-                                  className="bg-emerald-500 hover:bg-emerald-600 relative"
+                                  className="bg-slate-600 cursor-not-allowed text-xs sm:text-sm"
+                                  disabled
                                 >
-                                  <span className="mr-1">Analizza</span>
-                                  <span className="text-xs bg-emerald-700 px-1.5 py-0.5 rounded-full ml-1">
-                                    -2💎
-                                  </span>
+                                  N/A
                                 </Button>
-                              </Link>
-                            ) : (
-                              <Button 
-                                size="sm" 
-                                className="bg-slate-600 cursor-not-allowed"
-                                disabled
-                              >
-                                N/A
-                              </Button>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -401,37 +456,51 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentInsights.map((insight, i) => (
-                    <Link key={i} href={insight.href || '#'}>
-                      <div className="flex items-center space-x-4 p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          insight.type === 'tipsterai' ? 'bg-violet-500/20 text-violet-400' :
-                          insight.type === 'value-bet' ? 'bg-emerald-500/20 text-emerald-400' :
-                          insight.type === 'hot-tip' ? 'bg-orange-500/20 text-orange-400' :
-                          'bg-blue-500/20 text-blue-400'
-                        }`}>
-                          {insight.type === 'tipsterai' ? '🎯' :
-                           insight.type === 'value-bet' ? '💰' : 
-                           insight.type === 'hot-tip' ? '🔥' : '📊'}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-white font-medium">{insight.title}</div>
-                          <div className="text-slate-400 text-sm">{insight.description}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`font-semibold ${
-                            insight.type === 'tipsterai' ? 'text-violet-400' : 'text-emerald-400'
+                {insightsLoading ? (
+                  <div className="space-y-3">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="animate-pulse bg-slate-800 h-16 rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentInsights.map((insight, i) => (
+                      <Link key={i} href={insight.href || '#'}>
+                        <div className="flex items-center space-x-4 p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            insight.type === 'tipsterai' ? 'bg-violet-500/20 text-violet-400' :
+                            insight.type === 'value-bet' ? 'bg-emerald-500/20 text-emerald-400' :
+                            insight.type === 'hot-tip' ? 'bg-orange-500/20 text-orange-400' :
+                            'bg-blue-500/20 text-blue-400'
                           }`}>
-                            {insight.value}
+                            {insight.type === 'tipsterai' ? '🎯' :
+                             insight.type === 'value-bet' ? '💰' : 
+                             insight.type === 'hot-tip' ? '🔥' : '📊'}
                           </div>
-                          <div className="text-slate-500 text-xs">{insight.time}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white font-medium">{insight.title}</div>
+                            <div className="text-slate-400 text-sm truncate">{insight.description}</div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className={`font-semibold ${
+                              insight.type === 'tipsterai' ? 'text-violet-400' : 'text-emerald-400'
+                            }`}>
+                              {insight.value}
+                            </div>
+                            <div className="text-slate-500 text-xs">{insight.time}</div>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-600" />
+                      </Link>
+                    ))}
+                    
+                    {recentInsights.length === 0 && (
+                      <div className="text-center text-slate-400 py-4">
+                        Nessun insight disponibile al momento
                       </div>
-                    </Link>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -470,9 +539,9 @@ export default function DashboardPage() {
                           }`}>
                             {tool.icon}
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <div className="text-white font-medium">{tool.title}</div>
-                            <div className="text-slate-400 text-sm">{tool.description}</div>
+                            <div className="text-slate-400 text-sm truncate">{tool.description}</div>
                           </div>
                         </div>
                       </div>
@@ -532,38 +601,38 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <TrendingUp className="h-5 w-5 mr-2 text-emerald-500" />
-                  Performance AI
+                  Sistema CalcioAI
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Accuracy questa settimana</span>
-                      <span className="text-emerald-400 font-semibold">94.2%</span>
+                      <span className="text-slate-400">Partite analizzate oggi</span>
+                      <span className="text-emerald-400 font-semibold">{todayMatches.length}</span>
                     </div>
                     <div className="mt-2 bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: '94.2%'}}></div>
+                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: todayMatches.length > 0 ? '100%' : '0%'}}></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Value bets identificate</span>
-                      <span className="text-emerald-400 font-semibold">23</span>
+                      <span className="text-slate-400">Tips AI generati</span>
+                      <span className="text-emerald-400 font-semibold">{tipsterData.count}</span>
                     </div>
                     <div className="mt-2 bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: '76%'}}></div>
+                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: tipsterData.count > 0 ? '100%' : '0%'}}></div>
                     </div>
                   </div>
 
                   <div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">ROI teorico</span>
-                      <span className="text-emerald-400 font-semibold">+12.8%</span>
+                      <span className="text-slate-400">Leghe coperte</span>
+                      <span className="text-emerald-400 font-semibold">{dailySchedule.length}</span>
                     </div>
                     <div className="mt-2 bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: '64%'}}></div>
+                      <div className="bg-emerald-500 h-2 rounded-full" style={{width: dailySchedule.length > 0 ? '75%' : '0%'}}></div>
                     </div>
                   </div>
                 </div>
