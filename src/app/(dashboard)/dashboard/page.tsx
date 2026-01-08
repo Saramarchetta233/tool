@@ -282,8 +282,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="w-full py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="w-full py-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-hidden">
         
         {/* Header */}
         <div className="flex items-center space-x-2 mb-8">
@@ -355,10 +355,10 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 overflow-x-hidden">
           
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 overflow-x-hidden">
             
             {/* Today's Top Matches */}
             <Card className="bg-slate-900/50 border-slate-800">
@@ -379,7 +379,7 @@ export default function DashboardPage() {
                   Le migliori opportunità selezionate dall'AI
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-hidden">
                 {loading ? (
                   <div className="space-y-3">
                     {[1,2,3].map(i => (
@@ -465,7 +465,7 @@ export default function DashboardPage() {
                   Le ultime analisi e opportunità rilevate dall'AI
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-hidden">
                 {insightsLoading ? (
                   <div className="space-y-3">
                     {[1,2,3].map(i => (
@@ -516,14 +516,14 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-x-hidden">
             
             {/* Quick Tools */}
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
                 <CardTitle className="text-white">Strumenti Rapidi</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-hidden">
                 <div className="space-y-3">
                   {quickTools.map((tool, i) => (
                     <Link key={i} href={tool.href}>
@@ -569,7 +569,7 @@ export default function DashboardPage() {
                   Programma Oggi
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-hidden">
                 {scheduleLoading ? (
                   <div className="space-y-3">
                     {[1,2,3,4].map(i => (
@@ -614,7 +614,7 @@ export default function DashboardPage() {
                   Sistema CalcioAI
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-hidden">
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm">

@@ -156,30 +156,89 @@ export default function FantaCoachPage() {
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target?.result as string
-      const lines = text.split('\n').slice(1) // Skip header
+      const lines = text.split('\n')
       
       const importedPlayers: Player[] = []
+      let startLine = 0
       
-      lines.forEach(line => {
-        const [name, role, team] = line.split(',').map(s => s.trim())
-        if (name && role && team) {
-          // Cerca giocatore nei dati
-          const player = allPlayers.find(p => 
-            p.name.toLowerCase() === name.toLowerCase() &&
-            p.team.toLowerCase() === team.toLowerCase()
-          )
+      // Rileva se c'è un header
+      const firstLine = lines[0]?.toLowerCase()
+      if (firstLine && (firstLine.includes('nome') || firstLine.includes('name') || firstLine.includes('player'))) {
+        startLine = 1
+      }
+      
+      lines.slice(startLine).forEach((line, index) => {
+        if (!line.trim()) return
+        
+        // Supporta sia CSV che formato separato da spazi/tab
+        const separators = [',', ';', '\t', '  ', ' ']
+        let parts: string[] = []
+        
+        for (const sep of separators) {
+          if (line.includes(sep)) {
+            parts = line.split(sep).map(s => s.trim()).filter(s => s)
+            break
+          }
+        }
+        
+        // Se non trova separatori, prova a dividere per spazi singoli
+        if (parts.length === 0) {
+          parts = line.split(' ').filter(s => s.trim())
+        }
+        
+        if (parts.length >= 2) {
+          const name = parts[0]
+          let role = ''
+          let team = ''
           
-          if (player) {
-            importedPlayers.push(enrichPlayerData(player))
+          // Cerca ruolo (P, D, C, A)
+          const rolePattern = /^[PDCA]$/i
+          const roleIndex = parts.findIndex(p => rolePattern.test(p))
+          
+          if (roleIndex !== -1) {
+            role = parts[roleIndex].toUpperCase()
+            team = parts.slice(roleIndex + 1).join(' ') || parts.slice(1, roleIndex).join(' ')
+          } else {
+            // Se non trova ruolo, assume nome e resto come squadra
+            team = parts.slice(1).join(' ')
+          }
+          
+          if (name && team) {
+            // Cerca giocatore nei dati
+            const player = allPlayers.find(p => {
+              const nameMatch = p.name.toLowerCase().includes(name.toLowerCase()) || 
+                               name.toLowerCase().includes(p.name.toLowerCase())
+              const teamMatch = team && (p.team.toLowerCase().includes(team.toLowerCase()) || 
+                               team.toLowerCase().includes(p.team.toLowerCase()))
+              const roleMatch = !role || p.role === role
+              
+              return nameMatch && (teamMatch || !team) && roleMatch
+            })
+            
+            if (player) {
+              // Evita duplicati
+              if (!importedPlayers.find(ip => ip.id === player.id)) {
+                importedPlayers.push(enrichPlayerData(player))
+              }
+            }
           }
         }
       })
       
       if (importedPlayers.length > 0) {
-        saveRoster([...roster, ...importedPlayers])
-        alert(`Importati ${importedPlayers.length} giocatori`)
+        // Evita duplicati con la rosa esistente
+        const newPlayers = importedPlayers.filter(ip => 
+          !roster.find(rp => rp.id === ip.id)
+        )
+        
+        if (newPlayers.length > 0) {
+          saveRoster([...roster, ...newPlayers])
+          alert(`✅ Importati ${newPlayers.length} nuovi giocatori!`)
+        } else {
+          alert('⚠️ Tutti i giocatori sono già presenti nella rosa')
+        }
       } else {
-        alert('Nessun giocatore trovato nel CSV')
+        alert(`❌ Nessun giocatore riconosciuto nel file.\n\nFormati supportati:\n• CSV: "Nome,Ruolo,Squadra"\n• TXT: "Nome Ruolo Squadra" (uno per riga)\n• Fantacalcio.it export`)
       }
     }
     
@@ -367,7 +426,7 @@ export default function FantaCoachPage() {
                   Gestione Rosa
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  Importa la tua rosa o aggiungila manualmente
+                  Importa la tua rosa da file CSV/TXT o aggiungila manualmente
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -375,7 +434,7 @@ export default function FantaCoachPage() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".csv"
+                    accept=".csv,.txt"
                     onChange={handleImportCSV}
                     className="hidden"
                   />
@@ -384,7 +443,7 @@ export default function FantaCoachPage() {
                     className="bg-gradient-to-r from-emerald-500 to-cyan-500"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Importa CSV (Fantacalcio.it)
+                    Importa CSV/TXT
                   </Button>
                   <Button 
                     onClick={exportCSV}
@@ -403,6 +462,33 @@ export default function FantaCoachPage() {
                     <Plus className="h-4 w-4 mr-2" />
                     Aggiungi Giocatore
                   </Button>
+                </div>
+                
+                {/* Formato Import Help */}
+                <div className="mt-6 p-4 bg-slate-800/50 rounded-lg">
+                  <h4 className="text-white font-medium mb-3">📄 Formati supportati per l'import:</h4>
+                  <div className="space-y-2 text-sm text-slate-300">
+                    <div>
+                      <span className="text-emerald-400 font-medium">CSV:</span> 
+                      <code className="ml-2 px-2 py-1 bg-slate-700 rounded text-xs">Nome,Ruolo,Squadra</code>
+                    </div>
+                    <div>
+                      <span className="text-blue-400 font-medium">TXT:</span> 
+                      <code className="ml-2 px-2 py-1 bg-slate-700 rounded text-xs">Nome Ruolo Squadra</code>
+                      <span className="text-slate-400 ml-2">(uno per riga)</span>
+                    </div>
+                    <div>
+                      <span className="text-purple-400 font-medium">Esempio:</span>
+                      <div className="mt-2 p-2 bg-slate-700 rounded text-xs font-mono">
+                        Lautaro Martinez A Inter<br/>
+                        Theo Hernandez D Milan<br/>
+                        Barella C Inter
+                      </div>
+                    </div>
+                    <div className="text-slate-400 text-xs mt-2">
+                      💡 Il sistema riconosce automaticamente nome e squadra anche senza il ruolo
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
