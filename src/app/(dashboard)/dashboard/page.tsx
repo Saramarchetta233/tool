@@ -391,54 +391,53 @@ export default function DashboardPage() {
                   <div className="space-y-3">
                     {todayMatches.slice(0, 5).map((match) => (
                       <div key={match.id} className="bg-slate-800 rounded-lg p-3 sm:p-4 hover:bg-slate-700 transition-colors">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-center space-x-3 min-w-0 flex-1">
-                            <div className="text-center flex-shrink-0">
-                              <div className="text-white font-semibold text-sm sm:text-base truncate max-w-20 sm:max-w-none">{match.homeTeam}</div>
-                              <div className="text-slate-400 text-xs sm:text-sm">vs</div>
-                              <div className="text-white font-semibold text-sm sm:text-base truncate max-w-20 sm:max-w-none">{match.awayTeam}</div>
-                            </div>
-                            <div className="text-slate-400 flex-shrink-0">
-                              <div className="flex items-center space-x-1">
-                                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                                <span className="text-xs sm:text-sm">{match.time}</span>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 min-w-0 flex-1">
+                              <div className="text-center">
+                                <div className="text-white font-semibold text-xs truncate max-w-16">{match.homeTeam}</div>
+                                <div className="text-slate-400 text-xs">vs</div>
+                                <div className="text-white font-semibold text-xs truncate max-w-16">{match.awayTeam}</div>
                               </div>
-                              <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs mt-1">
-                                {match.league}
-                              </Badge>
+                              <div className="text-slate-400 flex-shrink-0">
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="h-3 w-3" />
+                                  <span className="text-xs">{match.time}</span>
+                                </div>
+                                <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs mt-1">
+                                  {match.league.length > 8 ? match.league.substring(0, 8) + '...' : match.league}
+                                </Badge>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2 flex-shrink-0">
+                              <div className="text-center">
+                                <div className="text-emerald-400 font-bold text-sm">{match.homeProb}%</div>
+                                <div className="text-slate-400 text-xs">Casa</div>
+                              </div>
+                              {getConfidenceBadge(match.confidence)}
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-between sm:justify-start sm:space-x-3 flex-shrink-0">
-                            <div className="text-center flex-shrink-0">
-                              <div className="text-emerald-400 font-bold text-base sm:text-lg">{match.homeProb}%</div>
-                              <div className="text-slate-400 text-xs">Casa</div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              {getConfidenceBadge(match.confidence)}
-                              {match.fixture_id ? (
-                                <Link href={`/matches/${match.fixture_id}`}>
-                                  <Button 
-                                    size="sm" 
-                                    className="bg-emerald-500 hover:bg-emerald-600 relative text-xs sm:text-sm px-2 sm:px-3"
-                                  >
-                                    <span className="hidden sm:inline mr-1">Analizza</span>
-                                    <span className="sm:hidden">📊</span>
-                                    <span className="text-xs bg-emerald-700 px-1 sm:px-1.5 py-0.5 rounded-full ml-1">
-                                      -2💎
-                                    </span>
-                                  </Button>
-                                </Link>
-                              ) : (
+                          <div className="flex justify-center">
+                            {match.fixture_id ? (
+                              <Link href={`/matches/${match.fixture_id}`} className="w-full">
                                 <Button 
                                   size="sm" 
-                                  className="bg-slate-600 cursor-not-allowed text-xs sm:text-sm"
-                                  disabled
+                                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-xs"
                                 >
-                                  N/A
+                                  📊 Analizza (-2💎)
                                 </Button>
-                              )}
-                            </div>
+                              </Link>
+                            ) : (
+                              <Button 
+                                size="sm" 
+                                className="w-full bg-slate-600 cursor-not-allowed text-xs"
+                                disabled
+                              >
+                                N/A
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

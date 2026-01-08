@@ -664,15 +664,21 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-900/50 border border-slate-700">
-            <TabsTrigger value="tracker" className="flex items-center gap-2">
-              📊 Tracker Scommesse
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-900/50 border border-slate-700 h-auto">
+            <TabsTrigger value="tracker" className="flex flex-col items-center gap-1 p-3 text-xs">
+              <span>📊</span>
+              <span className="hidden sm:inline">Tracker Scommesse</span>
+              <span className="sm:hidden">Tracker</span>
             </TabsTrigger>
-            <TabsTrigger value="calculators" className="flex items-center gap-2">
-              🧮 Calcolatori
+            <TabsTrigger value="calculators" className="flex flex-col items-center gap-1 p-3 text-xs">
+              <span>🧮</span>
+              <span className="hidden sm:inline">Calcolatori</span>
+              <span className="sm:hidden">Calc</span>
             </TabsTrigger>
-            <TabsTrigger value="academy" className="flex items-center gap-2">
-              📚 Academy
+            <TabsTrigger value="academy" className="flex flex-col items-center gap-1 p-3 text-xs">
+              <span>📚</span>
+              <span className="hidden sm:inline">Academy</span>
+              <span className="sm:hidden">Guide</span>
             </TabsTrigger>
           </TabsList>
 
@@ -699,7 +705,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                         id="initial-bankroll"
                         type="number"
                         placeholder="es. 100"
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800 border-slate-700 text-white text-base"
+                        style={{ fontSize: '16px' }}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             const value = parseFloat((e.target as HTMLInputElement).value)
@@ -832,7 +839,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                           placeholder="1.75"
                           value={newBet.odds}
                           onChange={(e) => setNewBet({...newBet, odds: e.target.value})}
-                          className="bg-slate-800 border-slate-700 text-white"
+                          className="bg-slate-800 border-slate-700 text-white text-base"
+                          style={{ fontSize: '16px' }}
                         />
                       </div>
                       
@@ -844,7 +852,8 @@ Su [/matches](/matches) vedi il rendimento casa/trasferta di ogni squadra. Dati 
                           placeholder="10"
                           value={newBet.stake}
                           onChange={(e) => setNewBet({...newBet, stake: e.target.value})}
-                          className="bg-slate-800 border-slate-700 text-white"
+                          className="bg-slate-800 border-slate-700 text-white text-base"
+                          style={{ fontSize: '16px' }}
                         />
                       </div>
                       

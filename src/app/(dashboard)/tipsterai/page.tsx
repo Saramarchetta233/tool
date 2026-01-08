@@ -747,6 +747,8 @@ export default function TipsterAI() {
                 onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
                 placeholder="Chiedi informazioni sulle partite o sui pronostici..."
                 disabled={chatLoading}
+                className="text-base"
+                style={{ fontSize: '16px' }}
               />
               <Button onClick={sendChatMessage} disabled={chatLoading}>
                 Invia
