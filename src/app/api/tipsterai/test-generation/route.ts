@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { generateDailyTipsV2 } from '@/lib/tipster-ai-v2'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   console.log('🧪 Testing TipsterAI generation system...')
   

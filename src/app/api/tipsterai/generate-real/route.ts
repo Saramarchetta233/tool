@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { generateDailyTipsV2 } from '@/lib/tipster-ai-v2'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const today = new Date().toISOString().split('T')[0]
   
