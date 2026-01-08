@@ -77,14 +77,16 @@ export default function DashboardPage() {
       // Convert to QuickMatch format
       const quickMatches: QuickMatch[] = matches.map((match: any) => {
         const homeProb = getHomeProb(match)
+        const homeTeam = match.homeTeam?.name || match.home_team?.name || match.teams?.home?.name || 'TBD'
+        const awayTeam = match.awayTeam?.name || match.away_team?.name || match.teams?.away?.name || 'TBD'
         return {
           id: match.id || match.fixture_id?.toString() || match.fixture?.id?.toString() || Math.random().toString(),
           fixture_id: match.fixture_id || match.fixture?.id || match.id,
-          homeTeam: match.homeTeam?.name || match.home_team?.name || match.teams?.home?.name || 'TBD',
-          awayTeam: match.awayTeam?.name || match.away_team?.name || match.teams?.away?.name || 'TBD',
+          homeTeam: homeTeam,
+          awayTeam: awayTeam,
           time: match.time || match.match_time || match.fixture?.date || '00:00',
           league: match.league || match.league_name || match.league?.name || 'Unknown',
-          confidence: getConfidenceFromProb(homeProb), // Now based on actual probability
+          confidence: getConfidenceFromProb(homeProb, homeTeam, awayTeam), // Now with team names
           homeProb: homeProb
         }
       })
@@ -209,10 +211,31 @@ export default function DashboardPage() {
     }
   }
 
-  // Helper functions - using consistent logic with utils.ts
-  const getConfidenceFromProb = (homeProb: number): 'ALTA' | 'MEDIA' | 'BASSA' => {
-    if (homeProb >= 60) return 'ALTA'
-    if (homeProb >= 40) return 'MEDIA'
+  // Helper functions - using same logic as API matches
+  const getConfidenceFromProb = (homeProb: number, homeTeam?: string, awayTeam?: string): 'ALTA' | 'MEDIA' | 'BASSA' => {
+    // Squadre top in Serie A 
+    const topTeams = ['Inter', 'Juventus', 'Milan', 'AC Milan', 'Napoli', 'Roma', 'Atalanta', 'Lazio']
+    const bottomTeams = ['Genoa', 'Empoli', 'Lecce', 'Monza', 'Salernitana', 'Spezia', 'Cremonese', 'Frosinone']
+    
+    // Top teams in Premier League
+    const topPL = ['Manchester City', 'Arsenal', 'Liverpool', 'Chelsea', 'Manchester United', 'Newcastle', 'Tottenham']
+    
+    if (homeTeam && awayTeam) {
+      const isHomeTop = topTeams.includes(homeTeam) || topPL.includes(homeTeam)
+      const isAwayTop = topTeams.includes(awayTeam) || topPL.includes(awayTeam)
+      const isHomeBottom = bottomTeams.includes(homeTeam)
+      const isAwayBottom = bottomTeams.includes(awayTeam)
+      
+      // ALTA confidence: top vs bottom
+      if ((isHomeTop && isAwayBottom) || (isAwayTop && isHomeBottom)) {
+        return 'ALTA'
+      }
+    }
+    
+    // Differenza netta nelle percentuali (stessa logica dell'API)
+    if (homeProb >= 65) return 'ALTA'
+    if (homeProb >= 45) return 'MEDIA'
+    
     return 'BASSA'
   }
 
