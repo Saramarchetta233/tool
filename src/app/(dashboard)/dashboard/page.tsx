@@ -230,10 +230,10 @@ export default function DashboardPage() {
   }
 
   const stats = [
-    { label: 'Partite Oggi', value: todayMatches.length.toString(), change: '+0', trend: 'up' },
-    { label: 'Leghe Attive', value: dailySchedule.length.toString(), change: '+0', trend: 'up' },
-    { label: 'Tips AI', value: tipsterData.count.toString(), change: '+0', trend: 'up' },
-    { label: 'Crediti', value: '87', change: '-2', trend: 'down' }
+    { label: 'Partite Oggi', value: todayMatches.length.toString(), change: null, trend: null },
+    { label: 'Leghe Attive', value: dailySchedule.length.toString(), change: null, trend: null },
+    { label: 'Tips AI', value: tipsterData.count.toString(), change: tipsterData.count > 0 ? 'NUOVI' : null, trend: tipsterData.count > 0 ? 'up' : null },
+    { label: 'Crediti', value: '87', change: null, trend: null }
   ]
 
   const quickTools = [
@@ -336,12 +336,14 @@ export default function DashboardPage() {
                     <div className="text-slate-400 text-sm">{stat.label}</div>
                     <div className="text-2xl font-bold text-white">{stat.value}</div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-sm font-medium ${stat.trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {stat.change}
+                  {stat.change && (
+                    <div className="text-right">
+                      <div className={`text-sm font-medium ${stat.trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {stat.change}
+                      </div>
+                      <TrendingUp className={`h-4 w-4 ${stat.trend === 'up' ? 'text-emerald-400' : 'text-red-400 rotate-180'}`} />
                     </div>
-                    <TrendingUp className={`h-4 w-4 ${stat.trend === 'up' ? 'text-emerald-400' : 'text-red-400 rotate-180'}`} />
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
