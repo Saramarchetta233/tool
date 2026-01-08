@@ -93,7 +93,7 @@ export async function POST() {
     
     if (allPlayers.length > 0) {
       console.log('💾 Salvataggio nel database...')
-      console.log(`   → Squadre uniche: ${[...new Set(allPlayers.map(p => p.team))].join(', ')}`)
+      console.log(`   → Squadre uniche: ${Array.from(new Set(allPlayers.map(p => p.team))).join(', ')}`)
       
       // Pulisci database
       const { error: deleteError } = await supabase
