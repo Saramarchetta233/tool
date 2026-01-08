@@ -211,29 +211,10 @@ export default function DashboardPage() {
     }
   }
 
-  // Helper functions - using same logic as API matches
+  // Helper functions - SOLO PERCENTUALI come prima
   const getConfidenceFromProb = (homeProb: number, homeTeam?: string, awayTeam?: string): 'ALTA' | 'MEDIA' | 'BASSA' => {
-    // Squadre top in Serie A 
-    const topTeams = ['Inter', 'Juventus', 'Milan', 'AC Milan', 'Napoli', 'Roma', 'Atalanta', 'Lazio']
-    const bottomTeams = ['Genoa', 'Empoli', 'Lecce', 'Monza', 'Salernitana', 'Spezia', 'Cremonese', 'Frosinone']
-    
-    // Top teams in Premier League
-    const topPL = ['Manchester City', 'Arsenal', 'Liverpool', 'Chelsea', 'Manchester United', 'Newcastle', 'Tottenham']
-    
-    if (homeTeam && awayTeam) {
-      const isHomeTop = topTeams.includes(homeTeam) || topPL.includes(homeTeam)
-      const isAwayTop = topTeams.includes(awayTeam) || topPL.includes(awayTeam)
-      const isHomeBottom = bottomTeams.includes(homeTeam)
-      const isAwayBottom = bottomTeams.includes(awayTeam)
-      
-      // ALTA confidence: top vs bottom
-      if ((isHomeTop && isAwayBottom) || (isAwayTop && isHomeBottom)) {
-        return 'ALTA'
-      }
-    }
-    
-    // Differenza netta nelle percentuali (stessa logica dell'API)
-    if (homeProb >= 65) return 'ALTA'
+    // LOGICA ORIGINALE: solo basata su percentuali
+    if (homeProb >= 60) return 'ALTA'
     if (homeProb >= 45) return 'MEDIA'
     
     return 'BASSA'
