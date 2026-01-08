@@ -282,19 +282,19 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 overflow-x-hidden">
-      <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Header */}
         <div className="flex items-center space-x-2 mb-8">
           <BarChart3 className="h-8 w-8 text-emerald-500" />
-          <h1 className="text-3xl font-bold gradient-text">CalcioAI Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text">CalcioAI Dashboard</h1>
         </div>
 
         {/* Welcome Section with TipsterAI CTA */}
         <Card className="bg-gradient-to-r from-emerald-900/20 to-cyan-900/20 border-emerald-500/50 mb-8">
           <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-white mb-2">
                   Benvenuto in CalcioAI 👋
@@ -317,13 +317,15 @@ export default function DashboardPage() {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
-                <p className="text-xs text-slate-400 mt-2">{tipsterData.count > 0 ? `${tipsterData.count} ${tipsterData.count === 1 ? 'proposta intelligente' : 'proposte intelligenti'} ${tipsterData.lastUpdated ? 'di ' + tipsterData.lastUpdated : 'disponibili'}` : 'Proposte intelligenti generate dall\'AI'}</p>
+                <p className="text-xs text-slate-400 mt-2">{tipsterData.count > 0 ? `${tipsterData.count} ${tipsterData.count === 1 ? 'proposta' : 'proposte'} ${tipsterData.lastUpdated ? 'di ' + tipsterData.lastUpdated : 'disponibili'}` : 'Proposte AI disponibili'}</p>
               </div>
               
-              <div className="text-right">
-                <div className="text-slate-400 text-sm">I tuoi crediti</div>
-                <div className="text-2xl font-bold text-emerald-400">87</div>
-                <div className="text-xs text-slate-500 mt-1">2 crediti per analisi</div>
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-center sm:text-right">
+                  <div className="text-slate-400 text-sm">I tuoi crediti</div>
+                  <div className="text-2xl font-bold text-emerald-400">87</div>
+                  <div className="text-xs text-slate-500 mt-1">2 crediti per analisi</div>
+                </div>
               </div>
             </div>
           </CardContent>
