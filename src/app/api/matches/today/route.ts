@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         const intelligentPreds = getIntelligentPredictions(match.home_team?.name, match.away_team?.name, match.league_name)
         return {
           ...intelligentPreds,
-          confidence: getSmartConfidence(match.predictions, match.home_team?.name, match.away_team?.name),
+          confidence: getSmartConfidence(intelligentPreds, match.home_team?.name, match.away_team?.name),
           advice: getDetailedAdvice(intelligentPreds, match.home_team?.name, match.away_team?.name, match.odds)
         }
       })() : undefined,
@@ -185,7 +185,10 @@ function getIntelligentPredictions(homeTeam: string | undefined, awayTeam: strin
 
 // Logica confidence SOLO basata su percentuali come prima
 function getSmartConfidence(predictions: any, homeTeam: string | undefined, awayTeam: string | undefined): 'ALTA' | 'MEDIA' | 'BASSA' {
-  if (!predictions) return 'BASSA'
+  if (!predictions) {
+    console.log(`❌ NO PREDICTIONS for confidence calculation`)
+    return 'BASSA'
+  }
   
   const home = parseInt(predictions.home) || 33
   const draw = parseInt(predictions.draw) || 33  
@@ -193,6 +196,9 @@ function getSmartConfidence(predictions: any, homeTeam: string | undefined, away
   
   // LOGICA ORIGINALE: solo percentuali
   const maxPercent = Math.max(home, draw, away)
+  
+  console.log(`🎯 CONFIDENCE DEBUG: ${homeTeam} vs ${awayTeam} - Predictions: ${home}%-${draw}%-${away}% → Max: ${maxPercent}% → ${maxPercent >= 60 ? 'ALTA' : maxPercent >= 45 ? 'MEDIA' : 'BASSA'}`)
+  
   if (maxPercent >= 60) return 'ALTA'
   if (maxPercent >= 45) return 'MEDIA'
   
