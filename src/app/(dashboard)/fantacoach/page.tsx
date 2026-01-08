@@ -170,50 +170,116 @@ export default function FantaCoachPage() {
       lines.slice(startLine).forEach((line, index) => {
         if (!line.trim()) return
         
-        // Supporta sia CSV che formato separato da spazi/tab
-        const separators = [',', ';', '\t', '  ', ' ']
+        // Parsing per formato fantacalcio con trattini
         let parts: string[] = []
+        let name = ''
+        let role = ''
+        let team = ''
         
-        for (const sep of separators) {
-          if (line.includes(sep)) {
-            parts = line.split(sep).map(s => s.trim()).filter(s => s)
-            break
+        // Rimuovi crediti tra parentesi
+        line = line.replace(/\(\d+\)/, '').trim()
+        
+        // Formato: "P - Carnesecchi ATA" o "D - Cuadrado PIS"
+        if (line.includes(' - ')) {
+          const dashParts = line.split(' - ')
+          if (dashParts.length >= 2) {
+            role = dashParts[0].trim().toUpperCase()
+            const nameTeamPart = dashParts[1].trim()
+            
+            // Divide nome e squadra (squadra è tipicamente le ultime 3 lettere)
+            const words = nameTeamPart.split(' ')
+            if (words.length >= 2) {
+              team = words[words.length - 1] // Ultima parola è la squadra
+              name = words.slice(0, -1).join(' ') // Tutto tranne l'ultima parola
+            } else {
+              name = nameTeamPart
+            }
+          }
+        } else {
+          // Formato standard: supporta sia CSV che formato separato da spazi/tab
+          const separators = [',', ';', '\t', '  ', ' ']
+          
+          for (const sep of separators) {
+            if (line.includes(sep)) {
+              parts = line.split(sep).map(s => s.trim()).filter(s => s)
+              break
+            }
+          }
+          
+          // Se non trova separatori, prova a dividere per spazi singoli
+          if (parts.length === 0) {
+            parts = line.split(' ').filter(s => s.trim())
+          }
+          
+          if (parts.length >= 2) {
+            name = parts[0]
+            
+            // Cerca ruolo (P, D, C, A)
+            const rolePattern = /^[PDCA]$/i
+            const roleIndex = parts.findIndex(p => rolePattern.test(p))
+            
+            if (roleIndex !== -1) {
+              role = parts[roleIndex].toUpperCase()
+              team = parts.slice(roleIndex + 1).join(' ') || parts.slice(1, roleIndex).join(' ')
+            } else {
+              // Se non trova ruolo, assume nome e resto come squadra
+              team = parts.slice(1).join(' ')
+            }
           }
         }
         
-        // Se non trova separatori, prova a dividere per spazi singoli
-        if (parts.length === 0) {
-          parts = line.split(' ').filter(s => s.trim())
-        }
-        
-        if (parts.length >= 2) {
-          const name = parts[0]
-          let role = ''
-          let team = ''
-          
-          // Cerca ruolo (P, D, C, A)
-          const rolePattern = /^[PDCA]$/i
-          const roleIndex = parts.findIndex(p => rolePattern.test(p))
-          
-          if (roleIndex !== -1) {
-            role = parts[roleIndex].toUpperCase()
-            team = parts.slice(roleIndex + 1).join(' ') || parts.slice(1, roleIndex).join(' ')
-          } else {
-            // Se non trova ruolo, assume nome e resto come squadra
-            team = parts.slice(1).join(' ')
+        if (name && name.length > 1) {
+          // Mappa sigle squadre comuni
+          const teamMap: Record<string, string[]> = {
+            'ATA': ['Atalanta'],
+            'BOL': ['Bologna'],
+            'TOR': ['Torino'],
+            'PIS': ['Juventus'], // Assuming PIS could be a typo for Juventus
+            'JUV': ['Juventus'],
+            'INT': ['Inter'],
+            'CRE': ['Cremonese'],
+            'MIL': ['Milan'],
+            'CAG': ['Cagliari'],
+            'LAZ': ['Lazio'],
+            'COM': ['Como'],
+            'NAP': ['Napoli'],
+            'ROM': ['Roma'],
+            'FIO': ['Fiorentina'],
+            'UDI': ['Udinese'],
+            'VER': ['Verona'],
+            'GEN': ['Genoa'],
+            'LEC': ['Lecce'],
+            'MON': ['Monza'],
+            'PAR': ['Parma'],
+            'VEN': ['Venezia'],
+            'EMP': ['Empoli']
           }
           
-          if (name && team) {
-            // Cerca giocatore nei dati
-            const player = allPlayers.find(p => {
-              const nameMatch = p.name.toLowerCase().includes(name.toLowerCase()) || 
-                               name.toLowerCase().includes(p.name.toLowerCase())
-              const teamMatch = team && (p.team.toLowerCase().includes(team.toLowerCase()) || 
-                               team.toLowerCase().includes(p.team.toLowerCase()))
-              const roleMatch = !role || p.role === role
-              
-              return nameMatch && (teamMatch || !team) && roleMatch
-            })
+          // Cerca giocatore nei dati
+          const player = allPlayers.find(p => {
+            // Match del nome (più flessibile)
+            const playerNameLower = p.name.toLowerCase().replace(/[^a-z ]/g, '')
+            const searchNameLower = name.toLowerCase().replace(/[^a-z ]/g, '')
+            
+            const nameMatch = playerNameLower.includes(searchNameLower) || 
+                             searchNameLower.includes(playerNameLower) ||
+                             playerNameLower.split(' ').some(part => searchNameLower.includes(part))
+            
+            // Match della squadra (include sigle)
+            let teamMatch = true
+            if (team) {
+              const possibleTeams = teamMap[team.toUpperCase()] || [team]
+              teamMatch = possibleTeams.some(t => 
+                p.team.toLowerCase().includes(t.toLowerCase()) || 
+                t.toLowerCase().includes(p.team.toLowerCase())
+              )
+            }
+            
+            // Match del ruolo
+            const roleMatch = !role || p.role === role
+            
+            return nameMatch && teamMatch && roleMatch
+          })
             
             if (player) {
               // Evita duplicati
@@ -478,11 +544,19 @@ export default function FantaCoachPage() {
                       <span className="text-slate-400 ml-2">(uno per riga)</span>
                     </div>
                     <div>
-                      <span className="text-purple-400 font-medium">Esempio:</span>
+                      <span className="text-purple-400 font-medium">Esempio (Fantacalcio):</span>
+                      <div className="mt-2 p-2 bg-slate-700 rounded text-xs font-mono">
+                        P - Carnesecchi ATA (21)<br/>
+                        D - Cuadrado JUV (10)<br/>
+                        C - Calhanoglu INT (40)<br/>
+                        A - Martinez L. INT (156)
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-emerald-400 font-medium">Formato semplice:</span>
                       <div className="mt-2 p-2 bg-slate-700 rounded text-xs font-mono">
                         Lautaro Martinez A Inter<br/>
-                        Theo Hernandez D Milan<br/>
-                        Barella C Inter
+                        Theo Hernandez D Milan
                       </div>
                     </div>
                     <div className="text-slate-400 text-xs mt-2">
