@@ -41,17 +41,21 @@ interface Fixture {
 }
 
 export default function FantaCoachPage() {
-  const [activeTab, setActiveTab] = useState<'roster' | 'lineup' | 'tips'>('roster')
+  const [activeTab, setActiveTab] = useState<'roster' | 'analysis'>('roster')
   const [formation, setFormation] = useState('3-5-2')
   const [roster, setRoster] = useState<Player[]>([])
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [fixtures, setFixtures] = useState<Fixture[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [generatedLineup, setGeneratedLineup] = useState<any>(null)
   const [recommendations, setRecommendations] = useState<any>(null)
+  const [loadingPlayers, setLoadingPlayers] = useState(false)
+  const [showTextImport, setShowTextImport] = useState(false)
+  const [rosterText, setRosterText] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const formations = ['3-5-2', '3-4-3', '4-3-3', '4-4-2', '4-5-1']
@@ -73,13 +77,81 @@ export default function FantaCoachPage() {
       setLoading(true)
       const response = await fetch('/api/fantacoach/players')
       const data = await response.json()
-      if (data.players) {
+      if (data.players && data.players.length > 0) {
         setAllPlayers(data.players)
+      } else {
+        console.log('No players found, database might be empty')
+        setAllPlayers([])
       }
     } catch (error) {
       console.error('Error fetching players:', error)
+      setAllPlayers([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadSerieAPlayers = async () => {
+    try {
+      setLoadingPlayers(true)
+      const response = await fetch('/api/fantacoach/load-fantacalcio-2025')
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert(`✅ Caricati ${data.loaded} giocatori da Fantacalcio.it 2025-26!`)
+        await fetchPlayers() // Ricarica i giocatori
+      } else {
+        alert(`❌ Errore: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error loading Serie A players:', error)
+      alert('❌ Errore nel caricamento dei giocatori')
+    } finally {
+      setLoadingPlayers(false)
+    }
+  }
+
+  const importSerieAPlayers = async () => {
+    try {
+      setIsImporting(true)
+      const response = await fetch('/api/fantacoach/import-serie-a-2025', {
+        method: 'POST'
+      })
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert(`✅ Importati ${data.imported} giocatori Serie A 2025-26 da API-Football!`)
+        await fetchPlayers() // Ricarica i giocatori
+      } else {
+        alert(`❌ Errore: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error importing Serie A players:', error)
+      alert('❌ Errore nell\'importazione dei giocatori')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const importFantacalcioReal = async () => {
+    try {
+      setIsImporting(true)
+      const response = await fetch('/api/fantacoach/import-fantacalcio-real-2025', {
+        method: 'POST'
+      })
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert(`✅ Importati ${data.imported} giocatori REALI Serie A 2025-26 da Fantacalcio.it!`)
+        await fetchPlayers() // Ricarica i giocatori
+      } else {
+        alert(`❌ Errore: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error importing real players:', error)
+      alert('❌ Errore nell\'importazione dei giocatori reali')
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -149,168 +221,341 @@ export default function FantaCoachPage() {
     return Math.round(prediction * 10) / 10
   }
 
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target?.result as string
-      const lines = text.split('\n')
       
-      const importedPlayers: Player[] = []
-      let startLine = 0
-      
-      // Rileva se c'è un header
-      const firstLine = lines[0]?.toLowerCase()
-      if (firstLine && (firstLine.includes('nome') || firstLine.includes('name') || firstLine.includes('player'))) {
-        startLine = 1
-      }
-      
-      lines.slice(startLine).forEach((line, index) => {
-        if (!line.trim()) return
+      try {
+        setIsImporting(true)
         
-        // Parsing per formato fantacalcio con trattini
-        let parts: string[] = []
-        let name = ''
-        let role = ''
-        let team = ''
+        // Usa la nuova API per il parsing diretto
+        const response = await fetch('/api/fantacoach/parse-roster', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rosterText: text })
+        })
         
-        // Rimuovi crediti tra parentesi
-        line = line.replace(/\(\d+\)/, '').trim()
+        const data = await response.json()
         
-        // Formato: "P - Carnesecchi ATA" o "D - Cuadrado PIS"
-        if (line.includes(' - ')) {
-          const dashParts = line.split(' - ')
-          if (dashParts.length >= 2) {
-            role = dashParts[0].trim().toUpperCase()
-            const nameTeamPart = dashParts[1].trim()
-            
-            // Divide nome e squadra (squadra è tipicamente le ultime 3 lettere)
-            const words = nameTeamPart.split(' ')
-            if (words.length >= 2) {
-              team = words[words.length - 1] // Ultima parola è la squadra
-              name = words.slice(0, -1).join(' ') // Tutto tranne l'ultima parola
-            } else {
-              name = nameTeamPart
-            }
+        if (response.ok && data.players) {
+          // Converte i giocatori parsati nel formato Player dell'UI
+          const importedPlayers: Player[] = data.players.map((p: any) => ({
+            id: Math.random(), // ID temporaneo
+            name: p.nome,
+            role: p.ruolo as 'P' | 'D' | 'C' | 'A',
+            team: p.squadra,
+            team_id: 0,
+            avgRating: 6.5, // Valori di default
+            lastRating: 6.5,
+            titularity: 80,
+            goals: 0,
+            assists: 0,
+            yellowCards: 0,
+            redCards: 0,
+            cleanSheets: 0,
+            gamesPlayed: 0
+          })).map((p: Player) => enrichPlayerData(p))
+          
+          // Evita duplicati con la rosa esistente
+          const newPlayers = importedPlayers.filter(ip => 
+            !roster.find(rp => rp.name.toLowerCase() === ip.name.toLowerCase() && rp.team === ip.team)
+          )
+          
+          if (newPlayers.length > 0) {
+            saveRoster([...roster, ...newPlayers])
+            alert(`✅ Importati ${newPlayers.length} nuovi giocatori da ${data.count} riconosciuti!\n\nUsando GPT-4 per statistiche e consigli avanzati.`)
+          } else {
+            alert('⚠️ Tutti i giocatori riconosciuti sono già presenti nella rosa')
           }
         } else {
-          // Formato standard: supporta sia CSV che formato separato da spazi/tab
-          const separators = [',', ';', '\t', '  ', ' ']
-          
-          for (const sep of separators) {
-            if (line.includes(sep)) {
-              parts = line.split(sep).map(s => s.trim()).filter(s => s)
-              break
-            }
-          }
-          
-          // Se non trova separatori, prova a dividere per spazi singoli
-          if (parts.length === 0) {
-            parts = line.split(' ').filter(s => s.trim())
-          }
-          
-          if (parts.length >= 2) {
-            name = parts[0]
-            
-            // Cerca ruolo (P, D, C, A)
-            const rolePattern = /^[PDCA]$/i
-            const roleIndex = parts.findIndex(p => rolePattern.test(p))
-            
-            if (roleIndex !== -1) {
-              role = parts[roleIndex].toUpperCase()
-              team = parts.slice(roleIndex + 1).join(' ') || parts.slice(1, roleIndex).join(' ')
-            } else {
-              // Se non trova ruolo, assume nome e resto come squadra
-              team = parts.slice(1).join(' ')
-            }
-          }
+          // Fallback al vecchio sistema se il nuovo parsing fallisce
+          console.warn('New parsing failed, falling back to old system:', data.error)
+          handleOldImportCSV(text)
         }
-        
-        if (name && name.length > 1) {
-          // Mappa sigle squadre comuni
-          const teamMap: Record<string, string[]> = {
-            'ATA': ['Atalanta'],
-            'BOL': ['Bologna'],
-            'TOR': ['Torino'],
-            'PIS': ['Juventus'], // Assuming PIS could be a typo for Juventus
-            'JUV': ['Juventus'],
-            'INT': ['Inter'],
-            'CRE': ['Cremonese'],
-            'MIL': ['Milan'],
-            'CAG': ['Cagliari'],
-            'LAZ': ['Lazio'],
-            'COM': ['Como'],
-            'NAP': ['Napoli'],
-            'ROM': ['Roma'],
-            'FIO': ['Fiorentina'],
-            'UDI': ['Udinese'],
-            'VER': ['Verona'],
-            'GEN': ['Genoa'],
-            'LEC': ['Lecce'],
-            'MON': ['Monza'],
-            'PAR': ['Parma'],
-            'VEN': ['Venezia'],
-            'EMP': ['Empoli']
-          }
-          
-          // Cerca giocatore nei dati
-          const player = allPlayers.find(p => {
-            // Match del nome (più flessibile)
-            const playerNameLower = p.name.toLowerCase().replace(/[^a-z ]/g, '')
-            const searchNameLower = name.toLowerCase().replace(/[^a-z ]/g, '')
-            
-            const nameMatch = playerNameLower.includes(searchNameLower) || 
-                             searchNameLower.includes(playerNameLower) ||
-                             playerNameLower.split(' ').some(part => searchNameLower.includes(part))
-            
-            // Match della squadra (include sigle)
-            let teamMatch = true
-            if (team) {
-              const possibleTeams = teamMap[team.toUpperCase()] || [team]
-              teamMatch = possibleTeams.some(t => 
-                p.team.toLowerCase().includes(t.toLowerCase()) || 
-                t.toLowerCase().includes(p.team.toLowerCase())
-              )
-            }
-            
-            // Match del ruolo
-            const roleMatch = !role || p.role === role
-            
-            return nameMatch && teamMatch && roleMatch
-          })
-            
-            if (player) {
-              // Evita duplicati
-              if (!importedPlayers.find(ip => ip.id === player.id)) {
-                importedPlayers.push(enrichPlayerData(player))
-              }
-            }
-          }
-        }
-      })
-      
-      if (importedPlayers.length > 0) {
-        // Evita duplicati con la rosa esistente
-        const newPlayers = importedPlayers.filter(ip => 
-          !roster.find(rp => rp.id === ip.id)
-        )
-        
-        if (newPlayers.length > 0) {
-          saveRoster([...roster, ...newPlayers])
-          alert(`✅ Importati ${newPlayers.length} nuovi giocatori!`)
-        } else {
-          alert('⚠️ Tutti i giocatori sono già presenti nella rosa')
-        }
-      } else {
-        alert(`❌ Nessun giocatore riconosciuto nel file.\n\nFormati supportati:\n• CSV: "Nome,Ruolo,Squadra"\n• TXT: "Nome Ruolo Squadra" (uno per riga)\n• Fantacalcio.it export`)
+      } catch (error) {
+        console.error('Error with new parsing system:', error)
+        // Fallback al vecchio sistema
+        handleOldImportCSV(text)
+      } finally {
+        setIsImporting(false)
       }
     }
     
     reader.readAsText(file)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+  }
+
+  // Sistema di fallback (vecchio parsing con matching nel database)
+  const handleOldImportCSV = (text: string) => {
+    const lines = text.split('\n')
+    const importedPlayers: Player[] = []
+    let startLine = 0
+    
+    // Rileva se c'è un header
+    const firstLine = lines[0]?.toLowerCase()
+    if (firstLine && (firstLine.includes('nome') || firstLine.includes('name') || firstLine.includes('player'))) {
+      startLine = 1
+    }
+    
+    lines.slice(startLine).forEach((line, index) => {
+      if (!line.trim()) return
+      
+      // Parsing per formato fantacalcio con trattini
+      let parts: string[] = []
+      let name = ''
+      let role = ''
+      let team = ''
+      
+      // Rimuovi crediti tra parentesi
+      line = line.replace(/\(\d+\)/, '').trim()
+      
+      // Formato: "P - Carnesecchi ATA" o "D - Cuadrado PIS"
+      if (line.includes(' - ')) {
+        const dashParts = line.split(' - ')
+        if (dashParts.length >= 2) {
+          role = dashParts[0].trim().toUpperCase()
+          const nameTeamPart = dashParts[1].trim()
+          
+          // Divide nome e squadra (squadra è tipicamente le ultime 3 lettere)
+          const words = nameTeamPart.split(' ')
+          if (words.length >= 2) {
+            team = words[words.length - 1] // Ultima parola è la squadra
+            name = words.slice(0, -1).join(' ') // Tutto tranne l'ultima parola
+          } else {
+            name = nameTeamPart
+          }
+        }
+      } else {
+        // Formato standard: supporta sia CSV che formato separato da spazi/tab
+        const separators = [',', ';', '\t', '  ', ' ']
+        
+        for (const sep of separators) {
+          if (line.includes(sep)) {
+            parts = line.split(sep).map(s => s.trim()).filter(s => s)
+            break
+          }
+        }
+        
+        // Se non trova separatori, prova a dividere per spazi singoli
+        if (parts.length === 0) {
+          parts = line.split(' ').filter(s => s.trim())
+        }
+        
+        if (parts.length >= 2) {
+          name = parts[0]
+          
+          // Cerca ruolo (P, D, C, A)
+          const rolePattern = /^[PDCA]$/i
+          const roleIndex = parts.findIndex(p => rolePattern.test(p))
+          
+          if (roleIndex !== -1) {
+            role = parts[roleIndex].toUpperCase()
+            team = parts.slice(roleIndex + 1).join(' ') || parts.slice(1, roleIndex).join(' ')
+          } else {
+            // Se non trova ruolo, assume nome e resto come squadra
+            team = parts.slice(1).join(' ')
+          }
+        }
+      }
+      
+      if (name && name.length > 1) {
+        // Debug: mostra cosa ha estratto
+        console.log(`Parsed line: "${line}" -> Name: "${name}", Role: "${role}", Team: "${team}"`)
+        
+        // Mappa sigle squadre comuni (aggiunte varianti)
+        const teamMap: Record<string, string[]> = {
+          'ATA': ['Atalanta', 'Atalanta BC'],
+          'BOL': ['Bologna', 'Bologna FC'],
+          'TOR': ['Torino', 'Torino FC'],
+          'PIS': ['Pisa', 'Pisa SC'], // PIS è Pisa, non Juventus
+          'JUV': ['Juventus', 'Juventus FC'],
+          'INT': ['Inter', 'Inter Milan', 'Internazionale'],
+          'CRE': ['Cremonese', 'US Cremonese'],
+          'MIL': ['Milan', 'AC Milan'],
+          'CAG': ['Cagliari', 'Cagliari Calcio'],
+          'LAZ': ['Lazio', 'SS Lazio'],
+          'COM': ['Como', 'Como 1907'],
+          'NAP': ['Napoli', 'SSC Napoli'],
+          'ROM': ['Roma', 'AS Roma'],
+          'FIO': ['Fiorentina', 'ACF Fiorentina'],
+          'UDI': ['Udinese', 'Udinese Calcio'],
+          'VER': ['Verona', 'Hellas Verona'],
+          'GEN': ['Genoa', 'Genoa CFC'],
+          'LEC': ['Lecce', 'US Lecce'],
+          'MON': ['Monza', 'AC Monza'],
+          'PAR': ['Parma', 'Parma Calcio'],
+          'VEN': ['Venezia', 'Venezia FC'],
+          'EMP': ['Empoli', 'Empoli FC']
+        }
+        
+        // Cerca giocatore nei dati con matching SUPER FLESSIBILE  
+        const player = allPlayers.find(p => {
+          // Normalizza i nomi: rimuovi accenti, puntini, caratteri speciali
+          const normalizeText = (text: string) => {
+            return text
+              .toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Rimuovi accenti
+              .replace(/[^a-z\s]/g, '') // Solo lettere e spazi
+              .replace(/\s+/g, ' ') // Spazi singoli
+              .trim()
+          }
+          
+          const playerNameNorm = normalizeText(p.name)
+          const searchNameNorm = normalizeText(name)
+          
+          // 1. NOME ESATTO (dopo normalizzazione)
+          if (playerNameNorm === searchNameNorm) return true
+          
+          // 2. COGNOME MATCH - prendi l'ultima parola di entrambi
+          const playerLastName = playerNameNorm.split(' ').pop() || ''
+          const searchLastName = searchNameNorm.split(' ').pop() || ''
+          if (playerLastName && searchLastName && 
+              playerLastName === searchLastName && searchLastName.length > 3) {
+            return true
+          }
+          
+          // 3. COGNOME CONTENUTO - es: "Vlaho" trova "Vlahovic"
+          if (searchNameNorm.length > 4 && playerNameNorm.includes(searchNameNorm)) {
+            return true
+          }
+          
+          // 4. COGNOME CONTENUTO AL CONTRARIO - es: "Vlahovic" trova "D Vlahovic"
+          if (searchLastName.length > 4 && playerNameNorm.includes(searchLastName)) {
+            return true
+          }
+          
+          // 5. MATCH PAROLE - almeno una parola in comune lunga >3 caratteri
+          const searchWords = searchNameNorm.split(' ').filter(w => w.length > 3)
+          const playerWords = playerNameNorm.split(' ').filter(w => w.length > 3)
+          if (searchWords.some(sw => playerWords.some(pw => pw.includes(sw) || sw.includes(pw)))) {
+            return true
+          }
+          
+          return false
+        })
+        
+        // Verifica squadra se fornita
+        if (player && team) {
+          const possibleTeams = teamMap[team.toUpperCase()] || [team]
+          const teamMatch = possibleTeams.some(t => 
+              player.team.toLowerCase().includes(t.toLowerCase()) || 
+              t.toLowerCase().includes(player.team.toLowerCase())
+          )
+          
+          // Se la squadra non corrisponde, ignora questo match
+          if (!teamMatch) {
+            return null
+          }
+        }
+        
+        // Verifica ruolo se fornito
+        if (player && role && player.role !== role) {
+          return null
+        }
+        
+        // Debug per vedere cosa ha trovato
+        if (player) {
+          console.log(`✅ FOUND: "${name}" -> ${player.name} (${player.team}, ${player.role})`)
+          // Evita duplicati
+          if (!importedPlayers.find(ip => ip.id === player.id)) {
+            importedPlayers.push(enrichPlayerData(player))
+          }
+        } else {
+          console.log(`❌ NOT FOUND: ${name} (${role}) from ${team} - No match in database`)
+        }
+      }
+    })
+    
+    // Debug: mostra alcuni giocatori disponibili nel database
+    if (importedPlayers.length === 0 && allPlayers.length > 0) {
+      console.log('🔍 Sample players in database:')
+      allPlayers.slice(0, 10).forEach(p => {
+        console.log(`  - ${p.name} (${p.team}, ${p.role})`)
+      })
+    }
+    
+    console.log(`📊 Import result: ${importedPlayers.length} players imported`)
+    
+    if (importedPlayers.length > 0) {
+      // Evita duplicati con la rosa esistente
+      const newPlayers = importedPlayers.filter(ip => 
+        !roster.find(rp => rp.id === ip.id)
+      )
+      
+      if (newPlayers.length > 0) {
+        saveRoster([...roster, ...newPlayers])
+        alert(`✅ Importati ${newPlayers.length} nuovi giocatori!`)
+      } else {
+        alert('⚠️ Tutti i giocatori sono già presenti nella rosa')
+      }
+    } else {
+      alert(`❌ Nessun giocatore riconosciuto nel file.\n\nFormati supportati:\n• Fantacalcio: "P - Carnesecchi ATA (21)"\n• CSV: "Nome,Ruolo,Squadra"\n• TXT: "Nome Ruolo Squadra"\n\nControlla la Console (F12) per debug dettagliato.`)
+    }
+  }
+
+  const handleTextImport = async () => {
+    if (!rosterText.trim()) {
+      alert('Inserisci il testo della rosa')
+      return
+    }
+
+    try {
+      setIsImporting(true)
+      
+      const response = await fetch('/api/fantacoach/parse-roster', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rosterText })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.players) {
+        // Converte i giocatori parsati nel formato Player dell'UI
+        const importedPlayers: Player[] = data.players.map((p: any) => ({
+          id: Math.random(),
+          name: p.nome,
+          role: p.ruolo as 'P' | 'D' | 'C' | 'A',
+          team: p.squadra,
+          team_id: 0,
+          avgRating: 6.5,
+          lastRating: 6.5,
+          titularity: 80,
+          goals: 0,
+          assists: 0,
+          yellowCards: 0,
+          redCards: 0,
+          cleanSheets: 0,
+          gamesPlayed: 0
+        })).map((p: Player) => enrichPlayerData(p))
+        
+        // Evita duplicati con la rosa esistente
+        const newPlayers = importedPlayers.filter(ip => 
+          !roster.find(rp => rp.name.toLowerCase() === ip.name.toLowerCase() && rp.team === ip.team)
+        )
+        
+        if (newPlayers.length > 0) {
+          saveRoster([...roster, ...newPlayers])
+          alert(`✅ Importati ${newPlayers.length} nuovi giocatori!\n\nOra GPT-4 li analizza direttamente senza dipendere dal database.`)
+          setRosterText('')
+          setShowTextImport(false)
+        } else {
+          alert('⚠️ Tutti i giocatori sono già presenti nella rosa')
+        }
+      } else {
+        alert(`❌ Errore nel parsing: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error importing text:', error)
+      alert('❌ Errore nell\'importazione del testo')
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -418,6 +663,9 @@ export default function FantaCoachPage() {
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.team.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  
+  // Debug per capire quanti giocatori abbiamo
+  console.log(`🔍 Debug: allPlayers=${allPlayers.length}, searchQuery="${searchQuery}", filteredPlayers=${filteredPlayers.length}`)
 
   return (
     <div className="min-h-screen bg-slate-950 p-4">
@@ -456,27 +704,17 @@ export default function FantaCoachPage() {
             La Mia Rosa
           </button>
           <button
-            onClick={() => setActiveTab('lineup')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'lineup'
-                ? 'bg-emerald-500 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            Genera Formazione
-          </button>
-          <button
             onClick={() => {
-              setActiveTab('tips')
+              setActiveTab('analysis')
               if (!recommendations) generateRecommendations()
             }}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'tips'
+              activeTab === 'analysis'
                 ? 'bg-emerald-500 text-white'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            Chi Schierare
+            🧠 Analisi AI Completa
           </button>
         </div>
 
@@ -492,7 +730,8 @@ export default function FantaCoachPage() {
                   Gestione Rosa
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  Importa la tua rosa da file CSV/TXT o aggiungila manualmente
+                  🧠 <strong>NUOVO:</strong> Usa "Incolla Rosa GPT" per importare direttamente - riconosce TUTTI i giocatori senza database! 
+                  <br />Oppure usa i metodi tradizionali: file CSV/TXT o ricerca manuale.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -504,6 +743,13 @@ export default function FantaCoachPage() {
                     onChange={handleImportCSV}
                     className="hidden"
                   />
+                  <Button 
+                    onClick={() => setShowTextImport(true)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    🧠 Incolla Rosa GPT
+                  </Button>
                   <Button 
                     onClick={() => fileInputRef.current?.click()}
                     className="bg-gradient-to-r from-emerald-500 to-cyan-500"
@@ -524,10 +770,68 @@ export default function FantaCoachPage() {
                     onClick={() => setShowSearch(true)}
                     variant="outline" 
                     className="border-slate-700 text-white hover:bg-slate-800"
+                    disabled={allPlayers.length === 0}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Aggiungi Giocatore
                   </Button>
+                  
+                  <div className="flex gap-2">
+                    {allPlayers.length === 0 && (
+                      <Button 
+                        onClick={loadSerieAPlayers}
+                        disabled={loadingPlayers}
+                        className="bg-blue-500 hover:bg-blue-600"
+                      >
+                        {loadingPlayers ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Caricando...
+                          </>
+                        ) : (
+                          '⚽ Carica da Fantacalcio.it'
+                        )}
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      onClick={importFantacalcioReal}
+                      disabled={isImporting}
+                      className="bg-red-500 hover:bg-red-600"
+                      title="Importa giocatori REALI Serie A 2025-26 da Fantacalcio.it"
+                    >
+                      {isImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Importando...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          🔥 DATI REALI 2025-26
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={importSerieAPlayers}
+                      disabled={isImporting}
+                      className="bg-gray-600 hover:bg-gray-700"
+                      title="Importa da API-Football (dati vecchi)"
+                    >
+                      {isImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Importando...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          API-Football (vecchi)
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Formato Import Help */}
@@ -604,7 +908,7 @@ export default function FantaCoachPage() {
                       </div>
                     ) : (
                       <div className="max-h-96 overflow-y-auto space-y-2">
-                        {filteredPlayers.slice(0, 10).map(player => (
+                        {filteredPlayers.slice(0, 50).map(player => (
                           <div
                             key={player.id}
                             onClick={() => addPlayer(player)}
@@ -627,6 +931,92 @@ export default function FantaCoachPage() {
                         ))}
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Text Import Modal */}
+            {showTextImport && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <span>🧠 Incolla Rosa da Fantacalcio</span>
+                    <Button
+                      onClick={() => {
+                        setShowTextImport(false)
+                        setRosterText('')
+                      }}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Incolla direttamente la lista dei giocatori - GPT-4 li riconoscerà automaticamente!
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <textarea
+                      value={rosterText}
+                      onChange={(e) => setRosterText(e.target.value)}
+                      placeholder={`Incolla qui la rosa in formato Fantacalcio, ad esempio:
+
+P - Carnesecchi ATA (21)
+D - Theo Hernandez MIL (38)  
+D - Bastoni INT (35)
+C - Calhanoglu INT (40)
+C - Kvaratskhelia NAP (45)
+A - Martinez L. INT (156)
+A - Vlahovic JUV (78)
+
+GPT-4 riconoscerà automaticamente tutti i nomi!`}
+                      className="w-full h-48 bg-slate-800 border border-slate-700 text-white p-3 rounded-md resize-none"
+                      autoFocus
+                    />
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={handleTextImport}
+                        disabled={!rosterText.trim() || isImporting}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500"
+                      >
+                        {isImporting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Elaborando...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Importa con GPT-4
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => {
+                          setShowTextImport(false)
+                          setRosterText('')
+                        }}
+                        variant="outline"
+                        className="border-slate-700 text-white hover:bg-slate-800"
+                      >
+                        Annulla
+                      </Button>
+                    </div>
+                    
+                    <div className="text-xs text-slate-400 space-y-1">
+                      <p>💡 <strong>Vantaggi del nuovo approccio:</strong></p>
+                      <ul className="list-disc list-inside ml-4 space-y-1">
+                        <li>Riconosce TUTTI i giocatori (anche con nomi difficili come "Pašalić")</li>
+                        <li>Non dipende dal database - funziona sempre</li>
+                        <li>GPT-4 conosce statistiche, forma, titolarità e infortuni aggiornati</li>
+                        <li>Costo: ~1-2 cent per importazione</li>
+                      </ul>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -698,26 +1088,26 @@ export default function FantaCoachPage() {
           </div>
         )}
 
-        {/* Lineup Generator Tab */}
-        {activeTab === 'lineup' && (
+        {/* AI Analysis Tab */}
+        {activeTab === 'analysis' && (
           <div className="space-y-6">
             
-            {/* Formation Selector */}
+            {/* AI Analysis Controller */}
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Target className="h-5 w-5 mr-2 text-emerald-500" />
-                  Generatore Formazione AI
+                  🧠 Analisi AI Completa
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  Seleziona modulo e genera la formazione ottimale per questa giornata
+                  Un'unica analisi intelligente: chi schierare + formazione ottimale (priorità alle 3 punte)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
                     <label className="text-slate-300 text-sm font-medium mb-2 block">
-                      Modulo
+                      Modulo preferito
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {formations.map((form) => (
@@ -737,9 +1127,9 @@ export default function FantaCoachPage() {
                   </div>
 
                   <Button 
-                    onClick={generateLineup}
-                    disabled={roster.length < 11 || analyzing}
-                    className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
+                    onClick={generateRecommendations}
+                    disabled={roster.length === 0 || analyzing}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                   >
                     {analyzing ? (
                       <>
@@ -749,182 +1139,307 @@ export default function FantaCoachPage() {
                     ) : (
                       <>
                         <BarChart3 className="h-4 w-4 mr-2" />
-                        Genera Formazione (3 crediti)
+                        🧠 Analisi Completa (~2¢)
                       </>
                     )}
                   </Button>
                   
-                  {roster.length < 11 && (
+                  {roster.length === 0 && (
                     <p className="text-sm text-red-400">
-                      Aggiungi almeno 11 giocatori alla rosa per generare una formazione
+                      Aggiungi giocatori alla rosa per ottenere l'analisi AI
                     </p>
                   )}
+
+                  <div className="text-xs text-slate-300 bg-slate-800/50 p-3 rounded-lg">
+                    <p className="font-medium mb-1">🎯 Cosa include l'analisi:</p>
+                    <ul className="list-disc list-inside space-y-1 text-slate-400">
+                      <li>Chi schierare assolutamente (con motivazioni)</li>
+                      <li>Formazione ottimale con le 3 punte migliori</li>
+                      <li>Capitano e vice-capitano consigliati</li>
+                      <li>Disclaimer su limiti dei dati GPT-4</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Generated Lineup */}
-            {generatedLineup && (
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Formazione Consigliata - {formation}
-                  </CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Basata su: forma, avversario, probabilità titolarità, bonus/malus attesi
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  
-                  {/* Captain & Vice */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                      <div className="text-yellow-400 font-semibold mb-2">👑 CAPITANO</div>
-                      <div className="text-white font-bold">{generatedLineup.captain?.name}</div>
-                      <div className="text-sm text-slate-400">
-                        {generatedLineup.captain?.reason}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                      <div className="text-slate-300 font-semibold mb-2">VICE-CAPITANO</div>
-                      <div className="text-white font-bold">{generatedLineup.viceCaptain?.name}</div>
-                      <div className="text-sm text-slate-400">
-                        {generatedLineup.viceCaptain?.reason}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Formation Visual */}
-                  <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-6">
-                    <div className="text-center space-y-6">
-                      <div className="text-emerald-400 font-semibold">FORMAZIONE {formation}</div>
-                      
-                      {/* Attackers */}
-                      <div className="flex justify-center gap-8">
-                        {generatedLineup.formation?.attackers?.map((player: any, i: number) => (
-                          <div key={i} className="text-center">
-                            <div className="w-16 h-16 bg-red-500/20 border border-red-500/50 rounded-full flex items-center justify-center mb-2">
-                              <span className="text-red-400 text-xs font-bold">A</span>
-                            </div>
-                            <div className="text-white text-xs">{player.name}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Midfielders */}
-                      <div className="flex justify-center gap-4">
-                        {generatedLineup.formation?.midfielders?.map((player: any, i: number) => (
-                          <div key={i} className="text-center">
-                            <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-500/50 rounded-full flex items-center justify-center mb-1">
-                              <span className="text-emerald-400 text-xs font-bold">C</span>
-                            </div>
-                            <div className="text-white text-xs">{player.name}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Defenders */}
-                      <div className="flex justify-center gap-6">
-                        {generatedLineup.formation?.defenders?.map((player: any, i: number) => (
-                          <div key={i} className="text-center">
-                            <div className="w-12 h-12 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center mb-1">
-                              <span className="text-blue-400 text-xs font-bold">D</span>
-                            </div>
-                            <div className="text-white text-xs">{player.name}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Goalkeeper */}
-                      <div className="flex justify-center">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-purple-500/20 border border-purple-500/50 rounded-full flex items-center justify-center mb-2">
-                            <span className="text-purple-400 text-xs font-bold">P</span>
-                          </div>
-                          <div className="text-white text-xs">{generatedLineup.formation?.goalkeeper?.name}</div>
+            {/* AI Analysis Results */}
+            {recommendations && (
+              <div className="space-y-6">
+                
+                {/* Disclaimer sui dati GPT-4 */}
+                {recommendations.disclaimer && (
+                  <Card className="bg-yellow-900/20 border-yellow-600/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-3">
+                        <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5" />
+                        <div>
+                          <p className="text-yellow-200 font-medium">⚠️ Informazioni sui dati</p>
+                          <p className="text-yellow-100/80 text-sm mt-1">{recommendations.disclaimer}</p>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                  {/* Bench */}
-                  {generatedLineup.bench && generatedLineup.bench.length > 0 && (
-                    <div>
-                      <h4 className="text-white font-semibold mb-3">Panchina (ordine priorità)</h4>
-                      <div className="grid grid-cols-3 gap-3">
-                        {generatedLineup.bench.map((player: any, i: number) => (
-                          <div key={i} className="bg-slate-800 rounded p-3 text-center">
-                            <div className="text-white font-medium">{player.name}</div>
-                            <div className="text-slate-400 text-xs">{player.priority}° opzione</div>
+                {/* Sezione TOP 3 ATTACCANTI */}
+                {recommendations.analysis?.topAttackers && recommendations.analysis.topAttackers.length > 0 && (
+                  <Card className="bg-slate-900/50 border-slate-800">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <Target className="h-5 w-5 mr-2 text-red-500" />
+                        🎯 TOP 3 ATTACCANTI (Priorità Assoluta)
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Le tue 3 punte migliori - da schierare sempre!
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {recommendations.analysis.topAttackers.map((player: any, i: number) => (
+                          <div key={i} className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                            <div className="text-center">
+                              <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <span className="text-white font-bold">{player.priority || i + 1}</span>
+                              </div>
+                              <div className="text-white font-bold">{player.name}</div>
+                              <div className="text-sm text-red-400">{player.team}</div>
+                              <p className="text-slate-300 text-xs mt-2">{player.reason}</p>
+                            </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
+                    </CardContent>
+                  </Card>
+                )}
 
-        {/* Tips & Recommendations Tab */}
-        {activeTab === 'tips' && (
-          <div className="space-y-6">
-            
-            {!recommendations ? (
+                {/* Formazione Completa */}
+                {recommendations.formation && (
+                  <Card className="bg-slate-900/50 border-slate-800">
+                    <CardHeader>
+                      <CardTitle className="text-white">
+                        🏆 Formazione Ottimale - {recommendations.formation.module || formation}
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Formazione completa con priorità alle 3 punte migliori
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      
+                      {/* Captain & Vice */}
+                      {(recommendations.formation.captain || recommendations.formation.viceCaptain) && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {recommendations.formation.captain && (
+                            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                              <div className="text-yellow-400 font-semibold mb-2">👑 CAPITANO</div>
+                              <div className="text-white font-bold">{recommendations.formation.captain.name}</div>
+                              <div className="text-sm text-slate-400">{recommendations.formation.captain.reason}</div>
+                            </div>
+                          )}
+                          
+                          {recommendations.formation.viceCaptain && (
+                            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+                              <div className="text-slate-300 font-semibold mb-2">VICE-CAPITANO</div>
+                              <div className="text-white font-bold">{recommendations.formation.viceCaptain.name}</div>
+                              <div className="text-sm text-slate-400">{recommendations.formation.viceCaptain.reason}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Formation Visual */}
+                      {recommendations.formation.lineup && (
+                        <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-6">
+                          <div className="text-center space-y-6">
+                            <div className="text-emerald-400 font-semibold">FORMAZIONE {recommendations.formation.module || formation}</div>
+                            
+                            {/* Attackers */}
+                            {recommendations.formation.lineup.attackers && recommendations.formation.lineup.attackers.length > 0 && (
+                              <div>
+                                <div className="text-red-400 text-sm mb-2">ATTACCANTI</div>
+                                <div className="flex justify-center gap-4 flex-wrap">
+                                  {recommendations.formation.lineup.attackers.map((player: any, i: number) => (
+                                    <div key={i} className="text-center">
+                                      <div className="w-14 h-14 bg-red-500/20 border border-red-500/50 rounded-full flex items-center justify-center mb-1">
+                                        <span className="text-red-400 text-xs font-bold">A</span>
+                                      </div>
+                                      <div className="text-white text-xs font-medium">{player.name}</div>
+                                      <div className="text-xs text-slate-400 max-w-20 truncate">{player.reason}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Midfielders */}
+                            {recommendations.formation.lineup.midfielders && recommendations.formation.lineup.midfielders.length > 0 && (
+                              <div>
+                                <div className="text-emerald-400 text-sm mb-2">CENTROCAMPISTI</div>
+                                <div className="flex justify-center gap-3 flex-wrap">
+                                  {recommendations.formation.lineup.midfielders.map((player: any, i: number) => (
+                                    <div key={i} className="text-center">
+                                      <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-500/50 rounded-full flex items-center justify-center mb-1">
+                                        <span className="text-emerald-400 text-xs font-bold">C</span>
+                                      </div>
+                                      <div className="text-white text-xs">{player.name}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Defenders */}
+                            {recommendations.formation.lineup.defenders && recommendations.formation.lineup.defenders.length > 0 && (
+                              <div>
+                                <div className="text-blue-400 text-sm mb-2">DIFENSORI</div>
+                                <div className="flex justify-center gap-3 flex-wrap">
+                                  {recommendations.formation.lineup.defenders.map((player: any, i: number) => (
+                                    <div key={i} className="text-center">
+                                      <div className="w-12 h-12 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center mb-1">
+                                        <span className="text-blue-400 text-xs font-bold">D</span>
+                                      </div>
+                                      <div className="text-white text-xs">{player.name}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Goalkeeper */}
+                            {recommendations.formation.lineup.goalkeeper && (
+                              <div>
+                                <div className="text-purple-400 text-sm mb-2">PORTIERE</div>
+                                <div className="flex justify-center">
+                                  <div className="text-center">
+                                    <div className="w-14 h-14 bg-purple-500/20 border border-purple-500/50 rounded-full flex items-center justify-center mb-1">
+                                      <span className="text-purple-400 text-xs font-bold">P</span>
+                                    </div>
+                                    <div className="text-white text-xs font-medium">{recommendations.formation.lineup.goalkeeper.name}</div>
+                                    <div className="text-xs text-slate-400">{recommendations.formation.lineup.goalkeeper.reason}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Loading State */}
+            {!recommendations && analyzing && (
               <Card className="bg-slate-900/50 border-slate-800">
                 <CardContent className="py-12 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-emerald-500 mx-auto mb-4" />
-                  <p className="text-slate-400">Analizzando la tua rosa...</p>
-                  <p className="text-sm text-slate-500 mt-2">Questo potrebbe richiedere alcuni secondi</p>
+                  <p className="text-slate-400">🧠 GPT-4 sta analizzando la tua rosa...</p>
+                  <p className="text-sm text-slate-500 mt-2">Creando analisi completa con priorità alle 3 punte</p>
                 </CardContent>
               </Card>
-            ) : (
-              <>
+            )}
+
+            {/* Analysis Sections */}
+            {recommendations?.analysis && (
+              <div className="space-y-6">
+                
                 {/* Must Start Players */}
-                <Card className="bg-slate-900/50 border-slate-800">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <TrendingUp className="h-5 w-5 mr-2 text-emerald-500" />
-                      ✅ MUST START
-                    </CardTitle>
-                    <CardDescription className="text-slate-400">
-                      Giocatori da schierare assolutamente questa giornata
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {recommendations.mustStart?.map((player: any, i: number) => (
-                        <div key={i} className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                  {i + 1}
+                {recommendations.analysis.mustStart && recommendations.analysis.mustStart.length > 0 && (
+                  <Card className="bg-slate-900/50 border-slate-800">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <TrendingUp className="h-5 w-5 mr-2 text-emerald-500" />
+                        ✅ MUST START
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Giocatori da schierare assolutamente (oltre alle 3 punte)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {recommendations.analysis.mustStart.map((player: any, i: number) => (
+                          <div key={i} className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Badge className={getRoleColor(player.role || 'C')}>
+                                    {player.role || 'N/A'}
+                                  </Badge>
+                                  <div>
+                                    <div className="text-white font-bold">{player.name}</div>
+                                    <div className="text-sm text-slate-400">{player.team}</div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="text-white font-bold">{player.name}</div>
-                                  <div className="text-sm text-slate-400">{player.team}</div>
-                                </div>
+                                <p className="text-slate-300 text-sm">{player.reason}</p>
                               </div>
-                              <p className="text-slate-300 text-sm">{player.reason}</p>
-                            </div>
-                            <div className="text-right ml-4">
-                              <div className="text-emerald-400 font-bold text-lg">{player.prediction}</div>
-                              <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">
-                                {player.confidence}
-                              </Badge>
+                              {player.prediction && (
+                                <div className="text-right ml-4">
+                                  <div className="text-emerald-400 font-bold text-lg">{player.prediction}</div>
+                                  {player.confidence && (
+                                    <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">
+                                      {player.confidence}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Recommended Players */}
+                {recommendations.analysis.recommended && recommendations.analysis.recommended.length > 0 && (
+                  <Card className="bg-slate-900/50 border-slate-800">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <Target className="h-5 w-5 mr-2 text-blue-500" />
+                        👍 CONSIGLIATI
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Buone opzioni da considerare
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {recommendations.analysis.recommended.map((player: any, i: number) => (
+                          <div key={i} className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Badge className={getRoleColor(player.role || 'C')}>
+                                    {player.role || 'N/A'}
+                                  </Badge>
+                                  <div>
+                                    <div className="text-white font-bold">{player.name}</div>
+                                    <div className="text-sm text-slate-400">{player.team}</div>
+                                  </div>
+                                </div>
+                                <p className="text-slate-300 text-sm">{player.reason}</p>
+                              </div>
+                              {player.prediction && (
+                                <div className="text-right ml-4">
+                                  <div className="text-blue-400 font-bold text-lg">{player.prediction}</div>
+                                  {player.confidence && (
+                                    <Badge className="bg-blue-500/20 text-blue-400 text-xs">
+                                      {player.confidence}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Doubts */}
-                {recommendations.doubts && recommendations.doubts.length > 0 && (
+                {recommendations.analysis.doubts && recommendations.analysis.doubts.length > 0 && (
                   <Card className="bg-slate-900/50 border-slate-800">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center">
@@ -936,21 +1451,33 @@ export default function FantaCoachPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        {recommendations.doubts.map((player: any, i: number) => (
+                      <div className="space-y-3">
+                        {recommendations.analysis.doubts.map((player: any, i: number) => (
                           <div key={i} className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <div className="text-white font-bold mb-2">{player.name}</div>
-                                <p className="text-emerald-400 text-sm mb-1">✅ PRO: {player.pros}</p>
-                                <p className="text-red-400 text-sm">❌ CONTRO: {player.cons}</p>
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Badge className={getRoleColor(player.role || 'C')}>
+                                    {player.role || 'N/A'}
+                                  </Badge>
+                                  <div>
+                                    <div className="text-white font-bold">{player.name}</div>
+                                    <div className="text-sm text-slate-400">{player.team}</div>
+                                  </div>
+                                </div>
+                                {player.pros && <p className="text-emerald-400 text-sm mb-1">✅ PRO: {player.pros}</p>}
+                                {player.cons && <p className="text-red-400 text-sm">❌ CONTRO: {player.cons}</p>}
                               </div>
-                              <div className="text-right ml-4">
-                                <div className="text-yellow-400 font-bold text-lg">{player.prediction}</div>
-                                <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
-                                  {player.confidence}
-                                </Badge>
-                              </div>
+                              {player.prediction && (
+                                <div className="text-right ml-4">
+                                  <div className="text-yellow-400 font-bold text-lg">{player.prediction}</div>
+                                  {player.confidence && (
+                                    <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
+                                      {player.confidence}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -960,45 +1487,49 @@ export default function FantaCoachPage() {
                 )}
 
                 {/* Players to Avoid */}
-                <Card className="bg-slate-900/50 border-slate-800">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
-                      ⚠️ DA EVITARE
-                    </CardTitle>
-                    <CardDescription className="text-slate-400">
-                      Giocatori rischiosi per questa giornata
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {recommendations.avoid?.map((player: any, i: number) => (
-                        <div key={i} className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                  {i + 1}
+                {recommendations.analysis.avoid && recommendations.analysis.avoid.length > 0 && (
+                  <Card className="bg-slate-900/50 border-slate-800">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
+                        ⚠️ DA EVITARE
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Giocatori rischiosi per questa giornata
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {recommendations.analysis.avoid.map((player: any, i: number) => (
+                          <div key={i} className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Badge className={getRoleColor(player.role || 'C')}>
+                                    {player.role || 'N/A'}
+                                  </Badge>
+                                  <div>
+                                    <div className="text-white font-bold">{player.name}</div>
+                                    <div className="text-sm text-slate-400">{player.team}</div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="text-white font-bold">{player.name}</div>
-                                  <div className="text-sm text-slate-400">{player.team}</div>
-                                </div>
+                                <p className="text-slate-300 text-sm">{player.reason}</p>
                               </div>
-                              <p className="text-slate-300 text-sm">{player.reason}</p>
+                              {player.risk && (
+                                <Badge className="bg-red-500/20 text-red-400">
+                                  {player.risk}
+                                </Badge>
+                              )}
                             </div>
-                            <Badge className="bg-red-500/20 text-red-400">
-                              {player.risk}
-                            </Badge>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
-            
+
             {/* Refresh Button */}
             <div className="text-center">
               <Button 
@@ -1008,7 +1539,7 @@ export default function FantaCoachPage() {
                 className="border-slate-700 text-white hover:bg-slate-800"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${analyzing ? 'animate-spin' : ''}`} />
-                Aggiorna Consigli (2 crediti)
+                🧠 Aggiorna Analisi (~2¢)
               </Button>
             </div>
           </div>
@@ -1017,3 +1548,4 @@ export default function FantaCoachPage() {
     </div>
   )
 }
+
