@@ -100,75 +100,56 @@ export async function generateDailyTipsV2() {
     serieA: false
   }
   
-  // REGOLE FINALI:
-  // 10+ partite: TUTTE le proposte (singola, doppia, tripla, mista, bomba)
-  // 5+ partite: SINGOLA + DOPPIA (almeno queste due)
-  // Meno di 5: regole progressive
-  
-  if (numMatches >= 10) {
-    console.log(`🎯 Trovate ${numMatches} partite (>=10), generando TUTTE le proposte!`)
-    
-    // Genera tutto in parallelo per velocità
-    const [singola, doppia, tripla, mista, bomba] = await Promise.all([
-      generateSingola(matchesData, supabase, today),
-      generateDoppia(matchesData, supabase, today),
-      generateTripla(matchesData, supabase, today),
-      generateMista(matchesData, supabase, today),
-      generateBomba(matchesData, supabase, today)
-    ])
-    
-    results.singola = singola
-    results.doppia = doppia
-    results.tripla = tripla
-    results.mista = mista
-    results.bomba = bomba
-  } else if (numMatches >= 5) {
-    console.log(`🎯 Trovate ${numMatches} partite (>=5), generando SINGOLA + DOPPIA obbligatorie + altre se possibili`)
-    
-    // SEMPRE singola e doppia con 5+ partite
+  // REGOLE:
+  // >= 5 partite: OBBLIGATORIO singola + doppia, PROVA tripla + mista + bomba
+  // < 5 partite: genera quello che si può
+
+  if (numMatches >= 5) {
+    console.log(`🎯 Trovate ${numMatches} partite (>=5), generando TUTTE le proposte!`)
+
+    // OBBLIGATORIO: Singola e Doppia
     const [singola, doppia] = await Promise.all([
       generateSingola(matchesData, supabase, today),
       generateDoppia(matchesData, supabase, today)
     ])
-    
     results.singola = singola
     results.doppia = doppia
-    
-    // Aggiungi altre se possibile
-    if (numMatches >= 7) {
-      console.log('🎲 Aggiungendo TRIPLA e BOMBA...')
-      const [tripla, bomba] = await Promise.all([
-        generateTripla(matchesData, supabase, today),
-        generateBomba(matchesData, supabase, today)
-      ])
-      results.tripla = tripla
-      results.bomba = bomba
-    }
-    
-    if (numMatches >= 8) {
-      console.log('🎲 Aggiungendo MISTA...')
-      const mista = await generateMista(matchesData, supabase, today)
-      results.mista = mista
-    }
-  } else {
-    // Regole progressive per meno di 5 partite
-    if (numMatches >= 1) {
-      console.log('🎲 Generando SINGOLA...')
-      const singola = await generateSingola(matchesData, supabase, today)
-      results.singola = singola
-    }
-    
-    if (numMatches >= 2) {
-      console.log('🎲 Generando DOPPIA...')
-      const doppia = await generateDoppia(matchesData, supabase, today)
-      results.doppia = doppia
-    }
-    
-    if (numMatches >= 3) {
-      console.log('🎲 Generando TRIPLA...')
-      const tripla = await generateTripla(matchesData, supabase, today)
-      results.tripla = tripla
-    }
+
+    // PROVA: Tripla, Mista, Bomba (se GPT riesce bene, altrimenti skip)
+    console.log('🎲 Provando a generare TRIPLA, MISTA, BOMBA...')
+    const [tripla, mista, bomba] = await Promise.all([
+      generateTripla(matchesData, supabase, today),
+      generateMista(matchesData, supabase, today),
+      generateBomba(matchesData, supabase, today)
+    ])
+    results.tripla = tripla
+    results.mista = mista
+    results.bomba = bomba
+
+  } else if (numMatches >= 3) {
+    console.log(`🎯 Trovate ${numMatches} partite (3-4), generando quello che si può...`)
+
+    const [singola, doppia, tripla] = await Promise.all([
+      generateSingola(matchesData, supabase, today),
+      generateDoppia(matchesData, supabase, today),
+      generateTripla(matchesData, supabase, today)
+    ])
+    results.singola = singola
+    results.doppia = doppia
+    results.tripla = tripla
+
+  } else if (numMatches >= 2) {
+    console.log(`🎯 Trovate ${numMatches} partite, generando singola e doppia...`)
+    const [singola, doppia] = await Promise.all([
+      generateSingola(matchesData, supabase, today),
+      generateDoppia(matchesData, supabase, today)
+    ])
+    results.singola = singola
+    results.doppia = doppia
+
+  } else if (numMatches >= 1) {
+    console.log(`🎯 Trovata 1 partita, generando solo singola...`)
+    results.singola = await generateSingola(matchesData, supabase, today)
   }
   
   // SEMPRE: Se ci sono partite di Serie A (anche domani), genera la sesta proposta
@@ -225,257 +206,257 @@ export async function generateDailyTipsV2() {
   return results
 }
 
-// SINGOLA: 1 partita con analisi OpenAI intelligente (1.1-10.0)
+// SINGOLA: 1 partita con analisi OpenAI intelligente
 async function generateSingola(matches: any[], supabase: any, today: string): Promise<boolean> {
   console.log(`🎯 Generando SINGOLA con OpenAI da ${matches.length} partite disponibili`)
-  
-  const prompt = `Sei TipsterAI, analizza le partite e crea la MIGLIORE SINGOLA per oggi.
 
-PARTITE DISPONIBILI:
-${JSON.stringify(matches, null, 2)}
+  // Prepara lista partite in formato semplice per GPT
+  const matchList = matches.map(m => ({
+    fixture_id: m.fixture_id,
+    partita: `${m.home_team} vs ${m.away_team}`,
+    lega: m.league,
+    orario: m.time,
+    quote: {
+      '1': m.odds?.winner?.home,
+      'X': m.odds?.winner?.draw,
+      '2': m.odds?.winner?.away,
+      'Over 2.5': m.odds?.goals?.over_2_5,
+      'Under 2.5': m.odds?.goals?.under_2_5,
+      'Gol': m.odds?.goals?.btts,
+      'NoGol': m.odds?.goals?.nobtts
+    }
+  }))
 
-USA LE QUOTE REALI FORNITE! NON inventare quote.
+  const prompt = `Sei TipsterAI, esperto di scommesse calcistiche. Analizza queste partite e scegli LA MIGLIORE SINGOLA.
 
-CONSTRAINT DATABASE: odds DEVE essere tra 1.1 e 10.0 (obbligatorio per il salvataggio).
+PARTITE DISPONIBILI CON QUOTE REALI:
+${JSON.stringify(matchList, null, 2)}
 
-Scegli LA MIGLIORE partita e selezione basandoti su:
-- Analisi tecnico-tattica delle squadre
-- Form recente e motivazioni
-- Quote value e probabilità reali
-- Contesto della partita
+REGOLE:
+1. DEVI scegliere UN fixture_id dalla lista sopra
+2. DEVI usare una prediction tra: 1, X, 2, Over 2.5, Under 2.5, Gol, NoGol
+3. USA la quota REALE dalla lista (non inventare!)
+4. Scegli la scommessa con miglior rapporto valore/sicurezza
 
-OUTPUT JSON:
+OUTPUT JSON (usa esattamente questo formato):
 {
-  "fixture_id": 123456,
-  "home_team": "Milan",
-  "away_team": "Monza",
-  "league": "Serie A",
-  "match_time": "15:00",
-  "prediction": "1",
-  "prediction_label": "MILAN VINCE",
-  "odds": 1.65,
-  "confidence": 80,
-  "reasoning": "Milan in forma eccellente in casa, Monza in difficoltà in trasferta. Quote value interessante.",
-  "valid_until": "${today}"
+  "fixture_id": <numero dalla lista>,
+  "home_team": "<squadra casa>",
+  "away_team": "<squadra ospite>",
+  "league": "<campionato>",
+  "match_time": "<orario>",
+  "prediction": "<1 o X o 2 o Over 2.5 o Under 2.5 o Gol o NoGol>",
+  "odds": <quota reale dalla lista>,
+  "confidence": <60-90>,
+  "reasoning": "<analisi dettagliata in italiano>"
 }`
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       console.log(`🔄 Tentativo ${attempt}/3 per generare singola`)
-      
+
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         response_format: { type: 'json_object' }
       })
-      
+
       const gptSingola = JSON.parse(response.choices[0].message.content || '{}')
-      
-      // Trova il match originale per assegnare quote REALI
+
+      // Verifica che il fixture_id esista
       const originalMatch = matches.find(m => m.fixture_id === gptSingola.fixture_id)
-      if (!originalMatch || !originalMatch.odds) {
-        throw new Error(`Match con fixture_id ${gptSingola.fixture_id} non trovato o senza odds`)
-      }
-      
-      // Assegna quota REALE dal database
-      const realOdds = RealOddsManager.assignRealOdds(gptSingola.prediction, originalMatch.odds)
-      
-      // VALIDAZIONE CONSTRAINT DATABASE: odds deve essere 1.1-10.0
-      if (!realOdds || isNaN(realOdds) || realOdds < 1.1 || realOdds > 10.0) {
-        console.log(`⚠️ Tentativo ${attempt}: Quota ${realOdds} non valida (range 1.1-10.0), rigenerando...`)
+      if (!originalMatch) {
+        console.log(`⚠️ Tentativo ${attempt}: fixture_id ${gptSingola.fixture_id} non valido, riprovo...`)
         continue
       }
-      
+
+      // Assegna quota REALE dal database
+      const realOdds = RealOddsManager.assignRealOdds(gptSingola.prediction, originalMatch.odds)
+      if (!realOdds || isNaN(realOdds) || realOdds < 1.1 || realOdds > 10.0) {
+        console.log(`⚠️ Tentativo ${attempt}: Quota ${realOdds} non valida per ${gptSingola.prediction}, riprovo...`)
+        continue
+      }
+
       const singola = {
         fixture_id: gptSingola.fixture_id,
-        home_team: gptSingola.home_team,
-        away_team: gptSingola.away_team,
-        league: gptSingola.league,
-        match_time: gptSingola.match_time,
+        home_team: originalMatch.home_team,
+        away_team: originalMatch.away_team,
+        league: originalMatch.league,
+        match_time: originalMatch.time,
         prediction: gptSingola.prediction,
-        prediction_label: buildPredictionLabel(gptSingola.prediction, gptSingola.home_team, gptSingola.away_team),
-        odds: Math.round(realOdds * 100) / 100, // QUOTA REALE
-        confidence: gptSingola.confidence,
+        prediction_label: buildPredictionLabel(gptSingola.prediction, originalMatch.home_team, originalMatch.away_team),
+        odds: Math.round(realOdds * 100) / 100,
+        confidence: gptSingola.confidence || 70,
         reasoning: gptSingola.reasoning,
         valid_until: today
       }
-      
-      console.log(`📊 Singola OpenAI (tentativo ${attempt}):`, {
-        match: `${singola.home_team} vs ${singola.away_team}`,
-        prediction: singola.prediction,
-        odds: singola.odds,
-        confidence: singola.confidence
-      })
-      
-      // Salva nel database
+
+      console.log(`📊 Singola:`, `${singola.home_team} vs ${singola.away_team} - ${singola.prediction} @${singola.odds}`)
+
       const { error } = await supabase
         .from('tips_singola')
         .upsert(singola, { onConflict: 'valid_until' })
-      
+
       if (error) {
         console.error('❌ Errore salvataggio singola:', error)
         return false
       }
-      
-      console.log('✅ Singola OpenAI salvata con successo')
+
+      console.log('✅ Singola salvata')
       return true
-      
+
     } catch (error) {
-      console.error(`❌ Errore tentativo ${attempt} per singola:`, error)
-      if (attempt === 3) {
-        console.error('❌ Falliti tutti i tentativi per singola')
-        return false
-      }
-      // Aspetta 1 secondo prima del prossimo tentativo
+      console.error(`❌ Errore tentativo ${attempt}:`, error)
+      if (attempt === 3) return false
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
-  
+
   return false
 }
 
-// DOPPIA: 2 partite con analisi OpenAI intelligente (>=1.90)
+// DOPPIA: 2 partite con analisi OpenAI intelligente
 async function generateDoppia(matches: any[], supabase: any, today: string): Promise<boolean> {
   console.log(`🎯 Generando DOPPIA con OpenAI da ${matches.length} partite disponibili`)
-  
-  const prompt = `Sei TipsterAI, analizza le partite e crea la MIGLIORE DOPPIA per oggi.
 
-PARTITE DISPONIBILI:
-${JSON.stringify(matches, null, 2)}
+  // Prepara lista partite in formato semplice per GPT
+  const matchList = matches.map(m => ({
+    fixture_id: m.fixture_id,
+    partita: `${m.home_team} vs ${m.away_team}`,
+    lega: m.league,
+    orario: m.time,
+    quote: {
+      '1': m.odds?.winner?.home,
+      'X': m.odds?.winner?.draw,
+      '2': m.odds?.winner?.away,
+      'Over 2.5': m.odds?.goals?.over_2_5,
+      'Under 2.5': m.odds?.goals?.under_2_5,
+      'Gol': m.odds?.goals?.btts,
+      'NoGol': m.odds?.goals?.nobtts
+    }
+  }))
 
-USA LE QUOTE REALI FORNITE! NON inventare quote.
+  const prompt = `Sei TipsterAI, esperto di scommesse calcistiche. Analizza queste partite e crea LA MIGLIORE DOPPIA (2 selezioni).
 
-CONSTRAINT DATABASE: total_odds DEVE essere >= 1.90 (obbligatorio per il salvataggio).
+PARTITE DISPONIBILI CON QUOTE REALI:
+${JSON.stringify(matchList, null, 2)}
 
-Scegli 2 partite e selezioni migliori basandoti su:
-- Analisi tecnico-tattica approfondita
-- Value betting e probabilità reali
-- Bilanciamento rischio/rendimento
-- Form e motivazioni delle squadre
+REGOLE:
+1. Scegli 2 partite DIVERSE dalla lista (2 fixture_id diversi!)
+2. Per ogni partita scegli una prediction tra: 1, X, 2, Over 2.5, Under 2.5, Gol, NoGol
+3. USA le quote REALI dalla lista (non inventare!)
+4. Obiettivo: quota totale tra 2.00 e 3.50
 
 OUTPUT JSON:
 {
   "matches": [
     {
-      "fixture_id": 123,
-      "home_team": "Milan",
-      "away_team": "Monza",
-      "league": "Serie A",
-      "time": "15:00",
-      "prediction": "1",
-      "confidence": 75,
-      "reasoning": "Milan dominante in casa, Monza fragile in trasferta"
+      "fixture_id": <numero>,
+      "prediction": "<1/X/2/Over 2.5/Under 2.5/Gol/NoGol>",
+      "reasoning": "<analisi in italiano>"
     },
     {
-      "fixture_id": 456,
-      "home_team": "Inter",
-      "away_team": "Como",
-      "league": "Serie A",
-      "time": "18:00",
-      "prediction": "Over 2.5",
-      "confidence": 70,
-      "reasoning": "Inter attacco prolific, Como difesa vulnerabile"
+      "fixture_id": <numero diverso>,
+      "prediction": "<1/X/2/Over 2.5/Under 2.5/Gol/NoGol>",
+      "reasoning": "<analisi in italiano>"
     }
   ],
-  "confidence": 72,
-  "strategy_reasoning": "Due selezioni value con alta probabilità di successo"
+  "confidence": <60-85>,
+  "strategy_reasoning": "<strategia complessiva>"
 }`
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       console.log(`🔄 Tentativo ${attempt}/3 per generare doppia`)
-      
+
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         response_format: { type: 'json_object' }
       })
-      
+
       const gptDoppia = JSON.parse(response.choices[0].message.content || '{}')
-      
-      // Processa ogni match e assegna quote REALI
-      const doppiaMatches = []
-      let totalOdds = 1
-      
-      for (const gptMatch of gptDoppia.matches) {
-        // Trova match originale
-        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
-        if (!originalMatch || !originalMatch.odds) {
-          throw new Error(`Match ${gptMatch.fixture_id} non trovato o senza odds`)
-        }
-        
-        // Assegna quota REALE
-        const realOdds = RealOddsManager.assignRealOdds(gptMatch.prediction, originalMatch.odds)
-        
-        if (!realOdds || isNaN(realOdds) || realOdds <= 0) {
-          throw new Error(`Quota reale non valida per ${gptMatch.prediction}`)
-        }
-        
-        const matchWithRealOdds = {
-          fixture_id: gptMatch.fixture_id,
-          home_team: gptMatch.home_team,
-          away_team: gptMatch.away_team,
-          league: gptMatch.league,
-          time: gptMatch.time,
-          prediction: gptMatch.prediction,
-          prediction_label: buildPredictionLabel(gptMatch.prediction, gptMatch.home_team, gptMatch.away_team),
-          odds: Math.round(realOdds * 100) / 100,
-          confidence: gptMatch.confidence,
-          reasoning: gptMatch.reasoning
-        }
-        
-        doppiaMatches.push(matchWithRealOdds)
-        totalOdds *= realOdds
-      }
-      
-      // Arrotonda quota totale
-      totalOdds = Math.round(totalOdds * 100) / 100
-      
-      // VALIDAZIONE CONSTRAINT DATABASE: total_odds >= 1.90
-      if (totalOdds < 1.90) {
-        console.log(`⚠️ Tentativo ${attempt}: Quota totale ${totalOdds} < 1.90, rigenerando...`)
+
+      if (!gptDoppia.matches || gptDoppia.matches.length < 2) {
+        console.log(`⚠️ Tentativo ${attempt}: GPT non ha restituito 2 match, riprovo...`)
         continue
       }
-      
+
+      // Verifica e costruisci le selezioni
+      const doppiaMatches = []
+      let totalOdds = 1
+      const usedIds = new Set<number>()
+
+      for (const gptMatch of gptDoppia.matches) {
+        if (doppiaMatches.length >= 2) break
+        if (usedIds.has(gptMatch.fixture_id)) continue
+
+        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
+        if (!originalMatch) {
+          console.log(`⚠️ fixture_id ${gptMatch.fixture_id} non trovato`)
+          continue
+        }
+
+        const realOdds = RealOddsManager.assignRealOdds(gptMatch.prediction, originalMatch.odds)
+        if (!realOdds || isNaN(realOdds) || realOdds <= 1.0) {
+          console.log(`⚠️ Quota non valida per ${gptMatch.prediction}`)
+          continue
+        }
+
+        usedIds.add(gptMatch.fixture_id)
+        doppiaMatches.push({
+          fixture_id: originalMatch.fixture_id,
+          home_team: originalMatch.home_team,
+          away_team: originalMatch.away_team,
+          league: originalMatch.league,
+          time: originalMatch.time,
+          prediction: gptMatch.prediction,
+          prediction_label: buildPredictionLabel(gptMatch.prediction, originalMatch.home_team, originalMatch.away_team),
+          odds: Math.round(realOdds * 100) / 100,
+          confidence: gptDoppia.confidence || 70,
+          reasoning: gptMatch.reasoning
+        })
+        totalOdds *= realOdds
+      }
+
+      if (doppiaMatches.length < 2) {
+        console.log(`⚠️ Tentativo ${attempt}: Solo ${doppiaMatches.length} match validi, riprovo...`)
+        continue
+      }
+
+      totalOdds = Math.round(totalOdds * 100) / 100
+
       const doppia = {
         matches: doppiaMatches,
         total_odds: totalOdds,
-        confidence: gptDoppia.confidence,
+        confidence: gptDoppia.confidence || 70,
         strategy_reasoning: gptDoppia.strategy_reasoning,
         valid_until: today
       }
-      
-      console.log(`📊 Doppia OpenAI (tentativo ${attempt}):`, {
-        totalOdds,
-        matches: doppiaMatches.map(m => `${m.home_team} vs ${m.away_team} - ${m.prediction}@${m.odds}`)
-      })
-      
-      // Salva nel database
+
+      console.log(`📊 Doppia:`, doppiaMatches.map(m => `${m.home_team} vs ${m.away_team} - ${m.prediction} @${m.odds}`).join(' | '), `TOT: @${totalOdds}`)
+
       const { error } = await supabase
         .from('tips_doppia')
         .upsert(doppia, { onConflict: 'valid_until' })
-      
+
       if (error) {
         console.error('❌ Errore salvataggio doppia:', error)
         return false
       }
-      
-      console.log('✅ Doppia OpenAI salvata con successo')
+
+      console.log('✅ Doppia salvata')
       return true
-      
+
     } catch (error) {
-      console.error(`❌ Errore tentativo ${attempt} per doppia:`, error)
-      if (attempt === 3) {
-        console.error('❌ Falliti tutti i tentativi per doppia')
-        return false
-      }
-      // Aspetta 1 secondo prima del prossimo tentativo
+      console.error(`❌ Errore tentativo ${attempt}:`, error)
+      if (attempt === 3) return false
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
-  
+
   return false
 }
 

@@ -65,10 +65,17 @@ export interface CompleteMatchAnalysis {
 }
 
 // Genera analisi completa con OpenAI GPT-4
-export async function generateCompleteAnalysis(match: any): Promise<CompleteMatchAnalysis | null> {
+export async function generateCompleteAnalysis(match: any): Promise<{ analysis: CompleteMatchAnalysis | null, error?: string }> {
   try {
-    console.log(`🤖 Generating COMPLETE analysis for ${match.home_team.name} vs ${match.away_team.name}...`)
-    
+    console.log(`🤖 Generating COMPLETE analysis for ${match.home_team?.name || 'Unknown'} vs ${match.away_team?.name || 'Unknown'}...`)
+
+    // Verifica dati necessari
+    if (!match.home_team?.name || !match.away_team?.name) {
+      const error = `Missing team data: home_team=${JSON.stringify(match.home_team)}, away_team=${JSON.stringify(match.away_team)}`
+      console.error(`❌ ${error}`)
+      return { analysis: null, error }
+    }
+
     const prompt = `Sei un analista esperto di calcio con 20 anni di esperienza. Analizza questa partita in modo DETTAGLIATO e PROFESSIONALE.
 
 DATI PARTITA:
@@ -152,7 +159,7 @@ IMPORTANTE:
 - Analizza tattiche, forma, statistiche H2H, condizioni di gioco`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
       response_format: { type: 'json_object' }
@@ -177,11 +184,12 @@ IMPORTANTE:
     }
     
     console.log(`✅ COMPLETE analysis generated for ${match.home_team.name} vs ${match.away_team.name}`)
-    return completeAnalysis
-    
+    return { analysis: completeAnalysis }
+
   } catch (error) {
-    console.error(`❌ Error generating COMPLETE analysis for match ${match.fixture_id}:`, error)
-    return null
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`❌ Error generating COMPLETE analysis for match ${match.fixture_id}:`, errorMessage)
+    return { analysis: null, error: errorMessage }
   }
 }
 
@@ -229,19 +237,19 @@ export async function generateTodayCompleteAnalyses() {
     }
     
     // Genera analisi
-    const analysis = await generateCompleteAnalysis(match)
-    
-    if (analysis) {
+    const result = await generateCompleteAnalysis(match)
+
+    if (result.analysis) {
       // Salva nel database
       const { error: saveError } = await supabase
         .from('match_analyses')
-        .upsert(analysis, { onConflict: 'fixture_id' })
-      
+        .upsert(result.analysis, { onConflict: 'fixture_id' })
+
       if (saveError) {
         console.error(`❌ Error saving analysis for match ${match.fixture_id}:`, saveError)
         results.push({
           fixture_id: match.fixture_id,
-          teams: `${match.home_team.name} vs ${match.away_team.name}`,
+          teams: `${match.home_team?.name || 'Unknown'} vs ${match.away_team?.name || 'Unknown'}`,
           status: 'error',
           error: saveError.message
         })
@@ -251,15 +259,15 @@ export async function generateTodayCompleteAnalyses() {
           fixture_id: match.fixture_id,
           teams: `${match.home_team.name} vs ${match.away_team.name}`,
           status: 'success',
-          confidence: analysis.confidence_score
+          confidence: result.analysis.confidence_score
         })
       }
     } else {
       results.push({
         fixture_id: match.fixture_id,
-        teams: `${match.home_team.name} vs ${match.away_team.name}`,
+        teams: `${match.home_team?.name || 'Unknown'} vs ${match.away_team?.name || 'Unknown'}`,
         status: 'failed',
-        error: 'Failed to generate analysis'
+        error: result.error || 'Failed to generate analysis'
       })
     }
     
