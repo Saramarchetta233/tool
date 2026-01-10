@@ -17,15 +17,16 @@ export async function generateDailyTipsV2() {
 
   // 1. Prendi tutte le partite di oggi da Supabase
   const today = new Date().toISOString().split('T')[0]
-  const currentTime = new Date().toTimeString().slice(0, 5)
-  
-  console.log(`🎯 TipsterAI V2: Generating tips for ${today}, current time: ${currentTime}`)
-  
+  // Sottrai 1 ora per compensare differenza fuso orario DB
+  const adjustedTime = new Date(Date.now() - 60 * 60 * 1000).toTimeString().slice(0, 5)
+
+  console.log(`🎯 TipsterAI V2: Generating tips for ${today}, filter time: ${adjustedTime}`)
+
   const { data: matches, error } = await supabase
     .from('matches')
     .select('*')
     .eq('match_date', today)
-    .gt('match_time', currentTime) // Solo partite non ancora iniziate
+    .gt('match_time', adjustedTime) // Solo partite non ancora iniziate (con 1h di tolleranza)
     .order('match_time', { ascending: true })
   
   if (error || !matches || matches.length === 0) {
@@ -152,54 +153,46 @@ export async function generateDailyTipsV2() {
     results.singola = await generateSingola(matchesData, supabase, today)
   }
   
-  // SEMPRE: Se ci sono partite di Serie A (anche domani), genera la sesta proposta
-  const serieAMatches = matchesData.filter(m => m.league === 'Serie A' || m.league.includes('Serie A'))
-  if (serieAMatches.length > 0) {
-    console.log(`🇮🇹 Trovate ${serieAMatches.length} partite di Serie A oggi, generando proposta speciale Serie A...`)
-    const serieA = await generateSerieASpecial(serieAMatches, matchesData, supabase, today)
+  // SERIE A: Cerca partite dell'intero TURNO (prossimi 4 giorni)
+  console.log('🇮🇹 Cercando partite Serie A del turno (prossimi 4 giorni)...')
+
+  const futureDates = []
+  for (let i = 0; i < 4; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() + i)
+    futureDates.push(d.toISOString().split('T')[0])
+  }
+
+  const { data: allSerieAMatches } = await supabase
+    .from('matches')
+    .select('*')
+    .ilike('league_name', '%Serie A%')
+    .in('match_date', futureDates)
+    .order('match_date')
+    .order('match_time')
+
+  if (allSerieAMatches && allSerieAMatches.length >= 3) {
+    console.log(`🇮🇹 Trovate ${allSerieAMatches.length} partite Serie A nel turno!`)
+
+    // Prepara dati partite Serie A
+    const serieAData = allSerieAMatches.map(m => ({
+      fixture_id: m.fixture_id,
+      home_team: m.home_team?.name || 'Casa',
+      away_team: m.away_team?.name || 'Ospite',
+      league: m.league_name,
+      time: m.match_time,
+      date: m.match_date,
+      odds: {
+        winner: m.odds?.winner || {},
+        doubleChance: m.odds?.doubleChance || {},
+        goals: m.odds?.goals || {}
+      }
+    }))
+
+    const serieA = await generateSerieASpecial(serieAData, serieAData, supabase, today)
     results.serieA = serieA
   } else {
-    console.log('🇮🇹 Verifico partite Serie A per domani...')
-    // Controlla anche domani per Serie A
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const tomorrowStr = tomorrow.toISOString().split('T')[0]
-    
-    const { data: tomorrowMatches } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('match_date', tomorrowStr)
-      .or('league_name.ilike.%Serie A%')
-      .order('match_time', { ascending: true })
-    
-    if (tomorrowMatches && tomorrowMatches.length > 0) {
-      console.log(`🇮🇹 Trovate ${tomorrowMatches.length} partite Serie A domani, generando proposta speciale...`)
-      
-      // Prepara dati partite di domani
-      const tomorrowData = tomorrowMatches.map(m => ({
-        fixture_id: m.fixture_id,
-        home_team: m.home_team?.name || 'Casa',
-        away_team: m.away_team?.name || 'Ospite',
-        league: m.league_name,
-        time: m.match_time,
-        date: m.match_date,
-        api_prediction: {
-          advice: m.predictions?.advice || null,
-          home_percent: parseInt(m.predictions?.home) || 33,
-          draw_percent: parseInt(m.predictions?.draw) || 33,
-          away_percent: parseInt(m.predictions?.away) || 34,
-          confidence: m.predictions?.confidence || 50
-        },
-        odds: {
-          winner: m.odds?.winner || {},
-          doubleChance: m.odds?.doubleChance || {},
-          goals: m.odds?.goals || {}
-        }
-      }))
-      
-      const serieA = await generateSerieASpecial(tomorrowData, matchesData.concat(tomorrowData), supabase, today)
-      results.serieA = serieA
-    }
+    console.log('🇮🇹 Meno di 3 partite Serie A nel turno, skip mista Serie A')
   }
   
   console.log('✅ Generazione completata:', results)
