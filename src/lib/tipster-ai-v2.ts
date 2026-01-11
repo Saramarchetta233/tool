@@ -247,6 +247,7 @@ OUTPUT JSON (usa esattamente questo formato):
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       console.log(`🔄 Tentativo ${attempt}/3 per generare singola`)
+      console.log(`📝 Prompt length: ${prompt.length}, matches: ${matchList.length}`)
 
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -255,17 +256,25 @@ OUTPUT JSON (usa esattamente questo formato):
         response_format: { type: 'json_object' }
       })
 
-      const gptSingola = JSON.parse(response.choices[0].message.content || '{}')
+      const gptContent = response.choices[0].message.content || '{}'
+      console.log(`🤖 GPT response: ${gptContent.substring(0, 200)}...`)
+
+      const gptSingola = JSON.parse(gptContent)
+      console.log(`📊 GPT fixture_id: ${gptSingola.fixture_id}, prediction: ${gptSingola.prediction}`)
 
       // Verifica che il fixture_id esista
       const originalMatch = matches.find(m => m.fixture_id === gptSingola.fixture_id)
       if (!originalMatch) {
         console.log(`⚠️ Tentativo ${attempt}: fixture_id ${gptSingola.fixture_id} non valido, riprovo...`)
+        console.log(`📋 fixture_id disponibili: ${matches.map(m => m.fixture_id).join(', ')}`)
         continue
       }
 
       // Assegna quota REALE dal database
+      console.log(`🔍 originalMatch.odds: ${JSON.stringify(originalMatch.odds).substring(0, 100)}...`)
       const realOdds = RealOddsManager.assignRealOdds(gptSingola.prediction, originalMatch.odds)
+      console.log(`💰 RealOdds per "${gptSingola.prediction}": ${realOdds}`)
+
       if (!realOdds || isNaN(realOdds) || realOdds < 1.1 || realOdds > 10.0) {
         console.log(`⚠️ Tentativo ${attempt}: Quota ${realOdds} non valida per ${gptSingola.prediction}, riprovo...`)
         continue
