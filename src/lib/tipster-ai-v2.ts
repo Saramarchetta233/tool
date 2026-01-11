@@ -262,8 +262,8 @@ OUTPUT JSON (usa esattamente questo formato):
       const gptSingola = JSON.parse(gptContent)
       console.log(`📊 GPT fixture_id: ${gptSingola.fixture_id}, prediction: ${gptSingola.prediction}`)
 
-      // Verifica che il fixture_id esista
-      const originalMatch = matches.find(m => m.fixture_id === gptSingola.fixture_id)
+      // Verifica che il fixture_id esista (usa Number per evitare mismatch string/number)
+      const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptSingola.fixture_id))
       if (!originalMatch) {
         console.log(`⚠️ Tentativo ${attempt}: fixture_id ${gptSingola.fixture_id} non valido, riprovo...`)
         console.log(`📋 fixture_id disponibili: ${matches.map(m => m.fixture_id).join(', ')}`)
@@ -395,7 +395,7 @@ OUTPUT JSON:
         if (doppiaMatches.length >= 2) break
         if (usedIds.has(gptMatch.fixture_id)) continue
 
-        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
+        const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
         if (!originalMatch) {
           console.log(`⚠️ fixture_id ${gptMatch.fixture_id} non trovato`)
           continue
@@ -537,8 +537,8 @@ OUTPUT JSON:
       let totalOdds = 1
       
       for (const gptMatch of gptTripla.matches) {
-        // Trova match originale
-        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
+        // Trova match originale (usa Number per evitare mismatch string/number)
+        const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
         if (!originalMatch || !originalMatch.odds) {
           throw new Error(`Match ${gptMatch.fixture_id} non trovato o senza odds`)
         }
@@ -679,8 +679,8 @@ OUTPUT JSON:
       let totalOdds = 1
       
       for (const gptMatch of gptMista.matches) {
-        // Trova il match nel database
-        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
+        // Trova il match nel database (usa Number per evitare mismatch string/number)
+        const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
         if (!originalMatch || !originalMatch.odds) {
           throw new Error(`Match ${gptMatch.fixture_id} non trovato o senza odds`)
         }
@@ -830,8 +830,8 @@ OUTPUT JSON:
       let totalOdds = 1
       
       for (const gptMatch of gptBomba.matches) {
-        // Trova match originale per verifica
-        const originalMatch = matches.find(m => m.fixture_id === gptMatch.fixture_id)
+        // Trova match originale per verifica (usa Number per evitare mismatch string/number)
+        const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
         if (!originalMatch) {
           throw new Error(`Match ${gptMatch.fixture_id} non trovato`)
         }
@@ -1050,8 +1050,8 @@ OUTPUT JSON:
       let totalOdds = 1
       
       for (const gptMatch of gptSerieA.matches) {
-        // Trova match originale
-        const originalMatch = matchesToUse.find(m => m.fixture_id === gptMatch.fixture_id)
+        // Trova match originale (usa Number per evitare mismatch string/number)
+        const originalMatch = matchesToUse.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
         if (!originalMatch || !originalMatch.odds) {
           throw new Error(`Match Serie A ${gptMatch.fixture_id} non trovato o senza odds`)
         }
