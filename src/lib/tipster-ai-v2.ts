@@ -296,12 +296,15 @@ OUTPUT JSON (usa esattamente questo formato):
 
       console.log(`📊 Singola:`, `${singola.home_team} vs ${singola.away_team} - ${singola.prediction} @${singola.odds}`)
 
+      // Delete existing singola for today, then insert new one
+      await supabase.from('tips_singola').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_singola')
-        .upsert(singola, { onConflict: 'valid_until' })
+        .insert(singola)
 
       if (error) {
-        console.error('❌ Errore salvataggio singola:', error)
+        console.error('❌ Errore salvataggio singola:', JSON.stringify(error))
         return false
       }
 
@@ -440,12 +443,15 @@ OUTPUT JSON:
 
       console.log(`📊 Doppia:`, doppiaMatches.map(m => `${m.home_team} vs ${m.away_team} - ${m.prediction} @${m.odds}`).join(' | '), `TOT: @${totalOdds}`)
 
+      // Delete existing doppia for today, then insert new one
+      await supabase.from('tips_doppia').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_doppia')
-        .upsert(doppia, { onConflict: 'valid_until' })
+        .insert(doppia)
 
       if (error) {
-        console.error('❌ Errore salvataggio doppia:', error)
+        console.error('❌ Errore salvataggio doppia:', JSON.stringify(error))
         return false
       }
 
@@ -465,149 +471,170 @@ OUTPUT JSON:
 // TRIPLA: 3 partite con analisi OpenAI intelligente (2.80-5.00)
 async function generateTripla(matches: any[], supabase: any, today: string): Promise<boolean> {
   console.log(`🎯 Generando TRIPLA con OpenAI da ${matches.length} partite disponibili`)
-  
-  const prompt = `Sei TipsterAI, analizza le partite e crea la MIGLIORE TRIPLA per oggi.
 
-PARTITE DISPONIBILI:
-${JSON.stringify(matches, null, 2)}
+  // Prepara lista partite in formato semplice per GPT (come singola/doppia)
+  const matchList = matches.map(m => ({
+    fixture_id: m.fixture_id,
+    partita: `${m.home_team} vs ${m.away_team}`,
+    lega: m.league,
+    orario: m.time,
+    quote: {
+      '1': m.odds?.winner?.home,
+      'X': m.odds?.winner?.draw,
+      '2': m.odds?.winner?.away,
+      '1X': m.odds?.doubleChance?.x1,
+      'X2': m.odds?.doubleChance?.x2,
+      'Over 2.5': m.odds?.goals?.over_2_5,
+      'Under 2.5': m.odds?.goals?.under_2_5,
+      'Gol': m.odds?.goals?.btts,
+      'NoGol': m.odds?.goals?.nobtts
+    }
+  }))
 
-USA LE QUOTE REALI FORNITE! NON inventare quote.
+  const prompt = `Sei TipsterAI, esperto di scommesse calcistiche. Crea LA MIGLIORE TRIPLA (3 selezioni).
 
-CONSTRAINT: La quota totale deve essere preferibilmente tra 2.80-5.00 per equilibrio rischio/rendimento.
+PARTITE DISPONIBILI CON QUOTE REALI:
+${JSON.stringify(matchList, null, 2)}
 
-COMBINA 3 selezioni INTELLIGENTI basandoti su:
-- Analisi tattica approfondita
-- Mix di mercati per diversificazione
-- Value betting con quote reali
-- Balance rischio/rendimento ottimale
+REGOLE IMPORTANTI:
+1. Scegli ESATTAMENTE 3 partite DIVERSE dalla lista (3 fixture_id diversi!)
+2. Per ogni partita scegli UNA SOLA prediction tra QUESTE OPZIONI ESATTE:
+   - "1" (vittoria casa)
+   - "X" (pareggio)
+   - "2" (vittoria ospite)
+   - "1X" (casa non perde)
+   - "X2" (ospite non perde)
+   - "Over 2.5" (almeno 3 gol)
+   - "Under 2.5" (massimo 2 gol)
+   - "Gol" (entrambe segnano)
+   - "NoGol" (almeno una non segna)
+3. NON inventare altri formati! Solo quelli sopra!
+4. USA le quote REALI dalla lista
+5. Obiettivo: quota totale tra 2.80 e 5.00
 
 OUTPUT JSON:
 {
   "matches": [
     {
-      "fixture_id": 123,
-      "home_team": "Milan",
-      "away_team": "Monza",
-      "league": "Serie A",
-      "time": "15:00",
-      "prediction": "1",
-      "confidence": 75,
-      "reasoning": "Milan in forma smagliante, Monza in crisi difensiva"
-    },
-    {
-      "fixture_id": 456,
-      "home_team": "Inter",
-      "away_team": "Como",
-      "league": "Serie A",
-      "time": "18:00",
-      "prediction": "Over 2.5",
-      "confidence": 70,
-      "reasoning": "Entrambe le squadre giocano a viso aperto"
-    },
-    {
-      "fixture_id": 789,
-      "home_team": "Roma",
-      "away_team": "Lecce",
-      "league": "Serie A",
-      "time": "20:45",
-      "prediction": "1X",
-      "confidence": 80,
-      "reasoning": "Roma in casa quasi imbattibile contro squadre di fascia bassa"
+      "fixture_id": <numero dalla lista>,
+      "home_team": "<squadra casa>",
+      "away_team": "<squadra ospite>",
+      "league": "<campionato>",
+      "time": "<orario>",
+      "prediction": "<SOLO: 1 o X o 2 o 1X o X2 o Over 2.5 o Under 2.5 o Gol o NoGol>",
+      "confidence": <60-85>,
+      "reasoning": "<analisi breve>"
     }
   ],
-  "confidence": 68,
-  "strategy_reasoning": "Mix equilibrato: favorito + goals + sicurezza per tripla intelligente"
+  "confidence": <60-80>,
+  "strategy_reasoning": "<strategia complessiva>"
 }`
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       console.log(`🔄 Tentativo ${attempt}/3 per generare tripla`)
-      
+
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         response_format: { type: 'json_object' }
       })
-      
-      const gptTripla = JSON.parse(response.choices[0].message.content || '{}')
-      
+
+      const gptContent = response.choices[0].message.content || '{}'
+      console.log(`🤖 GPT Tripla response: ${gptContent.substring(0, 300)}...`)
+
+      const gptTripla = JSON.parse(gptContent)
+
+      if (!gptTripla.matches || gptTripla.matches.length < 3) {
+        console.log(`⚠️ Tentativo ${attempt}: GPT non ha restituito 3 match, riprovo...`)
+        continue
+      }
+
       // Processa ogni match e assegna quote REALI
       const triplaMatches = []
       let totalOdds = 1
-      
+      const usedIds = new Set<number>()
+
       for (const gptMatch of gptTripla.matches) {
+        if (triplaMatches.length >= 3) break
+        if (usedIds.has(Number(gptMatch.fixture_id))) continue
+
         // Trova match originale (usa Number per evitare mismatch string/number)
         const originalMatch = matches.find(m => Number(m.fixture_id) === Number(gptMatch.fixture_id))
-        if (!originalMatch || !originalMatch.odds) {
-          throw new Error(`Match ${gptMatch.fixture_id} non trovato o senza odds`)
+        if (!originalMatch) {
+          console.log(`⚠️ fixture_id ${gptMatch.fixture_id} non trovato`)
+          continue
         }
-        
+
         // Assegna quota REALE
         const realOdds = RealOddsManager.assignRealOdds(gptMatch.prediction, originalMatch.odds)
-        
-        if (!realOdds || isNaN(realOdds) || realOdds <= 0) {
-          throw new Error(`Quota reale non valida per ${gptMatch.prediction}`)
+        console.log(`📊 Tripla: ${gptMatch.prediction} → quota reale: ${realOdds}`)
+
+        if (!realOdds || isNaN(realOdds) || realOdds <= 1.0) {
+          console.log(`⚠️ Quota non valida per ${gptMatch.prediction}`)
+          continue
         }
-        
-        const matchWithRealOdds = {
-          fixture_id: gptMatch.fixture_id,
-          home_team: gptMatch.home_team,
-          away_team: gptMatch.away_team,
-          league: gptMatch.league,
-          time: gptMatch.time,
+
+        usedIds.add(Number(gptMatch.fixture_id))
+        triplaMatches.push({
+          fixture_id: originalMatch.fixture_id,
+          home_team: originalMatch.home_team,
+          away_team: originalMatch.away_team,
+          league: originalMatch.league,
+          time: originalMatch.time,
           prediction: gptMatch.prediction,
-          prediction_label: buildPredictionLabel(gptMatch.prediction, gptMatch.home_team, gptMatch.away_team),
+          prediction_label: buildPredictionLabel(gptMatch.prediction, originalMatch.home_team, originalMatch.away_team),
           odds: Math.round(realOdds * 100) / 100,
-          confidence: gptMatch.confidence,
+          confidence: gptMatch.confidence || 70,
           reasoning: gptMatch.reasoning
-        }
-        
-        triplaMatches.push(matchWithRealOdds)
+        })
         totalOdds *= realOdds
       }
-      
+
+      if (triplaMatches.length < 3) {
+        console.log(`⚠️ Tentativo ${attempt}: Solo ${triplaMatches.length} match validi, riprovo...`)
+        continue
+      }
+
       // Arrotonda quota totale
       totalOdds = Math.round(totalOdds * 100) / 100
-      
+
       const tripla = {
         matches: triplaMatches,
         total_odds: totalOdds,
-        confidence: gptTripla.confidence,
+        confidence: gptTripla.confidence || 70,
         strategy_reasoning: gptTripla.strategy_reasoning,
         valid_until: today
       }
-      
-      console.log(`📊 Tripla OpenAI (tentativo ${attempt}):`, {
-        totalOdds,
-        targetRange: '2.80-5.00',
-        matches: triplaMatches.map(m => `${m.home_team} vs ${m.away_team} - ${m.prediction}@${m.odds}`)
-      })
-      
-      // Salva nel database
+
+      console.log(`📊 Tripla:`, triplaMatches.map(m => `${m.home_team} vs ${m.away_team} - ${m.prediction} @${m.odds}`).join(' | '), `TOT: @${totalOdds}`)
+
+      // Delete existing tripla for today, then insert new one
+      await supabase.from('tips_tripla').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_tripla')
-        .upsert(tripla, { onConflict: 'valid_until' })
-      
+        .insert(tripla)
+
       if (error) {
-        console.error('❌ Errore salvataggio tripla:', error)
+        console.error('❌ Errore salvataggio tripla:', JSON.stringify(error))
         return false
       }
-      
-      console.log(`✅ Tripla OpenAI salvata: ${triplaMatches.length} match @${totalOdds}`)
+
+      console.log(`✅ Tripla salvata: ${triplaMatches.length} match @${totalOdds}`)
       return true
-      
+
     } catch (error) {
       console.error(`❌ Errore tentativo ${attempt} per tripla:`, error)
       if (attempt === 3) {
         console.error('❌ Falliti tutti i tentativi per tripla')
         return false
       }
-      // Aspetta 1 secondo prima del prossimo tentativo
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
-  
+
   return false
 }
 
@@ -729,17 +756,19 @@ OUTPUT JSON:
         matches: matchesWithRealOdds.map(m => `${m.prediction}@${m.odds}`)
       })
       
-      // Salva nel database
+      // Delete existing mista for today, then insert new one
+      await supabase.from('tips_mista').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_mista')
-        .upsert(mista, { onConflict: 'valid_until' })
-      
+        .insert(mista)
+
       if (error) {
-        console.error('❌ Errore salvataggio mista:', error)
+        console.error('❌ Errore salvataggio mista:', JSON.stringify(error))
         return false
       }
-      
-      console.log(`✅ Mista OpenAI salvata: ${matchesWithRealOdds.length} selezioni @${totalOdds}`)
+
+      console.log(`✅ Mista salvata: ${matchesWithRealOdds.length} selezioni @${totalOdds}`)
       return true
       
     } catch (error) {
@@ -874,17 +903,19 @@ OUTPUT JSON:
         results: bombaMatches.map(m => `${m.prediction}@${m.odds}`)
       })
       
-      // Salva nel database
+      // Delete existing bomba for today, then insert new one
+      await supabase.from('tips_bomba').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_bomba')
-        .upsert(bomba, { onConflict: 'valid_until' })
-      
+        .insert(bomba)
+
       if (error) {
-        console.error('❌ Errore salvataggio bomba:', error)
+        console.error('❌ Errore salvataggio bomba:', JSON.stringify(error))
         return false
       }
-      
-      console.log(`✅ Bomba OpenAI salvata: 3 risultati esatti @${totalOdds}`)
+
+      console.log(`✅ Bomba salvata: 3 risultati esatti @${totalOdds}`)
       return true
       
     } catch (error) {
@@ -1101,17 +1132,19 @@ OUTPUT JSON:
         matches: serieAMatches.map(m => `${m.prediction}@${m.odds}`)
       })
       
-      // Salva nella tabella tips_serie_a
+      // Delete existing serie_a for today, then insert new one
+      await supabase.from('tips_serie_a').delete().eq('valid_until', today)
+
       const { error } = await supabase
         .from('tips_serie_a')
-        .upsert(serieASpecial, { onConflict: 'valid_until' })
-      
+        .insert(serieASpecial)
+
       if (error) {
-        console.error('❌ Errore salvataggio Serie A Special:', error)
+        console.error('❌ Errore salvataggio Serie A:', JSON.stringify(error))
         return false
       }
-      
-      console.log(`✅ Serie A Special OpenAI salvata: ${serieAMatches.length} partite @${totalOdds}`)
+
+      console.log(`✅ Serie A salvata: ${serieAMatches.length} partite @${totalOdds}`)
       return true
       
     } catch (error) {
