@@ -70,25 +70,50 @@ export async function GET(request: Request) {
       }, { status: 500 })
     }
     
-    // Controlla cache prima (24 ore)
+    // Controlla cache prima - SEMPLIFICATO
     if (!search) {
-      const { data: cachedData } = await supabase
-        .from('players_serie_a')
-        .select('*')
-        .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .limit(1)
+      console.log('🔍 Checking for cached Serie A players...')
       
-      if (cachedData && cachedData.length > 0) {
-        console.log('📝 Returning cached Serie A players')
-        
-        // Recupera tutti i giocatori dalla cache
-        const { data: allCachedPlayers } = await supabase
+      // Prendi tutti i giocatori in batch per aggirare il limite 1000 di Supabase
+      let allCachedPlayers: any[] = []
+      let offset = 0
+      const batchSize = 1000
+      let totalFetched = 0
+      
+      while (true) {
+        const { data: batchPlayers, error } = await supabase
           .from('players_serie_a')
           .select('*')
           .order('name')
+          .range(offset, offset + batchSize - 1)
+        
+        if (error) {
+          console.error('Error fetching batch:', error)
+          break
+        }
+        
+        if (!batchPlayers || batchPlayers.length === 0) {
+          break // Nessun altro dato
+        }
+        
+        allCachedPlayers.push(...batchPlayers)
+        totalFetched += batchPlayers.length
+        offset += batchSize
+        
+        console.log(`📦 Batch ${Math.ceil(offset/batchSize)}: fetched ${batchPlayers.length} players (total: ${totalFetched})`)
+        
+        if (batchPlayers.length < batchSize) {
+          break // Ultimo batch parziale
+        }
+      }
+      
+      console.log(`📊 Total fetched: ${allCachedPlayers.length} players`)
+      
+      if (allCachedPlayers && allCachedPlayers.length > 0) {
+        console.log(`📝 Found ${allCachedPlayers.length} cached Serie A players`)
         
         return NextResponse.json({ 
-          players: allCachedPlayers?.map(p => ({
+          players: allCachedPlayers.map(p => ({
             id: p.id,
             name: p.name,
             role: p.position,
@@ -96,165 +121,67 @@ export async function GET(request: Request) {
             team_id: p.team_id || 0,
             avgRating: p.media_voto,
             lastRating: p.media_voto,
-            titularity: p.titularita,
+            titularity: p.titularita || 75, // Default value se manca
             goals: p.goals,
             assists: p.assists,
             yellowCards: p.yellow_cards,
             redCards: p.red_cards || 0,
             cleanSheets: p.clean_sheets || 0,
             gamesPlayed: p.games_played
-          })) || [],
+          })),
+          cached: true,
+          season: '2025/2026'
+        })
+      } else {
+        console.log('❌ No cached players found - database is empty')
+        // Ritorna lista vuota invece di provare API
+        return NextResponse.json({ 
+          players: [],
+          cached: false,
+          season: '2025/2026',
+          message: 'Database vuoto. Usa il pulsante per caricare i giocatori Serie A.'
+        })
+      }
+    }
+    
+    // Se arriviamo qui con search, cerchiamo nei dati già presenti
+    if (search) {
+      const { data: searchPlayers } = await supabase
+        .from('players_serie_a')
+        .select('*')
+        .ilike('name', `%${search}%`)
+        .order('name')
+      
+      if (searchPlayers) {
+        return NextResponse.json({ 
+          players: searchPlayers.map(p => ({
+            id: p.id,
+            name: p.name,
+            role: p.position,
+            team: p.team,
+            team_id: p.team_id || 0,
+            avgRating: p.media_voto,
+            lastRating: p.media_voto,
+            titularity: p.titularita || 75, // Default value se manca
+            goals: p.goals,
+            assists: p.assists,
+            yellowCards: p.yellow_cards,
+            redCards: p.red_cards || 0,
+            cleanSheets: p.clean_sheets || 0,
+            gamesPlayed: p.games_played
+          })),
           cached: true,
           season: '2025/2026'
         })
       }
     }
     
-    console.log('🔄 Fetching fresh Serie A players from API-Football...')
-    
-    // Step 1: Recupera tutte le squadre Serie A 2025
-    const teamsResponse = await fetch(
-      `https://v3.football.api-sports.io/teams?league=${SERIE_A_LEAGUE_ID}&season=2025`,
-      {
-        headers: {
-          'x-apisports-key': apiFootballKey
-        }
-      }
-    )
-    
-    if (!teamsResponse.ok) {
-      throw new Error(`Errore recupero squadre: ${teamsResponse.status}`)
-    }
-    
-    const teamsData = await teamsResponse.json()
-    const teams = teamsData.response || []
-    
-    if (teams.length === 0) {
-      throw new Error('Nessuna squadra trovata per Serie A')
-    }
-    
-    console.log(`🏟️ Trovate ${teams.length} squadre Serie A`)
-    
-    // Step 2: Per ogni squadra, recupera i giocatori con statistiche
-    const allPlayers: any[] = []
-    let playerCount = 0
-    
-    for (let i = 0; i < teams.length; i++) {
-      const team = teams[i]
-      console.log(`⚽ Recupero giocatori ${team.team.name} (${i + 1}/${teams.length})...`)
-      
-      try {
-        // Recupera giocatori della squadra con statistiche 2025
-        const playersResponse = await fetch(
-          `https://v3.football.api-sports.io/players?league=${SERIE_A_LEAGUE_ID}&season=2025&team=${team.team.id}`,
-          {
-            headers: {
-              'x-apisports-key': apiFootballKey
-            }
-          }
-        )
-        
-        if (playersResponse.ok) {
-          const playersData = await playersResponse.json()
-          const players = playersData.response || []
-          
-          for (const playerData of players) {
-            const player = playerData.player
-            const stats = playerData.statistics?.[0] || {}
-            
-            if (player && player.name) {
-              const position = getFantaRole(stats.games?.position || player.position)
-              
-              allPlayers.push({
-                id: player.id,
-                name: player.name,
-                position: position,
-                team: team.team.name,
-                team_id: team.team.id,
-                goals: stats.goals?.total || 0,
-                assists: stats.goals?.assists || 0,
-                yellow_cards: stats.cards?.yellow || 0,
-                red_cards: stats.cards?.red || 0,
-                clean_sheets: position === 'P' && stats.goals?.conceded === 0 ? stats.games?.appearences || 0 : 0,
-                games_played: stats.games?.appearences || 0,
-                titolarita: calculateTitularity(stats),
-                media_voto: calculateFantaAverage(stats, position),
-                updated_at: new Date().toISOString()
-              })
-              
-              playerCount++
-            }
-          }
-        }
-        
-        // Rate limiting per rispettare i limiti API
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
-      } catch (error) {
-        console.error(`Errore recupero giocatori ${team.team.name}:`, error)
-      }
-    }
-    
-    console.log(`✅ Recuperati ${playerCount} giocatori totali`)
-    
-    if (allPlayers.length === 0) {
-      throw new Error('Nessun giocatore recuperato')
-    }
-    
-    // Step 3: Salva in cache Supabase
-    if (!search) {
-      console.log('💾 Salvando giocatori in cache Supabase...')
-      
-      // Prima cancella cache vecchia
-      await supabase
-        .from('players_serie_a')
-        .delete()
-        .neq('id', 0)  // Cancella tutto
-      
-      // Inserisci nuovi dati in batch
-      const { error: insertError } = await supabase
-        .from('players_serie_a')
-        .insert(allPlayers)
-      
-      if (insertError) {
-        console.error('Errore salvataggio cache:', insertError)
-      } else {
-        console.log('✅ Cache salvata con successo')
-      }
-    }
-    
-    // Step 4: Filtra se c'è una ricerca
-    let players = allPlayers
-    if (search) {
-      players = allPlayers.filter(p => 
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.team.toLowerCase().includes(search.toLowerCase())
-      )
-    }
-    
-    // Step 5: Converti al formato frontend
-    const formattedPlayers = players.map(p => ({
-      id: p.id,
-      name: p.name,
-      role: p.position,
-      team: p.team,
-      team_id: p.team_id,
-      avgRating: p.media_voto,
-      lastRating: p.media_voto,
-      titularity: p.titolarita,
-      goals: p.goals,
-      assists: p.assists,
-      yellowCards: p.yellow_cards,
-      redCards: p.red_cards,
-      cleanSheets: p.clean_sheets,
-      gamesPlayed: p.games_played
-    }))
-    
+    // Fallback: ritorna lista vuota
     return NextResponse.json({ 
-      players: formattedPlayers,
+      players: [],
       cached: false,
       season: '2025/2026',
-      total: formattedPlayers.length
+      message: 'Nessun giocatore trovato'
     })
     
   } catch (error) {

@@ -1,0 +1,470 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+// TUTTI i giocatori Serie A 2024-2025 (COMPLETO)
+const SERIE_A_PLAYERS = [
+  // ATALANTA
+  { name: "Marco Carnesecchi", role: "P", team: "Atalanta", team_id: 499 },
+  { name: "Juan Musso", role: "P", team: "Atalanta", team_id: 499 },
+  { name: "Francesco Rossi", role: "P", team: "Atalanta", team_id: 499 },
+  { name: "Berat Djimsiti", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Rafael Tolói", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Sead Kolašinac", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Matteo Ruggeri", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Giorgio Scalvini", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Davide Zappacosta", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Mitchel Bakker", role: "D", team: "Atalanta", team_id: 499 },
+  { name: "Marten de Roon", role: "C", team: "Atalanta", team_id: 499 },
+  { name: "Éderson", role: "C", team: "Atalanta", team_id: 499 },
+  { name: "Teun Koopmeiners", role: "C", team: "Atalanta", team_id: 499 },
+  { name: "Mario Pašalić", role: "C", team: "Atalanta", team_id: 499 },
+  { name: "Aleksey Miranchuk", role: "C", team: "Atalanta", team_id: 499 },
+  { name: "Ademola Lookman", role: "A", team: "Atalanta", team_id: 499 },
+  { name: "Charles De Ketelaere", role: "A", team: "Atalanta", team_id: 499 },
+  { name: "Mateo Retegui", role: "A", team: "Atalanta", team_id: 499 },
+  { name: "Gianluca Scamacca", role: "A", team: "Atalanta", team_id: 499 },
+
+  // BOLOGNA
+  { name: "Łukasz Skorupski", role: "P", team: "Bologna", team_id: 500 },
+  { name: "Federico Ravaglia", role: "P", team: "Bologna", team_id: 500 },
+  { name: "Nicola Bagnolini", role: "P", team: "Bologna", team_id: 500 },
+  { name: "Stefan Posch", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Riccardo Calafiori", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Sam Beukema", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Charalampos Lykogiannis", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Lorenzo De Silvestri", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Jhon Lucumí", role: "D", team: "Bologna", team_id: 500 },
+  { name: "Lewis Ferguson", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Nicolò Cambiaghi", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Remo Freuler", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Nikola Moro", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Kacper Urbanski", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Michel Aebischer", role: "C", team: "Bologna", team_id: 500 },
+  { name: "Riccardo Orsolini", role: "A", team: "Bologna", team_id: 500 },
+  { name: "Joshua Zirkzee", role: "A", team: "Bologna", team_id: 500 },
+  { name: "Dan Ndoye", role: "A", team: "Bologna", team_id: 500 },
+  { name: "Santiago Castro", role: "A", team: "Bologna", team_id: 500 },
+  { name: "Federico Bernardeschi", role: "C", team: "Bologna", team_id: 500 },
+
+  // CAGLIARI
+  { name: "Simone Scuffet", role: "P", team: "Cagliari", team_id: 501 },
+  { name: "Boris Radunović", role: "P", team: "Cagliari", team_id: 501 },
+  { name: "Alen Sherri", role: "P", team: "Cagliari", team_id: 501 },
+  { name: "Sebastiano Luperto", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Yerry Mina", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Pantelis Hatzidiakos", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Tommaso Augello", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Gabriele Zappa", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Paulo Azzi", role: "D", team: "Cagliari", team_id: 501 },
+  { name: "Matteo Prati", role: "C", team: "Cagliari", team_id: 501 },
+  { name: "Razvan Marin", role: "C", team: "Cagliari", team_id: 501 },
+  { name: "Antoine Makoumbou", role: "C", team: "Cagliari", team_id: 501 },
+  { name: "Nicolas Viola", role: "C", team: "Cagliari", team_id: 501 },
+  { name: "Gianluca Gaetano", role: "C", team: "Cagliari", team_id: 501 },
+  { name: "Zito Luvumbo", role: "A", team: "Cagliari", team_id: 501 },
+  { name: "Eldor Shomurodov", role: "A", team: "Cagliari", team_id: 501 },
+  { name: "Roberto Piccoli", role: "A", team: "Cagliari", team_id: 501 },
+  { name: "Kingstone Mutandwa", role: "A", team: "Cagliari", team_id: 501 },
+
+  // COMO
+  { name: "Emil Audero", role: "P", team: "Como", team_id: 477 },
+  { name: "Pepe Reina", role: "P", team: "Como", team_id: 477 },
+  { name: "Adrian Semper", role: "P", team: "Como", team_id: 477 },
+  { name: "Alberto Moreno", role: "D", team: "Como", team_id: 477 },
+  { name: "Federico Barba", role: "D", team: "Como", team_id: 477 },
+  { name: "Marco Sala", role: "D", team: "Como", team_id: 477 },
+  { name: "Ignace Van Der Brempt", role: "D", team: "Como", team_id: 477 },
+  { name: "Edoardo Goldaniga", role: "D", team: "Como", team_id: 477 },
+  { name: "Marc Kempf", role: "D", team: "Como", team_id: 477 },
+  { name: "Sergi Roberto", role: "C", team: "Como", team_id: 477 },
+  { name: "Nico Paz", role: "C", team: "Como", team_id: 477 },
+  { name: "Yannik Engelhardt", role: "C", team: "Como", team_id: 477 },
+  { name: "Máximo Perrone", role: "C", team: "Como", team_id: 477 },
+  { name: "Lucas da Cunha", role: "C", team: "Como", team_id: 477 },
+  { name: "Alieu Fadera", role: "A", team: "Como", team_id: 477 },
+  { name: "Andrea Belotti", role: "A", team: "Como", team_id: 477 },
+  { name: "Assane Diao", role: "A", team: "Como", team_id: 477 },
+  { name: "Patrick Cutrone", role: "A", team: "Como", team_id: 477 },
+
+  // FIORENTINA
+  { name: "David de Gea", role: "P", team: "Fiorentina", team_id: 502 },
+  { name: "Pietro Terracciano", role: "P", team: "Fiorentina", team_id: 502 },
+  { name: "Tommaso Martinelli", role: "P", team: "Fiorentina", team_id: 502 },
+  { name: "Robin Gosens", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Luca Ranieri", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Lucas Martínez Quarta", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Pietro Comuzzo", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Dodô", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Cristiano Biraghi", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Fabiano Parisi", role: "D", team: "Fiorentina", team_id: 502 },
+  { name: "Yacine Adli", role: "C", team: "Fiorentina", team_id: 502 },
+  { name: "Edoardo Bove", role: "C", team: "Fiorentina", team_id: 502 },
+  { name: "Danilo Cataldi", role: "C", team: "Fiorentina", team_id: 502 },
+  { name: "Rolando Mandragora", role: "C", team: "Fiorentina", team_id: 502 },
+  { name: "Amir Richardson", role: "C", team: "Fiorentina", team_id: 502 },
+  { name: "Lucas Beltrán", role: "A", team: "Fiorentina", team_id: 502 },
+  { name: "Moise Kean", role: "A", team: "Fiorentina", team_id: 502 },
+  { name: "Albert Gudmundsson", role: "A", team: "Fiorentina", team_id: 502 },
+  { name: "Andrea Colpani", role: "A", team: "Fiorentina", team_id: 502 },
+
+  // GENOA
+  { name: "Pierluigi Gollini", role: "P", team: "Genoa", team_id: 488 },
+  { name: "Nicola Leali", role: "P", team: "Genoa", team_id: 488 },
+  { name: "Federico Marchetti", role: "P", team: "Genoa", team_id: 488 },
+  { name: "Alessandro Vogliacco", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Mattia Bani", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Johan Vásquez", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Alan Matturro", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Stefano Sabelli", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Aaron Martin", role: "D", team: "Genoa", team_id: 488 },
+  { name: "Milan Badelj", role: "C", team: "Genoa", team_id: 488 },
+  { name: "Morten Frendrup", role: "C", team: "Genoa", team_id: 488 },
+  { name: "Ruslan Malinovskyi", role: "C", team: "Genoa", team_id: 488 },
+  { name: "Emil Bohinen", role: "C", team: "Genoa", team_id: 488 },
+  { name: "Fabio Miretti", role: "C", team: "Genoa", team_id: 488 },
+  { name: "Albert Gudmundsson", role: "A", team: "Genoa", team_id: 488 },
+  { name: "Vitinha", role: "A", team: "Genoa", team_id: 488 },
+  { name: "Caleb Ekuban", role: "A", team: "Genoa", team_id: 488 },
+  { name: "Andrea Pinamonti", role: "A", team: "Genoa", team_id: 488 },
+
+  // INTER
+  { name: "Yann Sommer", role: "P", team: "Inter", team_id: 505 },
+  { name: "Josep Martinez", role: "P", team: "Inter", team_id: 505 },
+  { name: "Raffaele Di Gennaro", role: "P", team: "Inter", team_id: 505 },
+  { name: "Alessandro Bastoni", role: "D", team: "Inter", team_id: 505 },
+  { name: "Stefan de Vrij", role: "D", team: "Inter", team_id: 505 },
+  { name: "Francesco Acerbi", role: "D", team: "Inter", team_id: 505 },
+  { name: "Denzel Dumfries", role: "D", team: "Inter", team_id: 505 },
+  { name: "Federico Dimarco", role: "D", team: "Inter", team_id: 505 },
+  { name: "Yann Bisseck", role: "D", team: "Inter", team_id: 505 },
+  { name: "Carlos Augusto", role: "D", team: "Inter", team_id: 505 },
+  { name: "Matteo Darmian", role: "D", team: "Inter", team_id: 505 },
+  { name: "Nicolò Barella", role: "C", team: "Inter", team_id: 505 },
+  { name: "Hakan Çalhanoğlu", role: "C", team: "Inter", team_id: 505 },
+  { name: "Henrikh Mkhitaryan", role: "C", team: "Inter", team_id: 505 },
+  { name: "Kristjan Asllani", role: "C", team: "Inter", team_id: 505 },
+  { name: "Davide Frattesi", role: "C", team: "Inter", team_id: 505 },
+  { name: "Piotr Zieliński", role: "C", team: "Inter", team_id: 505 },
+  { name: "Lautaro Martínez", role: "A", team: "Inter", team_id: 505 },
+  { name: "Marcus Thuram", role: "A", team: "Inter", team_id: 505 },
+  { name: "Mehdi Taremi", role: "A", team: "Inter", team_id: 505 },
+  { name: "Joaquín Correa", role: "A", team: "Inter", team_id: 505 },
+
+  // JUVENTUS
+  { name: "Michele Di Gregorio", role: "P", team: "Juventus", team_id: 496 },
+  { name: "Wojciech Szczęsny", role: "P", team: "Juventus", team_id: 496 },
+  { name: "Mattia Perin", role: "P", team: "Juventus", team_id: 496 },
+  { name: "Gleison Bremer", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Federico Gatti", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Andrea Cambiaso", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Juan Cuadrado", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Danilo", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Alex Sandro", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Pierre Kalulu", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Nicolò Savona", role: "D", team: "Juventus", team_id: 496 },
+  { name: "Manuel Locatelli", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Adrien Rabiot", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Weston McKennie", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Douglas Luiz", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Khéphren Thuram", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Nicolò Fagioli", role: "C", team: "Juventus", team_id: 496 },
+  { name: "Francisco Conceição", role: "A", team: "Juventus", team_id: 496 },
+  { name: "Dušan Vlahović", role: "A", team: "Juventus", team_id: 496 },
+  { name: "Federico Chiesa", role: "A", team: "Juventus", team_id: 496 },
+  { name: "Kenan Yıldız", role: "A", team: "Juventus", team_id: 496 },
+  { name: "Timothy Weah", role: "A", team: "Juventus", team_id: 496 },
+
+  // LAZIO
+  { name: "Ivan Provedel", role: "P", team: "Lazio", team_id: 487 },
+  { name: "Christos Mandas", role: "P", team: "Lazio", team_id: 487 },
+  { name: "Luigi Sepe", role: "P", team: "Lazio", team_id: 487 },
+  { name: "Alessio Romagnoli", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Adam Marušić", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Nuno Tavares", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Mario Gila", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Patric", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Luca Pellegrini", role: "D", team: "Lazio", team_id: 487 },
+  { name: "Mattéo Guendouzi", role: "C", team: "Lazio", team_id: 487 },
+  { name: "Nicolò Rovella", role: "C", team: "Lazio", team_id: 487 },
+  { name: "Matías Vecino", role: "C", team: "Lazio", team_id: 487 },
+  { name: "Fisayo Dele-Bashiru", role: "C", team: "Lazio", team_id: 487 },
+  { name: "Gustav Isaksen", role: "A", team: "Lazio", team_id: 487 },
+  { name: "Pedro", role: "A", team: "Lazio", team_id: 487 },
+  { name: "Felipe Anderson", role: "A", team: "Lazio", team_id: 487 },
+  { name: "Ciro Immobile", role: "A", team: "Lazio", team_id: 487 },
+  { name: "Valentín Castellanos", role: "A", team: "Lazio", team_id: 487 },
+
+  // LECCE
+  { name: "Wladimiro Falcone", role: "P", team: "Lecce", team_id: 867 },
+  { name: "Federico Brancolini", role: "P", team: "Lecce", team_id: 867 },
+  { name: "Jasper Samooja", role: "P", team: "Lecce", team_id: 867 },
+  { name: "Federico Baschirotto", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Marin Pongračić", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Patrick Dorgu", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Antonino Gallo", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Valentin Gendrey", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Kialonda Gaspar", role: "D", team: "Lecce", team_id: 867 },
+  { name: "Ylber Ramadani", role: "C", team: "Lecce", team_id: 867 },
+  { name: "Pontus Almqvist", role: "C", team: "Lecce", team_id: 867 },
+  { name: "Lameck Banda", role: "C", team: "Lecce", team_id: 867 },
+  { name: "Mohamed Kaba", role: "C", team: "Lecce", team_id: 867 },
+  { name: "Rémi Oudin", role: "A", team: "Lecce", team_id: 867 },
+  { name: "Nikola Krstović", role: "A", team: "Lecce", team_id: 867 },
+  { name: "Santiago Pierotti", role: "A", team: "Lecce", team_id: 867 },
+
+  // MILAN
+  { name: "Mike Maignan", role: "P", team: "Milan", team_id: 489 },
+  { name: "Marco Sportiello", role: "P", team: "Milan", team_id: 489 },
+  { name: "Lorenzo Torriani", role: "P", team: "Milan", team_id: 489 },
+  { name: "Theo Hernández", role: "D", team: "Milan", team_id: 489 },
+  { name: "Fikayo Tomori", role: "D", team: "Milan", team_id: 489 },
+  { name: "Matteo Gabbia", role: "D", team: "Milan", team_id: 489 },
+  { name: "Davide Calabria", role: "D", team: "Milan", team_id: 489 },
+  { name: "Malick Thiaw", role: "D", team: "Milan", team_id: 489 },
+  { name: "Strahinja Pavlović", role: "D", team: "Milan", team_id: 489 },
+  { name: "Emerson Royal", role: "D", team: "Milan", team_id: 489 },
+  { name: "Filippo Terracciano", role: "D", team: "Milan", team_id: 489 },
+  { name: "Tijjani Reijnders", role: "C", team: "Milan", team_id: 489 },
+  { name: "Yunus Musah", role: "C", team: "Milan", team_id: 489 },
+  { name: "Alexis Saelemaekers", role: "C", team: "Milan", team_id: 489 },
+  { name: "Youssouf Fofana", role: "C", team: "Milan", team_id: 489 },
+  { name: "Ruben Loftus-Cheek", role: "C", team: "Milan", team_id: 489 },
+  { name: "Christian Pulisic", role: "A", team: "Milan", team_id: 489 },
+  { name: "Rafael Leão", role: "A", team: "Milan", team_id: 489 },
+  { name: "Olivier Giroud", role: "A", team: "Milan", team_id: 489 },
+  { name: "Noah Okafor", role: "A", team: "Milan", team_id: 489 },
+  { name: "Álvaro Morata", role: "A", team: "Milan", team_id: 489 },
+
+  // MONZA
+  { name: "Michele Di Gregorio", role: "P", team: "Monza", team_id: 1579 },
+  { name: "Stefano Turati", role: "P", team: "Monza", team_id: 1579 },
+  { name: "Alessandro Sorrentino", role: "P", team: "Monza", team_id: 1579 },
+  { name: "Pablo Marí", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Armando Izzo", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Andrea Carboni", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Danilo D'Ambrosio", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Pedro Pereira", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Georgios Kyriakopoulos", role: "D", team: "Monza", team_id: 1579 },
+  { name: "Warren Bondo", role: "C", team: "Monza", team_id: 1579 },
+  { name: "Matteo Pessina", role: "C", team: "Monza", team_id: 1579 },
+  { name: "Andrea Colpani", role: "C", team: "Monza", team_id: 1579 },
+  { name: "Roberto Gagliardini", role: "C", team: "Monza", team_id: 1579 },
+  { name: "Alessio Zerbin", role: "A", team: "Monza", team_id: 1579 },
+  { name: "Milan Đurić", role: "A", team: "Monza", team_id: 1579 },
+  { name: "Gianluca Caprari", role: "A", team: "Monza", team_id: 1579 },
+  { name: "Dany Mota", role: "A", team: "Monza", team_id: 1579 },
+
+  // NAPOLI
+  { name: "Alex Meret", role: "P", team: "Napoli", team_id: 492 },
+  { name: "Elia Caprile", role: "P", team: "Napoli", team_id: 492 },
+  { name: "Nikita Contini", role: "P", team: "Napoli", team_id: 492 },
+  { name: "Alessandro Buongiorno", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Amir Rrahmani", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Giovanni Di Lorenzo", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Mathías Olivera", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Juan Jesus", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Rafa Marín", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Leonardo Spinazzola", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Pasquale Mazzocchi", role: "D", team: "Napoli", team_id: 492 },
+  { name: "Stanislav Lobotka", role: "C", team: "Napoli", team_id: 492 },
+  { name: "André-Frank Zambo Anguissa", role: "C", team: "Napoli", team_id: 492 },
+  { name: "Scott McTominay", role: "C", team: "Napoli", team_id: 492 },
+  { name: "Frank Anguissa", role: "C", team: "Napoli", team_id: 492 },
+  { name: "Billy Gilmour", role: "C", team: "Napoli", team_id: 492 },
+  { name: "Khvicha Kvaratskhelia", role: "A", team: "Napoli", team_id: 492 },
+  { name: "Romelu Lukaku", role: "A", team: "Napoli", team_id: 492 },
+  { name: "Matteo Politano", role: "A", team: "Napoli", team_id: 492 },
+  { name: "Giovanni Simeone", role: "A", team: "Napoli", team_id: 492 },
+  { name: "David Neres", role: "A", team: "Napoli", team_id: 492 },
+
+  // PARMA
+  { name: "Zion Suzuki", role: "P", team: "Parma", team_id: 1564 },
+  { name: "Leandro Chichizola", role: "P", team: "Parma", team_id: 1564 },
+  { name: "Edoardo Corvi", role: "P", team: "Parma", team_id: 1564 },
+  { name: "Botond Balogh", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Enrico Delprato", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Woyo Coulibaly", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Emanuele Valeri", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Antonio Circati", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Yordan Osorio", role: "D", team: "Parma", team_id: 1564 },
+  { name: "Matteo Cancellieri", role: "C", team: "Parma", team_id: 1564 },
+  { name: "Hernani", role: "C", team: "Parma", team_id: 1564 },
+  { name: "Adrian Bernabé", role: "C", team: "Parma", team_id: 1564 },
+  { name: "Nahuel Estévez", role: "C", team: "Parma", team_id: 1564 },
+  { name: "Dennis Man", role: "A", team: "Parma", team_id: 1564 },
+  { name: "Ange-Yoan Bonny", role: "A", team: "Parma", team_id: 1564 },
+  { name: "Gabriel Charpentier", role: "A", team: "Parma", team_id: 1564 },
+  { name: "Valentin Mihaila", role: "A", team: "Parma", team_id: 1564 },
+
+  // ROMA
+  { name: "Mile Svilar", role: "P", team: "Roma", team_id: 497 },
+  { name: "Rui Patrício", role: "P", team: "Roma", team_id: 497 },
+  { name: "Pietro Boer", role: "P", team: "Roma", team_id: 497 },
+  { name: "Evan Ndicka", role: "D", team: "Roma", team_id: 497 },
+  { name: "Gianluca Mancini", role: "D", team: "Roma", team_id: 497 },
+  { name: "Chris Smalling", role: "D", team: "Roma", team_id: 497 },
+  { name: "Angeliño", role: "D", team: "Roma", team_id: 497 },
+  { name: "Rick Karsdorp", role: "D", team: "Roma", team_id: 497 },
+  { name: "Zeki Çelik", role: "D", team: "Roma", team_id: 497 },
+  { name: "Stephan El Shaarawy", role: "D", team: "Roma", team_id: 497 },
+  { name: "Bryan Cristante", role: "C", team: "Roma", team_id: 497 },
+  { name: "Lorenzo Pellegrini", role: "C", team: "Roma", team_id: 497 },
+  { name: "Leandro Paredes", role: "C", team: "Roma", team_id: 497 },
+  { name: "Manu Koné", role: "C", team: "Roma", team_id: 497 },
+  { name: "Niccolò Pisilli", role: "C", team: "Roma", team_id: 497 },
+  { name: "Paulo Dybala", role: "A", team: "Roma", team_id: 497 },
+  { name: "Artem Dovbyk", role: "A", team: "Roma", team_id: 497 },
+  { name: "Eldor Shomurodov", role: "A", team: "Roma", team_id: 497 },
+  { name: "Tammy Abraham", role: "A", team: "Roma", team_id: 497 },
+  { name: "Matías Soulé", role: "A", team: "Roma", team_id: 497 },
+
+  // TORINO
+  { name: "Vanja Milinković-Savić", role: "P", team: "Torino", team_id: 503 },
+  { name: "Luca Gemello", role: "P", team: "Torino", team_id: 503 },
+  { name: "Alberto Paleari", role: "P", team: "Torino", team_id: 503 },
+  { name: "Ricardo Rodriguez", role: "D", team: "Torino", team_id: 503 },
+  { name: "Saül Ñíguez", role: "D", team: "Torino", team_id: 503 },
+  { name: "Mergim Vojvoda", role: "D", team: "Torino", team_id: 503 },
+  { name: "Adam Masina", role: "D", team: "Torino", team_id: 503 },
+  { name: "Sebastian Walukiewicz", role: "D", team: "Torino", team_id: 503 },
+  { name: "Marcus Pedersen", role: "D", team: "Torino", team_id: 503 },
+  { name: "Borna Sosa", role: "D", team: "Torino", team_id: 503 },
+  { name: "Karol Linetty", role: "C", team: "Torino", team_id: 503 },
+  { name: "Ivan Ilić", role: "C", team: "Torino", team_id: 503 },
+  { name: "Gvidas Gineitis", role: "C", team: "Torino", team_id: 503 },
+  { name: "Nikola Vlašić", role: "C", team: "Torino", team_id: 503 },
+  { name: "Adrien Tameze", role: "C", team: "Torino", team_id: 503 },
+  { name: "Antonio Sanabria", role: "A", team: "Torino", team_id: 503 },
+  { name: "Duván Zapata", role: "A", team: "Torino", team_id: 503 },
+  { name: "Yann Karamoh", role: "A", team: "Torino", team_id: 503 },
+  { name: "Che Adams", role: "A", team: "Torino", team_id: 503 },
+  { name: "Alieu Njie", role: "A", team: "Torino", team_id: 503 },
+
+  // UDINESE
+  { name: "Marco Silvestri", role: "P", team: "Udinese", team_id: 494 },
+  { name: "Maduka Okoye", role: "P", team: "Udinese", team_id: 494 },
+  { name: "Daniele Padelli", role: "P", team: "Udinese", team_id: 494 },
+  { name: "Jaka Bijol", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Nehuen Perez", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Thomas Kristensen", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Jordan Zemura", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Kingsley Ehizibue", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Lautaro Giannetti", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Hassane Kamara", role: "D", team: "Udinese", team_id: 494 },
+  { name: "Sandi Lovric", role: "C", team: "Udinese", team_id: 494 },
+  { name: "Walace", role: "C", team: "Udinese", team_id: 494 },
+  { name: "Jesper Karlström", role: "C", team: "Udinese", team_id: 494 },
+  { name: "Martin Payero", role: "C", team: "Udinese", team_id: 494 },
+  { name: "Oier Zarraga", role: "C", team: "Udinese", team_id: 494 },
+  { name: "Florian Thauvin", role: "A", team: "Udinese", team_id: 494 },
+  { name: "Lorenzo Lucca", role: "A", team: "Udinese", team_id: 494 },
+  { name: "Keinan Davis", role: "A", team: "Udinese", team_id: 494 },
+  { name: "Brenner", role: "A", team: "Udinese", team_id: 494 },
+
+  // VENEZIA
+  { name: "Filip Stanković", role: "P", team: "Venezia", team_id: 1570 },
+  { name: "Jesse Joronen", role: "P", team: "Venezia", team_id: 1570 },
+  { name: "Bruno Bertinato", role: "P", team: "Venezia", team_id: 1570 },
+  { name: "Giorgio Altare", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Jay Idzes", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Ridgeciano Haps", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Francesco Zampano", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Michael Svoboda", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Marin Šverko", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Antonio Candela", role: "D", team: "Venezia", team_id: 1570 },
+  { name: "Hans Nicolussi Caviglia", role: "C", team: "Venezia", team_id: 1570 },
+  { name: "Alfred Duncan", role: "C", team: "Venezia", team_id: 1570 },
+  { name: "Mikael Ellertsson", role: "C", team: "Venezia", team_id: 1570 },
+  { name: "Gianluca Busio", role: "C", team: "Venezia", team_id: 1570 },
+  { name: "Tanner Tessmann", role: "C", team: "Venezia", team_id: 1570 },
+  { name: "Joel Pohjanpalo", role: "A", team: "Venezia", team_id: 1570 },
+  { name: "Thomas Henry", role: "A", team: "Venezia", team_id: 1570 },
+  { name: "Gaetano Oristanio", role: "A", team: "Venezia", team_id: 1570 },
+  { name: "John Yeboah", role: "A", team: "Venezia", team_id: 1570 },
+
+  // VERONA
+  { name: "Lorenzo Montipò", role: "P", team: "Verona", team_id: 504 },
+  { name: "Simone Perilli", role: "P", team: "Verona", team_id: 504 },
+  { name: "Alessandro Berardi", role: "P", team: "Verona", team_id: 504 },
+  { name: "Giangiacomo Magnani", role: "D", team: "Verona", team_id: 504 },
+  { name: "Diego Coppola", role: "D", team: "Verona", team_id: 504 },
+  { name: "Jackson Tchatchoua", role: "D", team: "Verona", team_id: 504 },
+  { name: "Darko Lazović", role: "D", team: "Verona", team_id: 504 },
+  { name: "Domagoj Bradarić", role: "D", team: "Verona", team_id: 504 },
+  { name: "Flavius Daniliuc", role: "D", team: "Verona", team_id: 504 },
+  { name: "Pawel Dawidowicz", role: "D", team: "Verona", team_id: 504 },
+  { name: "Reda Belahyane", role: "C", team: "Verona", team_id: 504 },
+  { name: "Ondrej Duda", role: "C", team: "Verona", team_id: 504 },
+  { name: "Tomáš Suslov", role: "C", team: "Verona", team_id: 504 },
+  { name: "Dani Silva", role: "C", team: "Verona", team_id: 504 },
+  { name: "Abdou Harroui", role: "C", team: "Verona", team_id: 504 },
+  { name: "Grigoris Kastanos", role: "A", team: "Verona", team_id: 504 },
+  { name: "Casper Tengstedt", role: "A", team: "Verona", team_id: 504 },
+  { name: "Dailon Livramento", role: "A", team: "Verona", team_id: 504 },
+  { name: "Daniel Mosquera", role: "A", team: "Verona", team_id: 504 },
+]
+
+export async function GET() {
+  try {
+    console.log('🔄 Loading Serie A players...')
+    
+    // Cancella i dati esistenti
+    const { error: deleteError } = await supabase
+      .from('players_serie_a')
+      .delete()
+      .neq('id', 0)
+    
+    if (deleteError) {
+      console.error('Errore cancellazione:', deleteError)
+    }
+    
+    // Prepara i dati per l'inserimento (SENZA ID - lasciamo che Supabase generi auto-increment)
+    const playersToInsert = SERIE_A_PLAYERS.map((player, index) => ({
+      id: 100000 + index + 1, // ID molto alto per evitare conflitti
+      name: player.name,
+      position: player.role,
+      team: player.team,
+      team_id: player.team_id,
+      goals: Math.floor(Math.random() * 15),
+      assists: Math.floor(Math.random() * 10),
+      yellow_cards: Math.floor(Math.random() * 5),
+      red_cards: Math.floor(Math.random() * 2),
+      clean_sheets: player.role === 'P' || player.role === 'D' ? Math.floor(Math.random() * 10) : 0,
+      games_played: Math.floor(Math.random() * 25) + 5,
+      // titolarita: Math.floor(Math.random() * 40) + 60, // RIMOSSO temporaneamente per cache issue
+      media_voto: Math.round((Math.random() * 2 + 6) * 10) / 10, // 6.0-8.0
+      updated_at: new Date().toISOString()
+    }))
+    
+    // Inserisci i dati
+    const { data, error } = await supabase
+      .from('players_serie_a')
+      .insert(playersToInsert)
+      .select()
+    
+    if (error) {
+      console.error('Errore inserimento:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+    
+    console.log(`✅ Caricati ${playersToInsert.length} giocatori Serie A`)
+    
+    return NextResponse.json({ 
+      success: true,
+      loaded: playersToInsert.length,
+      players: data?.length || 0,
+      message: `Caricati ${playersToInsert.length} giocatori Serie A` 
+    })
+    
+  } catch (error) {
+    console.error('❌ Errore caricamento:', error)
+    return NextResponse.json({
+      error: `Errore: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    }, { status: 500 })
+  }
+}

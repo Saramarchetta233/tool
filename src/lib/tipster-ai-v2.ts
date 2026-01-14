@@ -225,11 +225,12 @@ async function generateSingola(matches: any[], supabase: any, today: string): Pr
 PARTITE DISPONIBILI CON QUOTE REALI:
 ${JSON.stringify(matchList, null, 2)}
 
-REGOLE:
+REGOLE IMPORTANTI:
 1. DEVI scegliere UN fixture_id dalla lista sopra
 2. DEVI usare una prediction tra: 1, X, 2, Over 2.5, Under 2.5, Gol, NoGol
 3. USA la quota REALE dalla lista (non inventare!)
-4. Scegli la scommessa con miglior rapporto valore/sicurezza
+4. IMPORTANTE: La quota DEVE essere tra 1.70 e 2.50! NON scegliere quote sotto 1.70 o sopra 2.50!
+5. Scegli la scommessa con miglior rapporto valore/sicurezza nel range 1.70-2.50
 
 OUTPUT JSON (usa esattamente questo formato):
 {
@@ -239,7 +240,7 @@ OUTPUT JSON (usa esattamente questo formato):
   "league": "<campionato>",
   "match_time": "<orario>",
   "prediction": "<1 o X o 2 o Over 2.5 o Under 2.5 o Gol o NoGol>",
-  "odds": <quota reale dalla lista>,
+  "odds": <quota tra 1.70 e 2.50>,
   "confidence": <60-90>,
   "reasoning": "<analisi dettagliata in italiano>"
 }`

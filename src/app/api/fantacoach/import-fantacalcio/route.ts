@@ -30,36 +30,35 @@ const roleMapping: Record<string, 'P' | 'D' | 'C' | 'A'> = {
   'Pc': 'A'
 }
 
-// Mappa squadre Fantacalcio -> ID API-Football
+// Mappa squadre Fantacalcio -> ID API-Football (Serie A 2025-26)
 const teamIdMapping: Record<string, number> = {
   'Atalanta': 499,
-  'Bologna': 500,
-  'Cagliari': 523,
-  'Como': 867,
-  'Empoli': 511,
+  'Bologna': 500, 
+  'Cagliari': 501,
+  'Como': 477, // CORRETTO per 2025-26
   'Fiorentina': 502,
-  'Genoa': 515,
+  'Genoa': 488,
   'Inter': 505,
   'Juventus': 496,
-  'Lazio': 503,
-  'Lecce': 514,
+  'Lazio': 487,
+  'Lecce': 867,
   'Milan': 489,
-  'Monza': 520,
+  'Monza': 1579,
   'Napoli': 492,
-  'Parma': 523,
-  'Roma': 504,
-  'Torino': 506,
-  'Udinese': 524,
-  'Venezia': 5890,
-  'Verona': 517
+  'Parma': 1564,
+  'Roma': 497,
+  'Torino': 503,
+  'Udinese': 494,
+  'Venezia': 1570,
+  'Verona': 504
 }
 
 export async function POST() {
   try {
     console.log('🔄 Importazione giocatori da Fantacalcio.it...')
     
-    // URL delle quotazioni Fantacalcio.it
-    const url = 'https://www.fantacalcio.it/quotazioni-fantacalcio/fantacalcio'
+    // URL delle quotazioni Fantacalcio.it Serie A 2025-26
+    const url = 'https://www.fantacalcio.it/quotazioni-fantacalcio'
     
     // Scarica la pagina
     const response = await fetch(url)

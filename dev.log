@@ -3,39 +3,18 @@
 > next dev
 
  ⚠ Port 3000 is in use, trying 3001 instead.
- ⚠ Port 3001 is in use, trying 3002 instead.
   ▲ Next.js 14.2.30
-  - Local:        http://localhost:3002
+  - Local:        http://localhost:3001
   - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1633ms
- ✓ Compiled /api/tipsterai/predictions-v2 in 372ms (94 modules)
-📊 Fetching TipsterAI V2 tips for 2025-12-29...
- ⨯ TypeError: Cannot read properties of undefined (reading 'fixture_id')
-    at GET (webpack-internal:///(rsc)/./src/app/api/tipsterai/predictions-v2/route.ts:62:46)
-    at async /Users/albertoinuso/siti/tool/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
-    at async eT.execute (/Users/albertoinuso/siti/tool/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
-    at async eT.handle (/Users/albertoinuso/siti/tool/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
-    at async doRender (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:1366:42)
-    at async cacheEntry.responseCache.get.routeKind (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:1588:28)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:1496:28)
-    at async DevServer.renderPageComponent (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:1924:24)
-    at async DevServer.renderToResponseImpl (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:1962:32)
-    at async DevServer.pipeImpl (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:922:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/next-server.js:272:17)
-    at async DevServer.handleRequestImpl (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/base-server.js:818:17)
-    at async /Users/albertoinuso/siti/tool/node_modules/next/dist/server/dev/next-dev-server.js:339:20
-    at async Span.traceAsyncFn (/Users/albertoinuso/siti/tool/node_modules/next/dist/trace/trace.js:154:20)
-    at async DevServer.handleRequest (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
-    at async invokeRender (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/lib/router-server.js:179:21)
-    at async handleRequest (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/lib/router-server.js:359:24)
-    at async requestHandlerImpl (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/lib/router-server.js:383:13)
-    at async Server.requestListener (/Users/albertoinuso/siti/tool/node_modules/next/dist/server/lib/start-server.js:141:13)
- GET /api/tipsterai/predictions-v2 500 in 460ms
- ✓ Compiled in 53ms (94 modules)
-📊 Fetching TipsterAI V2 tips for 2025-12-29...
- GET /api/tipsterai/predictions-v2 200 in 36ms
-📊 Fetching TipsterAI V2 tips for 2025-12-29...
- GET /api/tipsterai/predictions-v2 200 in 11ms
+ ✓ Ready in 1581ms
+ ✓ Compiled /src/middleware in 422ms (123 modules)
+ ○ Compiling / ...
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ Compiled / in 3s (550 modules)
+ GET / 200 in 3117ms
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
 [?25h
