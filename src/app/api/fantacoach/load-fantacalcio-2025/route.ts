@@ -35,7 +35,7 @@ export async function GET() {
         .from('players_serie_a')
         .select('team')
       
-      const uniqueTeams = [...new Set(allPlayers?.map(p => p.team) || [])]
+      const uniqueTeams = Array.from(new Set(allPlayers?.map(p => p.team) || []))
       
       const teamCount = uniqueTeams.length
       console.log(`📊 Squadre trovate: ${teamCount}/20`)
