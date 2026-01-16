@@ -1,4 +1,7 @@
+'use client'
+
 import Navigation from '@/components/Navigation'
+import RequirePurchase from '@/components/RequirePurchase'
 
 export default function DashboardLayout({
   children,
@@ -9,7 +12,9 @@ export default function DashboardLayout({
     <div className="min-h-screen w-full overflow-x-hidden bg-slate-950">
       <Navigation />
       <main className="w-full overflow-x-hidden">
-        {children}
+        <RequirePurchase>
+          {children}
+        </RequirePurchase>
       </main>
     </div>
   )

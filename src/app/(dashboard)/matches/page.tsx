@@ -78,6 +78,7 @@ export default function MatchesPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(true)
+  const [analyzedMatches, setAnalyzedMatches] = useState<string[]>([])
 
   const leagues = [
     { key: 'all', name: 'Tutti i Campionati' },
@@ -115,7 +116,18 @@ export default function MatchesPage() {
 
   useEffect(() => {
     fetchMatches()
+    fetchAnalyzedMatches()
   }, [selectedLeague, selectedDate])
+
+  const fetchAnalyzedMatches = async () => {
+    try {
+      const response = await fetch('/api/credits/analyzed-matches')
+      const data = await response.json()
+      setAnalyzedMatches(data.analyzedMatches || [])
+    } catch (error) {
+      console.error('Error fetching analyzed matches:', error)
+    }
+  }
 
   useEffect(() => {
     filterMatches()
@@ -404,10 +416,17 @@ export default function MatchesPage() {
 
                     {/* CTA */}
                     <Link href={`/matches/${match.id}`}>
-                      <Button className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Analisi Completa (2 crediti)
-                      </Button>
+                      {analyzedMatches.includes(match.id) ? (
+                        <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Vedi Analisi
+                        </Button>
+                      ) : (
+                        <Button className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+                          <TrendingUp className="h-4 w-4 mr-2" />
+                          Analisi Completa (10 crediti)
+                        </Button>
+                      )}
                     </Link>
                   </CardContent>
                 </Card>

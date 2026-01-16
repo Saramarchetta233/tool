@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { BarChart3, TrendingUp, Users, Target, Calendar, Clock, Trophy, Calculator, ArrowRight, Zap, Sparkles } from 'lucide-react'
+import { BarChart3, TrendingUp, Users, Target, Calendar, Clock, Trophy, Calculator, ArrowRight, Zap, Sparkles, CheckCircle, X } from 'lucide-react'
 import Link from 'next/link'
+import { useUserStore } from '@/stores/userStore'
 
 interface QuickMatch {
   id: string
@@ -38,6 +40,7 @@ interface RecentInsight {
 }
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams()
   const [todayMatches, setTodayMatches] = useState<QuickMatch[]>([])
   const [dailySchedule, setDailySchedule] = useState<DailySchedule[]>([])
   const [tipsterData, setTipsterData] = useState<TipsterData>({ count: 0, lastUpdated: null })
@@ -45,12 +48,28 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [scheduleLoading, setScheduleLoading] = useState(true)
   const [insightsLoading, setInsightsLoading] = useState(true)
+  const [showPurchaseSuccess, setShowPurchaseSuccess] = useState(false)
+  const [purchasedCredits, setPurchasedCredits] = useState<string | null>(null)
+  const { credits, refreshCredits } = useUserStore()
+
+  // Check for purchase success parameter
+  useEffect(() => {
+    const acquisto = searchParams.get('acquisto')
+    const crediti = searchParams.get('crediti')
+    if (acquisto === 'completato') {
+      setShowPurchaseSuccess(true)
+      setPurchasedCredits(crediti)
+      // Remove query params from URL without reload
+      window.history.replaceState({}, '', '/dashboard')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     fetchTodayMatches()
     fetchDailySchedule()
     fetchTipsterData()
-  }, [])
+    refreshCredits()
+  }, [refreshCredits])
 
   useEffect(() => {
     // Fetch insights after tipster data and matches are loaded
@@ -235,7 +254,7 @@ export default function DashboardPage() {
     { label: 'Partite Oggi', value: todayMatches.length.toString(), change: null, trend: null },
     { label: 'Leghe Attive', value: dailySchedule.length.toString(), change: null, trend: null },
     { label: 'Tips AI', value: tipsterData.count.toString(), change: tipsterData.count > 0 ? 'NUOVI' : null, trend: tipsterData.count > 0 ? 'up' : null },
-    { label: 'Crediti', value: '87', change: null, trend: null }
+    { label: 'Crediti', value: credits.toString(), change: null, trend: null }
   ]
 
   const quickTools = [
@@ -255,11 +274,13 @@ export default function DashboardPage() {
       color: 'emerald'
     },
     {
-      title: 'FantaCoach', 
+      title: 'FantaCoach',
       description: 'Ottimizza la tua formazione',
       icon: <Trophy className="h-6 w-6" />,
-      href: '/fantacoach',
-      color: 'purple'
+      href: '#',
+      color: 'purple',
+      disabled: true,
+      badge: 'In arrivo'
     },
     {
       title: 'Metodo AI',
@@ -284,7 +305,38 @@ export default function DashboardPage() {
   return (
     <div className="w-full py-6 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-hidden">
-        
+
+        {/* Purchase Success Banner */}
+        {showPurchaseSuccess && (
+          <div className="mb-6 relative">
+            <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl p-6 shadow-lg shadow-emerald-500/20">
+              <button
+                onClick={() => setShowPurchaseSuccess(false)}
+                className="absolute top-3 right-3 text-white/70 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-10 w-10 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Grazie per il tuo acquisto!
+                  </h2>
+                  <p className="text-emerald-100">
+                    {purchasedCredits ? (
+                      <>Hai ricevuto <strong>{purchasedCredits} crediti</strong>. Buona fortuna con le tue analisi!</>
+                    ) : (
+                      <>Il tuo acquisto è stato completato con successo. Buona fortuna con le tue analisi!</>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center space-x-2 mb-8">
           <BarChart3 className="h-8 w-8 text-emerald-500" />
@@ -323,8 +375,8 @@ export default function DashboardPage() {
               <div className="bg-slate-800/50 rounded-lg p-4">
                 <div className="text-center sm:text-right">
                   <div className="text-slate-400 text-sm">I tuoi crediti</div>
-                  <div className="text-2xl font-bold text-emerald-400">87</div>
-                  <div className="text-xs text-slate-500 mt-1">2 crediti per analisi</div>
+                  <div className="text-2xl font-bold text-emerald-400">{credits}</div>
+                  <div className="text-xs text-slate-500 mt-1">10 crediti per analisi</div>
                 </div>
               </div>
             </div>
@@ -430,16 +482,16 @@ export default function DashboardPage() {
                           {/* Button */}
                           {match.fixture_id ? (
                             <Link href={`/matches/${match.fixture_id}`}>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-sm py-2"
                               >
-                                📊 Analizza Partita (-2💎)
+                                📊 Analizza Partita (-10 crediti)
                               </Button>
                             </Link>
                           ) : (
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               className="w-full bg-slate-600 cursor-not-allowed text-sm py-2"
                               disabled
                             >
@@ -525,22 +577,34 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="overflow-x-hidden">
                 <div className="space-y-3">
-                  {quickTools.map((tool, i) => (
-                    <Link key={i} href={tool.href}>
-                      <div className={`relative p-4 rounded-lg border cursor-pointer transition-all hover:-translate-y-1 ${
-                        tool.highlight ? 'bg-gradient-to-r from-violet-900/30 to-purple-900/30 border-violet-500/50 hover:border-violet-400 shadow-lg shadow-violet-500/20' :
-                        tool.color === 'emerald' ? 'bg-emerald-900/20 border-emerald-500/30 hover:border-emerald-500/50' :
-                        tool.color === 'purple' ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-500/50' :
-                        tool.color === 'blue' ? 'bg-blue-900/20 border-blue-500/30 hover:border-blue-500/50' :
-                        'bg-violet-900/20 border-violet-500/30 hover:border-violet-500/50'
+                  {quickTools.map((tool, i) => {
+                    const content = (
+                      <div className={`relative p-4 rounded-lg border transition-all ${
+                        tool.disabled
+                          ? 'bg-slate-800/30 border-slate-700/50 opacity-60 cursor-not-allowed'
+                          : tool.highlight
+                            ? 'bg-gradient-to-r from-violet-900/30 to-purple-900/30 border-violet-500/50 hover:border-violet-400 shadow-lg shadow-violet-500/20 cursor-pointer hover:-translate-y-1'
+                            : tool.color === 'emerald'
+                              ? 'bg-emerald-900/20 border-emerald-500/30 hover:border-emerald-500/50 cursor-pointer hover:-translate-y-1'
+                              : tool.color === 'purple'
+                                ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-500/50 cursor-pointer hover:-translate-y-1'
+                                : tool.color === 'blue'
+                                  ? 'bg-blue-900/20 border-blue-500/30 hover:border-blue-500/50 cursor-pointer hover:-translate-y-1'
+                                  : 'bg-violet-900/20 border-violet-500/30 hover:border-violet-500/50 cursor-pointer hover:-translate-y-1'
                       }`}>
                         {tool.highlight && (
                           <div className="absolute -top-2 -right-2">
                             <span className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full font-bold">HOT</span>
                           </div>
                         )}
+                        {tool.badge && (
+                          <div className="absolute -top-2 -right-2">
+                            <span className="bg-slate-600 text-slate-300 text-xs px-2 py-1 rounded-full font-medium">{tool.badge}</span>
+                          </div>
+                        )}
                         <div className="flex items-center space-x-3">
                           <div className={`${
+                            tool.disabled ? 'text-slate-500' :
                             tool.color === 'emerald' ? 'text-emerald-400' :
                             tool.color === 'purple' ? 'text-purple-400' :
                             tool.color === 'blue' ? 'text-blue-400' :
@@ -550,13 +614,19 @@ export default function DashboardPage() {
                             {tool.icon}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-white font-medium">{tool.title}</div>
+                            <div className={`font-medium ${tool.disabled ? 'text-slate-400' : 'text-white'}`}>{tool.title}</div>
                             <div className="text-slate-400 text-sm truncate">{tool.description}</div>
                           </div>
                         </div>
                       </div>
-                    </Link>
-                  ))}
+                    )
+
+                    return tool.disabled ? (
+                      <div key={i}>{content}</div>
+                    ) : (
+                      <Link key={i} href={tool.href}>{content}</Link>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>

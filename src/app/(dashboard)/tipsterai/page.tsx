@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Sparkles, TrendingUp, Zap, Bomb, MessageSquare, RefreshCw, Clock } from 'lucide-react'
+import { Sparkles, TrendingUp, Zap, Bomb, MessageSquare, RefreshCw, Clock, CreditCard, AlertCircle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import Link from 'next/link'
+import { useUserStore } from '@/stores/userStore'
 
 interface Prediction {
   type: 'singola' | 'doppia' | 'tripla' | 'mista' | 'bomba' | 'serieA'
@@ -215,31 +216,67 @@ export default function TipsterAI() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [activeTipTab, setActiveTipTab] = useState('singola')
+  const [isFirstView, setIsFirstView] = useState(true)
+  const [regenerateError, setRegenerateError] = useState('')
   const today = new Date()
 
+  const { credits, tipsterFirstView, spendCredits, refreshCredits, markTipsterViewed, checkTipsterAccess } = useUserStore()
+
   useEffect(() => {
+    checkInitialAccess()
     fetchDailyPredictions()
   }, [])
 
+  const checkInitialAccess = async () => {
+    const access = await checkTipsterAccess()
+    setIsFirstView(access.isFirstView)
+
+    // Se e' la prima volta, segna come visto
+    if (access.isFirstView) {
+      await markTipsterViewed()
+    }
+  }
+
   const fetchDailyPredictions = async (forceRegenerate = false) => {
     setLoading(true)
+    setRegenerateError('')
+
     try {
       let response, data
-      
+
       if (forceRegenerate) {
+        // Per rigenerare servono 10 crediti (non e' piu' la prima volta)
+        if (credits < 10) {
+          setRegenerateError('Crediti insufficienti. Servono 10 crediti per rigenerare le proposte.')
+          setLoading(false)
+          return
+        }
+
+        // Spendi i crediti prima di rigenerare
+        const spendResult = await spendCredits(10, 'Rigenerazione TipsterAI')
+        if (!spendResult.success) {
+          setRegenerateError(spendResult.error || 'Errore durante la spesa dei crediti')
+          setLoading(false)
+          return
+        }
+
         // Forza rigenerazione con sistema V4 aggiornato
         console.log('🔄 Forzando rigenerazione tips V4...')
-        response = await fetch('/api/tipsterai/regenerate-v4', { 
+        response = await fetch('/api/tipsterai/regenerate-v4', {
           method: 'POST',
-          cache: 'no-store'
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ forceNewMatches: true }) // Assicura che cambino le partite
         })
         data = await response.json()
-        
+
         if (data.success) {
           console.log('✅ Tips V4 rigenerati, ricaricando...')
           // Dopo rigenerazione, ricarica i tips con cache-busting
           const cacheBuster = Date.now()
-          response = await fetch(`/api/tipsterai/predictions-v2?v=${cacheBuster}`, { 
+          response = await fetch(`/api/tipsterai/predictions-v2?v=${cacheBuster}`, {
             cache: 'no-store',
             headers: {
               'Cache-Control': 'no-cache',
@@ -248,6 +285,9 @@ export default function TipsterAI() {
           })
           data = await response.json()
         }
+
+        // Refresh credits dopo la spesa
+        await refreshCredits()
       } else {
         // Caricamento normale con cache-busting
         const cacheBuster = Date.now()
@@ -574,18 +614,37 @@ export default function TipsterAI() {
               
               {/* Info header e pulsante aggiorna */}
               <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium">
-                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                  {predictions.length} proposte attive per oggi
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                    {predictions.length} proposte attive per oggi
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-full text-sm">
+                    <CreditCard className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400 font-semibold">{credits}</span>
+                    <span className="text-slate-400">crediti</span>
+                  </div>
                 </div>
-                <Button 
-                  onClick={() => fetchDailyPredictions(true)} 
-                  disabled={loading}
-                  className="gap-2"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  Aggiorna Proposte
-                </Button>
+                <div className="flex flex-col items-end gap-2">
+                  <Button
+                    onClick={() => fetchDailyPredictions(true)}
+                    disabled={loading || credits < 10}
+                    className="gap-2"
+                    variant={credits < 10 ? "outline" : "default"}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    Aggiorna Proposte (10 crediti)
+                  </Button>
+                  {regenerateError && (
+                    <div className="flex items-center gap-2 text-red-400 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      {regenerateError}
+                      <Link href="/ricarica" className="text-emerald-400 hover:underline ml-2">
+                        Ricarica
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Content delle proposte */}

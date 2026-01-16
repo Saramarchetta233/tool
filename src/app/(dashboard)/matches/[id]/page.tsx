@@ -8,13 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { 
-  BarChart3, TrendingUp, Trophy, Target, Shield, 
+import {
+  BarChart3, TrendingUp, Trophy, Target, Shield,
   Calendar, AlertCircle, ChevronRight, Users,
   Activity, Zap, TrendingDown, ArrowLeft, Clock, MapPin, RefreshCw,
-  Brain, Sparkles, TrendingUpIcon
+  Brain, Sparkles, TrendingUpIcon, CreditCard, Lock
 } from 'lucide-react'
 import Link from 'next/link'
+import { useUserStore } from '@/stores/userStore'
 
 interface AIAnalysisResponse {
   success: boolean
@@ -40,15 +41,23 @@ export default function MatchAnalysisPage() {
   const params = useParams()
   const router = useRouter()
   const matchId = params.id as string
-  
+
   const [analysis, setAnalysis] = useState<AIAnalysisResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  
+  const [insufficientCredits, setInsufficientCredits] = useState(false)
+  const [creditsSpent, setCreditsSpent] = useState(false)
+  const [alreadyAnalyzed, setAlreadyAnalyzed] = useState(false)
+
+  const { credits, spendCredits, refreshCredits } = useUserStore()
+
   // Refs per tracciare se abbiamo già fatto fetch
   const hasFetchedRef = useRef(false)
   const isFetchingRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const creditsSpentRef = useRef(false) // Previene doppio addebito
+
+  const ANALYSIS_COST = 10
 
   const fetchAnalysis = async () => {
     console.log('🔄 Manual fetchAnalysis called (retry)')
@@ -98,41 +107,99 @@ export default function MatchAnalysisPage() {
 
   useEffect(() => {
     console.log('🔄 useEffect triggered for matchId:', matchId)
-    
+
     // BLOCCA se già fetchato o in corso
     if (hasFetchedRef.current || isFetchingRef.current) {
       console.log('⚠️ Already fetched or fetching, skipping duplicate request...')
       return
     }
-    
+
     isFetchingRef.current = true
     console.log('🚀 Starting fetch for match analysis...')
-    
+
     // Cancella richieste precedenti
     if (abortControllerRef.current) {
       console.log('🛑 Aborting previous request')
       abortControllerRef.current.abort()
     }
-    
+
     abortControllerRef.current = new AbortController()
-    
+
     const fetchWithAbort = async () => {
       try {
         setLoading(true)
         setError(false)
-        
+        setInsufficientCredits(false)
+
+        // PRIMA: Controlla se l'utente ha già analizzato questa partita
+        console.log('🔍 Checking if already analyzed...')
+        const checkResponse = await fetch('/api/credits/check-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matchId }),
+        })
+        const checkData = await checkResponse.json()
+
+        if (checkData.alreadyAnalyzed) {
+          console.log('✅ Match already analyzed - FREE access')
+          setAlreadyAnalyzed(true)
+          // Skip credit check and spending, go directly to fetch
+        } else {
+          // Non ancora analizzata - controlla e spendi crediti
+          console.log('💰 Checking credits... Current:', credits)
+
+          // Previeni doppio addebito con ref
+          if (creditsSpentRef.current) {
+            console.log('⚠️ Credits already spent in this session, skipping...')
+          } else {
+            // Verifica crediti dal server
+            const creditsResponse = await fetch('/api/credits/check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ amount: ANALYSIS_COST }),
+            })
+            const creditsData = await creditsResponse.json()
+
+            if (!creditsData.hasEnough) {
+              console.log('❌ Insufficient credits:', creditsData.credits)
+              setInsufficientCredits(true)
+              setLoading(false)
+              isFetchingRef.current = false
+              return
+            }
+
+            // Spendi i crediti prima dell'analisi
+            console.log('💳 Spending credits...')
+            creditsSpentRef.current = true // Marca PRIMA di chiamare per prevenire race condition
+
+            const spendResult = await spendCredits(ANALYSIS_COST, `Analisi partita ${matchId}`, matchId)
+
+            if (!spendResult.success) {
+              console.log('❌ Failed to spend credits:', spendResult.error)
+              creditsSpentRef.current = false // Reset se fallisce
+              setInsufficientCredits(true)
+              setLoading(false)
+              isFetchingRef.current = false
+              return
+            }
+
+            setCreditsSpent(true)
+            console.log('✅ Credits spent successfully')
+          }
+        }
+
         console.log('📡 Making API call to:', `/api/matches/${matchId}`)
-        
+
         const response = await fetch(`/api/matches/${matchId}`, {
           signal: abortControllerRef.current?.signal
         })
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
-        
+
         const aiData: AIAnalysisResponse = await response.json()
-      
+
         console.log('📦 Received data:', {
           dataSource: aiData.dataSource,
           cacheHit: aiData.cacheHit,
@@ -141,7 +208,7 @@ export default function MatchAnalysisPage() {
           hasValueBets: aiData.value_bets?.length || 0,
           hasReport: !!aiData.report_narrativo
         })
-        
+
         // Verifica che i dati essenziali siano presenti
         if (aiData && aiData.match) {
           setAnalysis(aiData)
@@ -151,7 +218,7 @@ export default function MatchAnalysisPage() {
         } else {
           throw new Error('Dati analisi non validi')
         }
-        
+
       } catch (error: any) {
         if (error?.name === 'AbortError') {
           console.log('🛑 Request aborted (normal behavior)')
@@ -162,11 +229,13 @@ export default function MatchAnalysisPage() {
       } finally {
         setLoading(false)
         isFetchingRef.current = false // Reset flag dopo completamento
+        // Refresh credits
+        refreshCredits()
       }
     }
-    
+
     fetchWithAbort()
-    
+
     return () => {
       console.log('🧹 Cleanup: aborting any pending requests')
       abortControllerRef.current?.abort()
@@ -182,8 +251,50 @@ export default function MatchAnalysisPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Generando analisi AI...</p>
+          <p className="text-slate-400">
+            {alreadyAnalyzed ? 'Caricamento analisi...' : 'Generando analisi AI...'}
+          </p>
+          {alreadyAnalyzed && (
+            <p className="text-blue-400 text-sm mt-2">Analisi già effettuata</p>
+          )}
         </div>
+      </div>
+    )
+  }
+
+  // Crediti insufficienti
+  if (insufficientCredits) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <Card className="bg-slate-900 border-slate-800 max-w-md">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-8 w-8 text-amber-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">Crediti Insufficienti</h2>
+            <p className="text-slate-400 mb-2">
+              Per visualizzare l'analisi di questa partita servono <span className="text-emerald-400 font-semibold">10 crediti</span>.
+            </p>
+            <p className="text-slate-500 text-sm mb-6">
+              Il tuo saldo attuale: <span className="text-white font-semibold">{credits}</span> crediti
+            </p>
+
+            <div className="space-y-3">
+              <Link href="/ricarica">
+                <Button className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Ricarica Crediti
+                </Button>
+              </Link>
+              <Link href="/matches">
+                <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Torna alle partite
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -195,11 +306,13 @@ export default function MatchAnalysisPage() {
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">Analisi Non Disponibile</h2>
-            <p className="text-slate-400 mb-4">Non è stato possibile generare l'analisi per questa partita.</p>
-            <Button onClick={fetchAnalysis} className="bg-emerald-600 hover:bg-emerald-700">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Riprova
-            </Button>
+            <p className="text-slate-400 mb-4">Non e' stato possibile generare l'analisi per questa partita.</p>
+            <Link href="/matches">
+              <Button className="bg-emerald-600 hover:bg-emerald-700">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Torna alle partite
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -244,9 +357,16 @@ export default function MatchAnalysisPage() {
               Tutte le Partite
             </Button>
           </Link>
-          <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-            🤖 AI POWERED
-          </Badge>
+          <div className="flex items-center gap-2">
+            {alreadyAnalyzed && (
+              <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                ✓ Già analizzata
+              </Badge>
+            )}
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+              🤖 AI POWERED
+            </Badge>
+          </div>
         </div>
 
         {/* Match Info */}
