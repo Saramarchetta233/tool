@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
             description: `Acquisto ${packageType} - Stripe Session ${sessionId}`,
           })
 
-          // Update purchase status if exists
+          // Update or create purchase record
           if (existingPurchase) {
             await supabase
               .from('purchases')
@@ -89,6 +89,20 @@ export async function POST(request: NextRequest) {
                 completed_at: new Date().toISOString(),
               })
               .eq('stripe_session_id', sessionId)
+          } else {
+            // Create purchase record if it doesn't exist
+            await supabase.from('purchases').insert({
+              user_id: userId,
+              package_type: packageType,
+              amount_eur: packageType === 'initial' ? 49 :
+                         packageType === 'recharge_500' ? 9.99 :
+                         packageType === 'recharge_1500' ? 24.99 :
+                         packageType === 'recharge_3000' ? 39.99 : 0,
+              credits_amount: creditsToAdd,
+              stripe_session_id: sessionId,
+              status: 'completed',
+              completed_at: new Date().toISOString(),
+            })
           }
         }
       } else {
