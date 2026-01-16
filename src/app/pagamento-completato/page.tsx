@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { CheckCircle, ArrowRight, CreditCard, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useUserStore } from '@/stores/userStore'
 
-export default function PagamentoCompletatoPage() {
+function PagamentoCompletatoContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const sessionId = searchParams.get('session_id')
@@ -139,5 +139,20 @@ export default function PagamentoCompletatoPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function PagamentoCompletatoPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+          <p className="mt-4 text-slate-400">Caricamento...</p>
+        </div>
+      </div>
+    }>
+      <PagamentoCompletatoContent />
+    </Suspense>
   )
 }
