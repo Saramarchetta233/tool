@@ -14,7 +14,6 @@ import { createClient } from "@/lib/supabase/client"
 export default function AccediPage() {
   const router = useRouter()
   const { login, signup } = useUserStore()
-  const supabase = createClient()
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("")
@@ -103,6 +102,7 @@ export default function AccediPage() {
     setResetError("")
 
     try {
+      const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
