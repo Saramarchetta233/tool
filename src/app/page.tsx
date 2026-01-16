@@ -305,16 +305,16 @@ export default function HomePage() {
               <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">PRO</Badge>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Link href="/accedi">
-                <Button variant="ghost" className="text-slate-300 hover:text-white hidden sm:flex">
+                <Button variant="ghost" className="text-slate-300 hover:text-white text-sm sm:text-base">
                   Accedi
                 </Button>
               </Link>
               <Link href="/accedi">
-                <Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-emerald-500/25">
-                  Inizia Ora - 49€
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-emerald-500/25 text-sm sm:text-base px-3 sm:px-4">
+                  <span className="hidden sm:inline">Inizia Ora - </span>49€
+                  <ArrowRight className="ml-1 sm:ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
