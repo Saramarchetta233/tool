@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BarChart3, Eye, EyeOff, Mail, Lock, User, CreditCard, CheckCircle } from "lucide-react"
+import { BarChart3, Eye, EyeOff, Mail, Lock, User, CreditCard, CheckCircle, ArrowLeft, KeyRound } from "lucide-react"
 import { useUserStore } from "@/stores/userStore"
 
 export default function AccediPage() {
@@ -29,6 +29,13 @@ export default function AccediPage() {
   const [signupLoading, setSignupLoading] = useState(false)
   const [signupError, setSignupError] = useState("")
   const [signupSuccess, setSignupSuccess] = useState(false)
+
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState("")
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetError, setResetError] = useState("")
+  const [resetSuccess, setResetSuccess] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,6 +73,32 @@ export default function AccediPage() {
     }
 
     setSignupLoading(false)
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setResetLoading(true)
+    setResetError("")
+
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setResetError(data.error || "Errore durante l'invio dell'email")
+      } else {
+        setResetSuccess(true)
+      }
+    } catch (error) {
+      setResetError("Errore di connessione")
+    }
+
+    setResetLoading(false)
   }
 
   const handlePurchase = async () => {
@@ -122,58 +155,162 @@ export default function AccediPage() {
 
               {/* Login Tab */}
               <TabsContent value="login" className="mt-6">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  {loginError && (
-                    <div className="p-3 text-sm text-red-400 bg-red-900/20 border border-red-900/20 rounded">
-                      {loginError}
+                {showForgotPassword ? (
+                  // Forgot Password View
+                  resetSuccess ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Mail className="h-8 w-8 text-emerald-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">Email Inviata!</h3>
+                      <p className="text-slate-400 mb-2">
+                        Abbiamo inviato un link per reimpostare la password a:
+                      </p>
+                      <p className="text-emerald-400 font-semibold mb-4">{resetEmail}</p>
+                      <div className="bg-slate-800/50 rounded-lg p-4 mb-6 text-left">
+                        <p className="text-sm text-slate-300 mb-2">Cosa fare ora:</p>
+                        <ol className="text-sm text-slate-400 list-decimal list-inside space-y-1">
+                          <li>Controlla la tua casella email</li>
+                          <li>Clicca sul link nel messaggio</li>
+                          <li>Scegli una nuova password</li>
+                        </ol>
+                        <p className="text-xs text-slate-500 mt-3">
+                          Non trovi l'email? Controlla la cartella spam.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setShowForgotPassword(false)
+                          setResetSuccess(false)
+                          setResetEmail("")
+                        }}
+                        variant="outline"
+                        className="border-slate-700 text-white hover:bg-slate-800"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Torna al login
+                      </Button>
                     </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                      <Input
-                        type="email"
-                        placeholder="la.tua.email@esempio.it"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                        className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                      <Input
-                        type={showLoginPassword ? "text" : "password"}
-                        placeholder="La tua password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                        className="pl-10 pr-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
-                      />
+                  ) : (
+                    <div className="space-y-4">
                       <button
                         type="button"
-                        onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                        onClick={() => {
+                          setShowForgotPassword(false)
+                          setResetError("")
+                        }}
+                        className="flex items-center text-sm text-slate-400 hover:text-white transition-colors"
                       >
-                        {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <ArrowLeft className="h-4 w-4 mr-1" />
+                        Torna al login
                       </button>
-                    </div>
-                  </div>
 
-                  <Button
-                    type="submit"
-                    disabled={loginLoading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    {loginLoading ? "Accesso in corso..." : "Accedi"}
-                  </Button>
-                </form>
+                      <div className="text-center py-4">
+                        <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <KeyRound className="h-7 w-7 text-amber-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-2">Password Dimenticata?</h3>
+                        <p className="text-slate-400 text-sm">
+                          Inserisci la tua email e ti invieremo un link per reimpostare la password.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleForgotPassword} className="space-y-4">
+                        {resetError && (
+                          <div className="p-3 text-sm text-red-400 bg-red-900/20 border border-red-900/20 rounded">
+                            {resetError}
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-300">Email</label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                            <Input
+                              type="email"
+                              placeholder="la.tua.email@esempio.it"
+                              value={resetEmail}
+                              onChange={(e) => setResetEmail(e.target.value)}
+                              required
+                              className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={resetLoading}
+                          className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                        >
+                          {resetLoading ? "Invio in corso..." : "Invia Link di Reset"}
+                        </Button>
+                      </form>
+                    </div>
+                  )
+                ) : (
+                  // Normal Login Form
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    {loginError && (
+                      <div className="p-3 text-sm text-red-400 bg-red-900/20 border border-red-900/20 rounded">
+                        {loginError}
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Email</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                        <Input
+                          type="email"
+                          placeholder="la.tua.email@esempio.it"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          required
+                          className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-slate-300">Password</label>
+                        <button
+                          type="button"
+                          onClick={() => setShowForgotPassword(true)}
+                          className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          Password dimenticata?
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                        <Input
+                          type={showLoginPassword ? "text" : "password"}
+                          placeholder="La tua password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          required
+                          className="pl-10 pr-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                        >
+                          {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={loginLoading}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      {loginLoading ? "Accesso in corso..." : "Accedi"}
+                    </Button>
+                  </form>
+                )}
               </TabsContent>
 
               {/* Signup Tab */}
