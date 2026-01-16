@@ -163,10 +163,14 @@ export async function POST(request: NextRequest) {
       url: session.url,
       sessionId: session.id,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Stripe checkout error:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error type:', error?.type)
+    console.error('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY)
+    console.error('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
     return NextResponse.json(
-      { error: 'Errore durante la creazione del pagamento' },
+      { error: 'Errore durante la creazione del pagamento', details: error?.message },
       { status: 500 }
     )
   }
