@@ -31,12 +31,13 @@ export async function GET(
     console.log('🔍 Checking cache for cached AI analysis...')
 
     // 1. Check for cached AI analysis first (not expired)
+    // Use maybeSingle() instead of single() to avoid error when no cache exists
     const { data: cachedAnalysis, error: cacheError } = await supabaseAdmin
       .from('match_analyses')
       .select('analysis, created_at, expires_at')
       .eq('fixture_id', fixtureId)
       .gt('expires_at', new Date().toISOString())
-      .single()
+      .maybeSingle()
 
     console.log('📋 Cache result:', {
       found: !!cachedAnalysis,

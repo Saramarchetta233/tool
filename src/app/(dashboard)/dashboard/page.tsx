@@ -50,7 +50,48 @@ export default function DashboardPage() {
   const [insightsLoading, setInsightsLoading] = useState(true)
   const [showPurchaseSuccess, setShowPurchaseSuccess] = useState(false)
   const [purchasedCredits, setPurchasedCredits] = useState<string | null>(null)
-  const { credits, refreshCredits } = useUserStore()
+  const { credits, refreshCredits, isAuthenticated } = useUserStore()
+
+  // State for magic link auto-claim
+  const [magicLinkClaimed, setMagicLinkClaimed] = useState(false)
+  const [magicLinkCredits, setMagicLinkCredits] = useState<number | null>(null)
+
+  // Auto-claim magic link token from localStorage
+  useEffect(() => {
+    const autoClaimMagicLink = async () => {
+      if (!isAuthenticated) return
+
+      const token = localStorage.getItem('magic_link_token')
+      if (!token) return
+
+      try {
+        console.log('Tentativo auto-claim con token:', token)
+        const res = await fetch('/api/magic/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        })
+
+        const data = await res.json()
+
+        if (data.success) {
+          setMagicLinkClaimed(true)
+          setMagicLinkCredits(data.creditsAdded)
+          await refreshCredits()
+          console.log(`Magic link claimed: ${data.creditsAdded} crediti`)
+        }
+
+        // Rimuovi token in ogni caso (successo o errore)
+        localStorage.removeItem('magic_link_token')
+
+      } catch (error) {
+        console.error('Auto-claim error:', error)
+        localStorage.removeItem('magic_link_token')
+      }
+    }
+
+    autoClaimMagicLink()
+  }, [isAuthenticated, refreshCredits])
 
   // Check for purchase success parameter
   useEffect(() => {
@@ -330,6 +371,33 @@ export default function DashboardPage() {
                     ) : (
                       <>Il tuo acquisto è stato completato con successo. Buona fortuna con le tue analisi!</>
                     )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Magic Link Claim Success Banner */}
+        {magicLinkClaimed && (
+          <div className="mb-6 relative">
+            <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl p-6 shadow-lg shadow-violet-500/20">
+              <button
+                onClick={() => setMagicLinkClaimed(false)}
+                className="absolute top-3 right-3 text-white/70 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-10 w-10 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Crediti Attivati!
+                  </h2>
+                  <p className="text-violet-100">
+                    Hai ricevuto <strong>{magicLinkCredits} crediti</strong> dal tuo acquisto. Buona fortuna con le tue analisi!
                   </p>
                 </div>
               </div>
