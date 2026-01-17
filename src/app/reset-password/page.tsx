@@ -1,17 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { BarChart3, Eye, EyeOff, Lock, CheckCircle, AlertCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { BarChart3, Eye, EyeOff, Lock, CheckCircle } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -20,25 +18,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [validSession, setValidSession] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    // Check if user has a valid session from the reset link
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setValidSession(!!session)
-    }
-    checkSession()
-
-    // Listen for auth state changes (when user clicks reset link)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setValidSession(true)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,21 +36,24 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
       })
 
-      if (error) {
-        setError(error.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Errore durante il reset della password')
       } else {
         setSuccess(true)
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/accedi')
         }, 3000)
       }
     } catch (err) {
-      setError('Errore durante il reset della password')
+      setError('Errore di connessione')
     }
 
     setLoading(false)
@@ -90,23 +72,7 @@ export default function ResetPasswordPage() {
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="pt-8">
-            {validSession === false ? (
-              // Invalid or expired session
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="h-8 w-8 text-red-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Link Scaduto</h3>
-                <p className="text-slate-400 mb-6">
-                  Il link per reimpostare la password e scaduto o non valido.
-                </p>
-                <Link href="/accedi">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Richiedi un nuovo link
-                  </Button>
-                </Link>
-              </div>
-            ) : success ? (
+            {success ? (
               // Success state
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
