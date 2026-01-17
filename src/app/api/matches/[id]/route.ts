@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { ApiFootballService, formatOddsForFrontend, calculateProbabilitiesFromOdds, getDefaultOdds } from '@/lib/api-football'
 // import { generateMatchNarrative, generateBettingTips } from '@/lib/openai-helper'
 import { generateMatchAnalysis, AIAnalysisResult } from '@/lib/match-analysis-ai'
@@ -84,7 +84,13 @@ export async function GET(
       
       console.log('✅ RETURNING CACHED ANALYSIS - ZERO COST!')
       console.log('=== CACHED RESPONSE SENT ===')
-      return NextResponse.json(cachedResponse)
+
+      // Add cache headers for browser caching (5 minutes)
+      return NextResponse.json(cachedResponse, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        }
+      })
     }
 
     console.log('📭 No valid cache found, generating NEW analysis with GPT-4...')
@@ -313,8 +319,13 @@ export async function GET(
     
     console.log('✅ Returning FRESH AI analysis')
     console.log('=== MATCH ANALYSIS REQUEST END ===')
-    
-    return NextResponse.json(finalResponse)
+
+    // Add cache headers (shorter for fresh data)
+    return NextResponse.json(finalResponse, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=180, stale-while-revalidate=300',
+      }
+    })
     
   } catch (error) {
     console.error('❌ Error in /api/matches/[id]:', error)

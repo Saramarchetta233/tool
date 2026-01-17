@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { generateDailyTipsSimple } from '@/lib/tipster-ai-simple'
 
 export const dynamic = 'force-dynamic'
