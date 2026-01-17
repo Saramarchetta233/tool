@@ -11,6 +11,7 @@ import { BarChart3, Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2 } from 
 export default function ResetPasswordPage() {
   const router = useRouter()
   const supabaseRef = useRef<any>(null)
+  const initStarted = useRef(false)
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -24,48 +25,91 @@ export default function ResetPasswordPage() {
   const [initializing, setInitializing] = useState(true)
 
   useEffect(() => {
+    // Prevent double initialization in strict mode
+    if (initStarted.current) return
+    initStarted.current = true
+
     const initSession = async () => {
       try {
-        // Dynamically import to avoid SSR issues
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         supabaseRef.current = supabase
 
-        // Check for tokens in URL hash (from email link)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1))
-        const accessToken = hashParams.get('access_token')
-        const refreshToken = hashParams.get('refresh_token')
-        const type = hashParams.get('type')
+        // Listen for auth state changes - Supabase fires PASSWORD_RECOVERY event
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+          console.log('Auth event:', event, session ? 'has session' : 'no session')
 
-        if (accessToken && refreshToken && type === 'recovery') {
-          // Exchange tokens for session
-          const { error: sessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          })
-
-          if (sessionError) {
-            console.error('Session error:', sessionError)
-            setSessionError(true)
-          } else {
-            setSessionReady(true)
-            // Clean URL
-            window.history.replaceState(null, '', '/reset-password')
+          if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+            if (session) {
+              setSessionReady(true)
+              setInitializing(false)
+            }
           }
+        })
+
+        // Give Supabase a moment to auto-process the URL hash
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        // Check if session was established
+        const { data: { session } } = await supabase.auth.getSession()
+        console.log('Session check:', session ? 'found' : 'not found')
+
+        if (session) {
+          setSessionReady(true)
+          setInitializing(false)
+          return
+        }
+
+        // Try manual token extraction if no session yet
+        const hash = window.location.hash
+        console.log('URL hash:', hash ? 'present' : 'empty')
+
+        if (hash && hash.length > 1) {
+          const hashParams = new URLSearchParams(hash.substring(1))
+          const accessToken = hashParams.get('access_token')
+          const refreshToken = hashParams.get('refresh_token')
+
+          console.log('Tokens found:', accessToken ? 'yes' : 'no')
+
+          if (accessToken && refreshToken) {
+            const { data, error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            })
+
+            if (sessionError) {
+              console.error('Set session error:', sessionError)
+            } else if (data.session) {
+              console.log('Session established manually')
+              setSessionReady(true)
+              setInitializing(false)
+              window.history.replaceState(null, '', '/reset-password')
+              return
+            }
+          }
+        }
+
+        // Wait a bit more for auth state change event
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // Final check
+        const { data: { session: finalSession } } = await supabase.auth.getSession()
+        if (finalSession) {
+          setSessionReady(true)
         } else {
-          // Check if there's already a valid session
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            setSessionReady(true)
-          } else {
-            setSessionError(true)
-          }
+          console.log('No session after all attempts')
+          setSessionError(true)
+        }
+        setInitializing(false)
+
+        return () => {
+          subscription.unsubscribe()
         }
       } catch (err) {
         console.error('Init error:', err)
         setSessionError(true)
+        setInitializing(false)
       }
-      setInitializing(false)
     }
 
     initSession()
@@ -127,7 +171,6 @@ export default function ResetPasswordPage() {
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="pt-8">
             {initializing ? (
-              // Loading state
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Loader2 className="h-8 w-8 text-emerald-400 animate-spin" />
@@ -136,7 +179,6 @@ export default function ResetPasswordPage() {
                 <p className="text-slate-400">Stiamo verificando il link</p>
               </div>
             ) : sessionError ? (
-              // Invalid or expired session
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="h-8 w-8 text-red-400" />
@@ -152,7 +194,6 @@ export default function ResetPasswordPage() {
                 </Link>
               </div>
             ) : success ? (
-              // Success state
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="h-8 w-8 text-emerald-400" />
@@ -167,7 +208,6 @@ export default function ResetPasswordPage() {
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500 mx-auto"></div>
               </div>
             ) : sessionReady ? (
-              // Reset password form
               <div className="space-y-6">
                 <div className="text-center">
                   <div className="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
