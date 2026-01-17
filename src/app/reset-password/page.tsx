@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { BarChart3, Eye, EyeOff, Lock, CheckCircle } from 'lucide-react'
+import { BarChart3, Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const supabaseRef = useRef<any>(null)
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -18,6 +19,57 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
+  const [sessionError, setSessionError] = useState(false)
+  const [initializing, setInitializing] = useState(true)
+
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        // Dynamically import to avoid SSR issues
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
+        supabaseRef.current = supabase
+
+        // Check for tokens in URL hash (from email link)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const type = hashParams.get('type')
+
+        if (accessToken && refreshToken && type === 'recovery') {
+          // Exchange tokens for session
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (sessionError) {
+            console.error('Session error:', sessionError)
+            setSessionError(true)
+          } else {
+            setSessionReady(true)
+            // Clean URL
+            window.history.replaceState(null, '', '/reset-password')
+          }
+        } else {
+          // Check if there's already a valid session
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            setSessionReady(true)
+          } else {
+            setSessionError(true)
+          }
+        }
+      } catch (err) {
+        console.error('Init error:', err)
+        setSessionError(true)
+      }
+      setInitializing(false)
+    }
+
+    initSession()
+  }, [])
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,16 +88,18 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+      if (!supabaseRef.current) {
+        setError('Errore di inizializzazione')
+        setLoading(false)
+        return
+      }
+
+      const { error } = await supabaseRef.current.auth.updateUser({
+        password: password
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Errore durante il reset della password')
+      if (error) {
+        setError(error.message)
       } else {
         setSuccess(true)
         setTimeout(() => {
@@ -53,7 +107,7 @@ export default function ResetPasswordPage() {
         }, 3000)
       }
     } catch (err) {
-      setError('Errore di connessione')
+      setError('Errore durante il reset della password')
     }
 
     setLoading(false)
@@ -72,7 +126,32 @@ export default function ResetPasswordPage() {
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="pt-8">
-            {success ? (
+            {initializing ? (
+              // Loading state
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Loader2 className="h-8 w-8 text-emerald-400 animate-spin" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Verifica in corso...</h3>
+                <p className="text-slate-400">Stiamo verificando il link</p>
+              </div>
+            ) : sessionError ? (
+              // Invalid or expired session
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-8 w-8 text-red-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Link Scaduto</h3>
+                <p className="text-slate-400 mb-6">
+                  Il link per reimpostare la password e scaduto o non valido.
+                </p>
+                <Link href="/accedi">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    Richiedi un nuovo link
+                  </Button>
+                </Link>
+              </div>
+            ) : success ? (
               // Success state
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -87,7 +166,7 @@ export default function ResetPasswordPage() {
                 </p>
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500 mx-auto"></div>
               </div>
-            ) : (
+            ) : sessionReady ? (
               // Reset password form
               <div className="space-y-6">
                 <div className="text-center">
@@ -162,7 +241,7 @@ export default function ResetPasswordPage() {
                   </Button>
                 </form>
               </div>
-            )}
+            ) : null}
           </CardContent>
         </Card>
 
